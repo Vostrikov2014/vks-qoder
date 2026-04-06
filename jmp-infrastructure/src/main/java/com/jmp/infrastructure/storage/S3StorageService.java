@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -22,6 +23,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
  * Per specification §16.1-16.10
  */
 @Service
+@Profile("!dev")
 @Slf4j
 public class S3StorageService implements StorageService {
 
