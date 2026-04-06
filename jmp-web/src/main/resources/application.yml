@@ -1,0 +1,127 @@
+# Jitsi Management Platform Configuration
+# Per specification §18.1, §21.2
+
+spring:
+  application:
+    name: jmp-web
+    version: 1.0.0
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/jmp}
+    username: ${DB_USER:jmp}
+    password: ${DB_PASS:jmp}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        jdbc.lob.non_contextual_creation: true
+    show-sql: false
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: jmp
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${REDIS_URL:localhost}
+      port: 6379
+      password: ${REDIS_PASS:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+
+# JMP Security Configuration
+jmp:
+  security:
+    jwt:
+      access-token-secret: ${JWT_ACCESS_SECRET:YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==}
+      refresh-token-secret: ${JWT_REFRESH_SECRET:cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=}
+      access-token-expiration-minutes: 15
+      refresh-token-expiration-days: 7
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.jmp: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{trace_id}] %-5level %logger{36} - %msg%n"
+  structured:
+    format:
+      console: json
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  info:
+    title: Jitsi Management Platform API
+    description: Centralized platform for administering, monitoring, and managing Jitsi video conferences
+    version: 1.0.0
+    contact:
+      name: JMP Development Team
+      email: dev@jmp.example.com

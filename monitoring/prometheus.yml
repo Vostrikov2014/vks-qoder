@@ -1,0 +1,22 @@
+# Prometheus Configuration
+# Per specification §11.3
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers: []
+
+rule_files: []
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'jmp-api'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['jmp-api:8080']
+    scrape_interval: 5s
