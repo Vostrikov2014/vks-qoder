@@ -19,6 +19,12 @@
 - [TenantRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/TenantRepository.java)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Updated Jitsi domain configuration in seed data from 'meet.jit.si' to 'localhost:8443' for local development
+- Updated password hashing algorithm from bcrypt $2a$12$ to $2b$12$ for improved security
+- Enhanced security considerations section to reflect the new bcrypt algorithm
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Project Structure](#project-structure)
@@ -32,7 +38,7 @@
 10. [Appendices](#appendices)
 
 ## Introduction
-This document describes the database design of the Jitsi Management Platform (JMP). It covers the relational schema defined by Flyway migrations, the JPA entity model, constraints and indexes, data access patterns via Spring Data JPA, and operational aspects such as data lifecycle, retention, seeding, and security considerations. The goal is to provide a clear understanding of how data is modeled, stored, and accessed across the platform’s core entities.
+This document describes the database design of the Jitsi Management Platform (JMP). It covers the relational schema defined by Flyway migrations, the JPA entity model, constraints and indexes, data access patterns via Spring Data JPA, and operational aspects such as data lifecycle, retention, seeding, and security considerations. The goal is to provide a clear understanding of how data is modeled, stored, and accessed across the platform's core entities.
 
 ## Project Structure
 The database schema is managed by Flyway migrations under the web module resources. Entities are defined in the domain module and mapped to the database via JPA. Repositories define typed data access patterns.
@@ -115,10 +121,11 @@ This section documents the core entities, their fields, data types, constraints,
 
 - Tenants
   - Purpose: Multi-tenant organization container with quotas and settings.
-  - Key fields: id (UUID PK), name (unique), slug (unique), status, quotas (embedded), settings (JSONB), jitsi_config (JSONB), timestamps, suspension fields.
+  - Key fields: id (UUID PK), name (unique), slug (unique), status, quotas (embedded), settings (JSONB), jitsi_config (JSONB), **jitsi_domain** (for local development), timestamps, suspension fields.
   - Constraints: Unique constraints on name and slug; embedded quotas define allowed features and limits.
   - Indexes: slug, domain, status.
   - Lifecycle: Status transitions include ACTIVE, SUSPENDED, DELETED; suspension fields capture reason and timestamp.
+  - **Updated**: Added jitsi_domain field for configuring Jitsi server domains, currently set to 'localhost:8443' for local development environments.
 
 - Users
   - Purpose: Platform users scoped to a tenant; supports RBAC and optional external auth identifiers.
@@ -126,6 +133,7 @@ This section documents the core entities, their fields, data types, constraints,
   - Constraints: Unique constraint on email; tenant_id FK; soft-deleted rows filtered by deleted_at in indexes.
   - Indexes: email, tenant_id, status (filtered by deleted_at).
   - Lifecycle: Status includes PENDING_VERIFICATION, ACTIVE, SUSPENDED, DELETED; soft-delete sets deleted_at and status.
+  - **Updated**: Password hashes now use bcrypt $2b$12$ algorithm for improved security over the previous $2a$12$ format.
 
 - Roles and Permissions
   - Roles: id (UUID PK), name (unique), description, role_type, tenant_id (optional), parent_role_id (self-FK), permissions (M:N), flags (system/global), timestamps.
@@ -215,10 +223,12 @@ PERMISSIONS ||--o{ ROLES : "role_permissions (junction)"
   - Embedded quotas: maxConcurrentConferences, maxParticipantsPerConference, maxRecordingStorageMb, maxConferenceDurationMinutes, allowedFeatures.
   - JSONB settings and jitsi_config for extensibility.
   - Status enum with ACTIVE/SUSPENDED/DELETED; suspension fields track reason and timestamp.
+  - **Updated**: jitsi_domain field for configuring Jitsi server domains, currently set to 'localhost:8443' for local development environments.
 - Users
   - Enum status with PENDING_VERIFICATION/ACTIVE/SUSPENDED/DELETED.
   - Soft delete via deleted_at; external auth fields for SSO.
   - Many-to-many roles via user_roles junction.
+  - **Updated**: Password hashing algorithm upgraded to bcrypt $2b$12$ for enhanced security.
 - Roles and Permissions
   - Role hierarchy via parent_role_id; system vs tenant-scoped roles.
   - Resource/action taxonomy supports ABAC alongside RBAC.
@@ -354,6 +364,8 @@ class TenantRepository {
   - V1 initializes schema, UUID extension, tables, constraints, indexes, and comments.
 - Seed Data:
   - V2 inserts default tenant, system permissions, system roles, role-permission assignments, default users, and role assignments.
+  - **Updated**: Default tenant now uses 'localhost:8443' as jitsi_domain for local development environments.
+  - **Updated**: Default user passwords use bcrypt $2b$12$ algorithm for enhanced security.
 - Additional Tables:
   - V3 adds recordings table with indexes.
   - V4 adds audit logs table with indexes.
@@ -368,7 +380,7 @@ class TenantRepository {
 - [V4__create_audit_logs_table.sql:1-36](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql#L1-L36)
 - [V5__create_identity_providers_table.sql:1-45](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L1-L45)
 
-### Security, Privacy, and Access Control
+### Data Security, Privacy, and Access Control
 - Authentication and Authorization:
   - Users support local credentials and optional external auth identifiers for SSO.
   - IdentityProviders configure OIDC endpoints and attribute mapping; supports auto-provisioning and default roles.
@@ -377,6 +389,7 @@ class TenantRepository {
   - Audit logs capture sensitive actions, IP/user-agent, and success/failure for compliance.
 - Access Control:
   - RBAC with hierarchical roles and system/global permissions; role_permissions junction enforces granular access.
+- **Updated**: Enhanced password security with bcrypt $2b$12$ algorithm providing improved resistance against timing attacks and better memory-hard properties compared to the previous $2a$12$ format.
 
 **Section sources**
 - [User.java:76-82](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L76-L82)
@@ -438,14 +451,13 @@ User --> Role
 - Audit Log Queries:
   - Success=false index accelerates failure analysis; created_at DESC indexes support time-series queries.
 
-[No sources needed since this section provides general guidance]
-
 ## Troubleshooting Guide
 - Common Issues:
   - Duplicate tenant slug/name: Check unique indexes and seed data.
   - Conference uniqueness: room_name+tenant_id must be unique; verify soft-deleted rows are excluded.
   - Recording retention: Ensure retention_until is set appropriately; monitor archival jobs.
   - Audit failures: Use success=false index to locate failed operations quickly.
+  - **Updated**: Password authentication issues: Ensure bcrypt $2b$12$ format is compatible with your authentication library.
 - Diagnostics:
   - Verify FK existence and referential integrity after schema changes.
   - Confirm index usage with EXPLAIN/EXPLAIN ANALYZE on slow queries.
@@ -458,7 +470,7 @@ User --> Role
 ## Conclusion
 The JMP database design emphasizes multi-tenancy, soft-deleted row isolation, and flexible configuration via JSONB fields. The schema, constraints, and indexes support efficient querying and strong referential integrity. JPA entities align closely with the schema, enabling clean data access patterns and robust auditing. Migration scripts provide a clear, versioned evolution path for schema changes.
 
-[No sources needed since this section summarizes without analyzing specific files]
+**Updated**: Recent enhancements include improved Jitsi domain configuration for local development environments and enhanced password security through the adoption of bcrypt $2b$12$ algorithm, providing better protection against timing attacks and improved cryptographic strength.
 
 ## Appendices
 
@@ -472,6 +484,7 @@ varchar slug UK
 varchar status
 jsonb settings
 jsonb jitsi_config
+varchar jitsi_domain
 timestamptz created_at
 timestamptz updated_at
 timestamptz suspended_at

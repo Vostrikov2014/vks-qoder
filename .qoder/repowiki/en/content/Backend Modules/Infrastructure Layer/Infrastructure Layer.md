@@ -9,13 +9,23 @@
 - [WebSocketAuthInterceptor.java](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java)
 - [RealtimeEventService.java](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java)
 - [S3StorageService.java](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java)
+- [LocalStorageService.java](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java)
+- [StorageService.java](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java)
 - [application.yml](file://jmp-web/src/main/resources/application.yml)
+- [docker-compose.yml](file://docker-compose.yml)
 - [V1__init_schema.sql](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql)
 - [JwtService.java](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java)
-- [StorageService.java](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java)
 - [GlobalExceptionHandler.java](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java)
 - [JmpApplication.java](file://jmp-web/src/main/java/com/jmp/web/JmpApplication.java)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added comprehensive coverage of Spring Profile-based storage backend selection
+- Documented MinIO service integration as S3-compatible storage backend
+- Enhanced development environment configuration with Docker Compose services
+- Updated storage service architecture to reflect dual implementation approach
+- Added MinIO-specific configuration and deployment considerations
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -30,15 +40,17 @@
 10. [Appendices](#appendices)
 
 ## Introduction
-This document describes the Infrastructure Layer of the Jitsi Management Platform. It focuses on security configuration (JWT authentication filter, user details service, and Spring Security setup), WebSocket configuration for real-time communication and authentication interception, storage service implementation for AWS S3 integration, database configuration and persistence layer setup, and infrastructure-specific configurations such as CORS, rate limiting, and caching strategies. Cross-cutting concerns like logging, monitoring, and error handling are also addressed, along with how infrastructure services support the application layer while maintaining separation of concerns.
+This document describes the Infrastructure Layer of the Jitsi Management Platform. It focuses on security configuration (JWT authentication filter, user details service, and Spring Security setup), WebSocket configuration for real-time communication and authentication interception, storage service implementation with Spring Profile-based backend selection, database configuration and persistence layer setup, and infrastructure-specific configurations such as CORS, rate limiting, and caching strategies. Cross-cutting concerns like logging, monitoring, and error handling are also addressed, along with how infrastructure services support the application layer while maintaining separation of concerns.
+
+**Updated** Enhanced to include Spring Profile-based storage backend selection and MinIO service integration for S3-compatible object storage.
 
 ## Project Structure
 The Infrastructure Layer spans several packages:
 - Security: JWT filter, Spring Security configuration, and user details service
 - WebSocket: STOMP broker configuration, authentication interceptor, and event broadcasting service
-- Storage: S3 integration for presigned URLs and lifecycle operations
+- Storage: Dual implementation approach with Spring Profile-based backend selection (Local for dev, S3/MinIO for production)
 - Persistence: JPA/Hibernate configuration, Flyway migrations, and repository scanning
-- Application services: JWT and storage abstractions used by infrastructure components
+- Application services: Storage abstraction interface used by infrastructure components
 - API: Global exception handling aligned with RFC 7807
 
 ```mermaid
@@ -46,10 +58,9 @@ graph TB
 subgraph "Infrastructure"
 SEC["Security<br/>JwtAuthenticationFilter, SecurityConfig, UserDetailsServiceImpl"]
 WS["WebSocket<br/>WebSocketConfig, WebSocketAuthInterceptor, RealtimeEventService"]
-STORE["Storage<br/>S3StorageService"]
+STORE["Storage<br/>LocalStorageService (dev)<br/>S3StorageService (!dev)"]
 end
 subgraph "Application"
-APP_JWT["JwtService"]
 APP_STORE["StorageService (interface)"]
 end
 subgraph "Persistence"
@@ -58,8 +69,8 @@ end
 subgraph "API"
 API_EX["GlobalExceptionHandler"]
 end
-SEC --> APP_JWT
-WS --> APP_JWT
+SEC --> APP_STORE
+WS --> APP_STORE
 STORE --> APP_STORE
 SEC --> DB_CFG
 API_EX --> SEC
@@ -72,8 +83,8 @@ API_EX --> SEC
 - [WebSocketConfig.java:1-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L1-L70)
 - [WebSocketAuthInterceptor.java:1-94](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L1-L94)
 - [RealtimeEventService.java:1-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L1-L142)
-- [S3StorageService.java:1-129](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L129)
-- [JwtService.java:1-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L1-L236)
+- [LocalStorageService.java:1-63](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L1-L63)
+- [S3StorageService.java:1-131](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L131)
 - [StorageService.java:1-56](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L1-L56)
 - [application.yml:1-128](file://jmp-web/src/main/resources/application.yml#L1-L128)
 - [V1__init_schema.sql:1-172](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L1-L172)
@@ -91,9 +102,13 @@ API_EX --> SEC
 - WebSocket Configuration: Enables STOMP broker, registers endpoints with SockJS fallback, configures JSON message converters, and registers an authentication interceptor.
 - WebSocket Authentication Interceptor: Validates JWT tokens from STOMP CONNECT headers or query parameters and attaches authentication to the session.
 - Realtime Event Service: Sends tenant-scoped, user-scoped, and broadcast events via SimpMessagingTemplate with robust error logging.
-- S3 Storage Service: Implements presigned URL generation for uploads/downloads, deletion, and placeholders for archival/restore with configurable region, credentials, and endpoint overrides.
+- Storage Service Architecture: Dual implementation approach with Spring Profile-based backend selection - Local storage for development (`dev` profile) and S3/MinIO for production (`!dev` profile).
+- Local Storage Service: In-memory implementation for development with token-based access control and local file simulation.
+- S3/MinIO Storage Service: AWS SDK v2 implementation with S3Presigner for presigned URL generation, configurable region and endpoint for MinIO compatibility.
 - Database and Persistence: JPA/Hibernate with PostgreSQL dialect, HikariCP connection pooling, Flyway migrations, and repository/entity scanning.
 - Global Exception Handler: Standardizes error responses using RFC 7807 Problem Details.
+
+**Updated** Added comprehensive coverage of Spring Profile-based storage backend selection and MinIO integration.
 
 **Section sources**
 - [JwtAuthenticationFilter.java:1-122](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/JwtAuthenticationFilter.java#L1-L122)
@@ -102,12 +117,16 @@ API_EX --> SEC
 - [WebSocketConfig.java:1-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L1-L70)
 - [WebSocketAuthInterceptor.java:1-94](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L1-L94)
 - [RealtimeEventService.java:1-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L1-L142)
-- [S3StorageService.java:1-129](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L129)
+- [LocalStorageService.java:1-63](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L1-L63)
+- [S3StorageService.java:1-131](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L131)
+- [StorageService.java:1-56](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L1-L56)
 - [application.yml:1-128](file://jmp-web/src/main/resources/application.yml#L1-L128)
 - [GlobalExceptionHandler.java:1-130](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java#L1-L130)
 
 ## Architecture Overview
-The Infrastructure Layer integrates security, messaging, storage, and persistence to support the application layer. Security intercepts HTTP and WebSocket traffic, persistence manages relational data, and storage handles media lifecycles. The API layer centralizes error handling.
+The Infrastructure Layer integrates security, messaging, storage, and persistence to support the application layer. Security intercepts HTTP and WebSocket traffic, persistence manages relational data, and storage handles media lifecycles through a flexible backend selection mechanism. The API layer centralizes error handling.
+
+**Updated** Enhanced to reflect Spring Profile-based storage backend selection and MinIO service integration.
 
 ```mermaid
 graph TB
@@ -115,11 +134,12 @@ Client["Client Apps<br/>HTTP + WebSocket"]
 HTTP["HTTP Layer<br/>Controllers"]
 SEC["Security Filters<br/>JWT + CORS + Stateless"]
 WS["WebSocket Broker<br/>STOMP + SockJS"]
-APP["Application Services<br/>JwtService, StorageService"]
+APP["Application Services<br/>StorageService Interface"]
 INFRA_WS["Infra WebSocket<br/>Auth Interceptor + Event Service"]
 INFRA_SEC["Infra Security<br/>JWT Filter + UserDetailsService"]
 PERSIST["Persistence<br/>JPA/Hibernate + Flyway"]
-STORE["Storage<br/>S3 Presigned URLs"]
+STORE["Storage<br/>Profile-based Selection<br/>Local (dev) | S3/MinIO (!dev)"]
+DEV_ENV["Development Environment<br/>Docker Compose<br/>MinIO + Postgres + Redis"]
 Client --> HTTP
 Client --> WS
 HTTP --> SEC
@@ -131,6 +151,7 @@ APP --> PERSIST
 APP --> STORE
 INFRA_WS --> APP
 INFRA_SEC --> APP
+STORE --> DEV_ENV
 ```
 
 **Diagram sources**
@@ -139,7 +160,9 @@ INFRA_SEC --> APP
 - [WebSocketConfig.java:1-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L1-L70)
 - [WebSocketAuthInterceptor.java:1-94](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L1-L94)
 - [RealtimeEventService.java:1-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L1-L142)
-- [S3StorageService.java:1-129](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L129)
+- [LocalStorageService.java:18](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L18)
+- [S3StorageService.java:26](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L26)
+- [docker-compose.yml:130-149](file://docker-compose.yml#L130-L149)
 - [JwtService.java:1-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L1-L236)
 - [StorageService.java:1-56](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L1-L56)
 - [application.yml:1-128](file://jmp-web/src/main/resources/application.yml#L1-L128)
@@ -231,27 +254,53 @@ Broker-->>Client : "MESSAGE with event payload"
 - [WebSocketAuthInterceptor.java:1-94](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L1-L94)
 - [RealtimeEventService.java:1-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L1-L142)
 
-### Storage Service Implementation (AWS S3)
-- S3StorageService implements StorageService with:
-  - Presigned download and upload URL generation via S3Presigner
-  - Direct deletion and placeholders for archival/restore
-  - Configurable region, credentials, and endpoint override for MinIO/S3-compatible storage
-  - Provider identification and logging for operations
+### Storage Service Implementation and Spring Profile-Based Backend Selection
+- Storage Service Interface
+  - Defines core storage operations: presigned URL generation, upload/download, deletion, scheduling, archiving, and restoration
+  - Supports multiple providers: S3, Azure Blob, Google Cloud Storage, MinIO, and Local
+- Local Storage Service (Dev Profile)
+  - In-memory implementation for development environments
+  - Uses Spring Profile annotation `@Profile("dev")` for automatic activation
+  - Generates token-based URLs for simulated file access
+  - Provides local file simulation with HashMap storage
+- S3/MinIO Storage Service (Production Profile)
+  - AWS SDK v2 implementation with S3Presigner for presigned URL generation
+  - Uses Spring Profile annotation `@Profile("!dev")` for production environments
+  - Configurable region, credentials, and endpoint for MinIO/S3-compatible storage
+  - Supports endpoint override for MinIO service integration
+  - Implements deletion, scheduling, archiving, and restoration operations
+- Spring Profile Configuration
+  - Development: `SPRING_PROFILES_ACTIVE: docker,dev` activates dev profile
+  - Production: Default profile activates S3/MinIO implementation
+  - Automatic backend selection based on active Spring profiles
+
+**Updated** Comprehensive coverage of Spring Profile-based storage backend selection and MinIO integration.
 
 ```mermaid
 flowchart TD
-Start(["Call generatePresignedUrl/generateUploadUrl"]) --> BuildReq["Build GetObject/PutObject PresignRequest"]
-BuildReq --> Presign["S3Presigner.presign*"]
-Presign --> URL["Return signed URL"]
-URL --> End(["Done"])
+Start(["Application Startup"]) --> Profiles["Check Active Spring Profiles"]
+Profiles --> DevCheck{"Profile == 'dev'? "}
+DevCheck --> |Yes| LocalImpl["Activate LocalStorageService"]
+DevCheck --> |No| S3Check{"Profile == '!dev'? "}
+S3Check --> |Yes| S3Impl["Activate S3StorageService"]
+S3Check --> |No| Default["Default to S3 implementation"]
+LocalImpl --> LocalOps["Local Storage Operations"]
+S3Impl --> S3Ops["S3/MinIO Storage Operations"]
+Default --> S3Ops
+LocalOps --> End(["Ready"])
+S3Ops --> End
 ```
 
 **Diagram sources**
-- [S3StorageService.java:62-85](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L62-L85)
+- [LocalStorageService.java:18](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L18)
+- [S3StorageService.java:26](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L26)
+- [docker-compose.yml:50](file://docker-compose.yml#L50)
 
 **Section sources**
-- [S3StorageService.java:1-129](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L129)
+- [LocalStorageService.java:1-63](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L1-L63)
+- [S3StorageService.java:1-131](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L131)
 - [StorageService.java:1-56](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L1-L56)
+- [docker-compose.yml:50](file://docker-compose.yml#L50)
 
 ### Database Configuration and Persistence Layer
 - JPA/Hibernate
@@ -338,11 +387,19 @@ ROLES ||--o{ ROLE_PERMISSIONS : "assigned"
   - Redis configured for data access; caching not explicitly implemented in the analyzed files
 - Compression
   - HTTP compression enabled for JSON/XML/text content types
+- Development Environment Configuration
+  - Docker Compose includes comprehensive service dependencies: PostgreSQL, Redis, MinIO, Jitsi services
+  - Volume definitions for persistent data storage
+  - Health checks for service readiness
+  - MinIO integration with S3-compatible endpoint configuration
+
+**Updated** Enhanced development environment configuration with comprehensive service dependencies and MinIO integration.
 
 **Section sources**
 - [SecurityConfig.java:77-88](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/SecurityConfig.java#L77-L88)
 - [application.yml:63-70](file://jmp-web/src/main/resources/application.yml#L63-L70)
 - [application.yml:45-56](file://jmp-web/src/main/resources/application.yml#L45-L56)
+- [docker-compose.yml:1-342](file://docker-compose.yml#L1-L342)
 
 ### Cross-Cutting Concerns
 - Logging
@@ -357,7 +414,9 @@ ROLES ||--o{ ROLE_PERMISSIONS : "assigned"
 - [GlobalExceptionHandler.java:1-130](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java#L1-L130)
 
 ## Dependency Analysis
-The Infrastructure Layer components depend on application services and framework libraries. Security depends on JwtService and UserDetailsService; WebSocket depends on JwtService and SimpMessagingTemplate; Storage depends on AWS SDK v2; persistence depends on Hibernate, HikariCP, and Flyway.
+The Infrastructure Layer components depend on application services and framework libraries. Security depends on JwtService and UserDetailsService; WebSocket depends on JwtService and SimpMessagingTemplate; Storage depends on AWS SDK v2 for S3/MinIO or local in-memory implementation; persistence depends on Hibernate, HikariCP, and Flyway.
+
+**Updated** Enhanced dependency analysis to reflect Spring Profile-based storage backend selection.
 
 ```mermaid
 graph LR
@@ -368,9 +427,10 @@ SecCfg --> UDS
 WSCfg["WebSocketConfig"] --> WSI["WebSocketAuthInterceptor"]
 WSCfg --> REvent["RealtimeEventService"]
 WSI --> JwtSvc
-S3["S3StorageService"] --> StoreIF["StorageService (interface)"]
-App["Application Services"] --> JwtSvc
-App --> StoreIF
+LocalStorage["LocalStorageService"] --> StoreIF["StorageService (interface)"]
+S3Storage["S3StorageService"] --> StoreIF
+StoreIF --> App["Application Services"]
+App --> JwtSvc
 Pers["Persistence"] --> Repo["Domain Repositories"]
 ```
 
@@ -380,8 +440,8 @@ Pers["Persistence"] --> Repo["Domain Repositories"]
 - [WebSocketConfig.java:27-31](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L27-L31)
 - [WebSocketAuthInterceptor.java:31-32](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L31-L32)
 - [RealtimeEventService.java:22-23](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L22-L23)
-- [S3StorageService.java:26-29](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L26-L29)
-- [JwtService.java:25-43](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L43)
+- [LocalStorageService.java:20](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L20)
+- [S3StorageService.java:28](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L28)
 - [StorageService.java:9-55](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L9-L55)
 
 **Section sources**
@@ -390,7 +450,8 @@ Pers["Persistence"] --> Repo["Domain Repositories"]
 - [WebSocketConfig.java:1-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L1-L70)
 - [WebSocketAuthInterceptor.java:1-94](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L1-L94)
 - [RealtimeEventService.java:1-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L1-L142)
-- [S3StorageService.java:1-129](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L129)
+- [LocalStorageService.java:1-63](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L1-L63)
+- [S3StorageService.java:1-131](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L1-L131)
 - [JwtService.java:1-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L1-L236)
 - [StorageService.java:1-56](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L1-L56)
 
@@ -399,14 +460,16 @@ Pers["Persistence"] --> Repo["Domain Repositories"]
   - Stateless processing reduces server-side session overhead; ensure token size remains minimal
 - WebSocket Broker
   - In-memory broker suitable for development; consider external brokers (RabbitMQ/Redis) for production scaling
-- Storage
-  - Presigned URLs shift workload to client; ensure appropriate expiration windows and secure secrets
+- Storage Backend Selection
+  - Local storage for development provides low-latency access but limited scalability
+  - S3/MinIO provides scalable, distributed storage with appropriate latency for production
+  - Spring Profile-based selection ensures optimal backend for each environment
 - Persistence
   - HikariCP tuning for pool sizes and timeouts; batch sizing and ordered inserts/updates reduce contention
 - Compression
   - Enable compression for JSON responses to reduce bandwidth
 
-[No sources needed since this section provides general guidance]
+**Updated** Added performance considerations for Spring Profile-based storage backend selection.
 
 ## Troubleshooting Guide
 - Authentication Failures
@@ -416,34 +479,54 @@ Pers["Persistence"] --> Repo["Domain Repositories"]
   - Confirm Authorization header or login parameter presence; ensure broker endpoints are reachable
   - Review interceptor logs for invalid tokens and authentication attachment
 - Storage Operations
-  - Validate S3 credentials, region, and endpoint; confirm bucket existence and permissions
+  - **Local Storage (Dev)**: Verify token-based URLs and in-memory storage state
+  - **S3/MinIO (Prod)**: Validate S3 credentials, region, and endpoint; confirm bucket existence and permissions
   - Check presigned URL expiration and signature correctness
+  - **MinIO Integration**: Verify MinIO service health and endpoint configuration
 - Database Connectivity
   - Review datasource configuration, HikariCP settings, and Flyway migration status
+- Spring Profile Issues
+  - Verify active profiles: `SPRING_PROFILES_ACTIVE: docker,dev` for development
+  - Ensure correct storage backend is activated based on profile
 - Error Responses
   - Inspect RFC 7807 Problem Details for structured error reporting
+
+**Updated** Enhanced troubleshooting guide to include storage backend selection issues and MinIO-specific problems.
 
 **Section sources**
 - [JwtAuthenticationFilter.java:70-76](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/JwtAuthenticationFilter.java#L70-L76)
 - [WebSocketAuthInterceptor.java:44-47](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L44-L47)
+- [LocalStorageService.java:25-40](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L25-L40)
 - [S3StorageService.java:62-85](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L62-L85)
+- [docker-compose.yml:130-149](file://docker-compose.yml#L130-L149)
 - [application.yml:12-23](file://jmp-web/src/main/resources/application.yml#L12-L23)
 - [GlobalExceptionHandler.java:1-130](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java#L1-L130)
 
 ## Conclusion
-The Infrastructure Layer establishes a secure, scalable foundation for the Jitsi Management Platform. JWT-based authentication and Spring Security protect HTTP endpoints, while WebSocket configuration enables real-time tenant-scoped events with robust authentication interception. AWS S3 integration supports efficient media lifecycle operations via presigned URLs. The persistence layer leverages JPA/Hibernate, HikariCP, and Flyway for reliable data management. Cross-cutting concerns such as logging, monitoring, and standardized error handling ensure operational excellence and maintain separation of concerns between infrastructure and application services.
+The Infrastructure Layer establishes a secure, scalable foundation for the Jitsi Management Platform with enhanced flexibility through Spring Profile-based storage backend selection. JWT-based authentication and Spring Security protect HTTP endpoints, while WebSocket configuration enables real-time tenant-scoped events with robust authentication interception. The dual storage implementation approach provides optimal development experience with local storage and production-ready scalability with S3/MinIO integration. The persistence layer leverages JPA/Hibernate, HikariCP, and Flyway for reliable data management. Enhanced development environment configuration through Docker Compose provides comprehensive service dependencies including MinIO for S3-compatible object storage. Cross-cutting concerns such as logging, monitoring, and standardized error handling ensure operational excellence and maintain separation of concerns between infrastructure and application services.
 
-[No sources needed since this section summarizes without analyzing specific files]
+**Updated** Enhanced conclusion to reflect Spring Profile-based storage backend selection and MinIO integration capabilities.
 
 ## Appendices
 - Configuration Reference
   - Security: JWT secrets and expiration minutes/days
   - Database: JDBC URL, credentials, HikariCP pool settings
-  - Storage: S3 bucket, region, access/secret keys, optional endpoint
+  - Storage: S3 bucket, region, access/secret keys, optional endpoint for MinIO
+  - Spring Profiles: `dev` for local storage, `!dev` for S3/MinIO
   - Monitoring: Actuator endpoints and Prometheus metrics exposure
+  - Development Environment: Docker Compose services and volume definitions
 - Migration Notes
   - Initial schema includes multi-tenant entities, indexes, and comments for clarity
+- MinIO Integration
+  - S3-compatible object storage with configurable endpoint
+  - Health checks and volume persistence for production deployments
+  - Token-based access control for development environment
+
+**Updated** Added configuration reference for Spring Profiles, storage backend selection, and MinIO integration.
 
 **Section sources**
 - [application.yml:71-128](file://jmp-web/src/main/resources/application.yml#L71-L128)
 - [V1__init_schema.sql:1-172](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L1-L172)
+- [docker-compose.yml:130-149](file://docker-compose.yml#L130-L149)
+- [LocalStorageService.java:18](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/LocalStorageService.java#L18)
+- [S3StorageService.java:26](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L26)

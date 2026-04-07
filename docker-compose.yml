@@ -8,6 +8,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: jmp-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: jmp
       POSTGRES_USER: jmp
@@ -28,6 +29,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: jmp-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -46,6 +48,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: jmp-api
+    restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: docker,dev
       DB_URL: jdbc:postgresql://postgres:5432/jmp
@@ -86,6 +89,7 @@ services:
       context: ./jmp-ui
       dockerfile: Dockerfile
     container_name: jmp-ui
+    restart: unless-stopped
     environment:
       VITE_API_URL: http://localhost:8081/api/v1
     ports:
@@ -99,6 +103,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: jmp-prometheus
+    restart: unless-stopped
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -114,6 +119,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: jmp-grafana
+    restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
@@ -131,6 +137,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: jmp-minio
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -152,6 +159,7 @@ services:
   jitsi-web:
     image: jitsi/web:stable
     container_name: jmp-jitsi-web
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -196,6 +204,7 @@ services:
   jitsi-prosody:
     image: jitsi/prosody:stable
     container_name: jmp-jitsi-prosody
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -238,6 +247,7 @@ services:
   jitsi-jicofo:
     image: jitsi/jicofo:stable
     container_name: jmp-jitsi-jicofo
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -279,6 +289,7 @@ services:
   jitsi-jvb:
     image: jitsi/jvb:stable
     container_name: jmp-jitsi-jvb
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
