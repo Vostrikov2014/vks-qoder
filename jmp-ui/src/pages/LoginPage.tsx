@@ -1,25 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Box,
-  Paper,
   TextField,
   Button,
   Typography,
   Alert,
-  CircularProgress,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
-import { VideoCall as VideoCallIcon } from '@mui/icons-material';
+import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
 import { authApi } from '../services/api';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1] as const,
+    },
+  },
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Apply dark mode class to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +65,7 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(email, password);
       const { accessToken, refreshToken, user } = response.data;
-      
+
       setAuth(user, accessToken, refreshToken);
       navigate('/');
     } catch (err) {
@@ -43,81 +79,378 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100vh',
+        width: '100vw',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'background.default',
+        position: 'relative',
+        overflow: 'hidden',
+        p: 2,
       }}
     >
-      <Paper
-        elevation={3}
+      {/* Aurora Background */}
+      <div className="aurora-bg" />
+
+      {/* Theme Toggle */}
+      <Box
         sx={{
-          p: 4,
-          width: '100%',
-          maxWidth: 400,
-          mx: 2,
+          position: 'absolute',
+          top: 24,
+          right: 24,
+          zIndex: 10,
         }}
       >
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <VideoCallIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-          <Typography variant="h4" component="h1" gutterBottom>
-            Jitsi Management Platform
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Sign in to manage your video conferences
-          </Typography>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            margin="normal"
-            required
-            autoFocus
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            margin="normal"
-            required
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={loading}
-            sx={{ mt: 3 }}
+        <IconButton
+          onClick={toggleTheme}
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 'var(--radius-xl)',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-muted)',
+            boxShadow: 'var(--shadow-lg)',
+            '&:hover': {
+              background: 'var(--glass-bg)',
+              color: 'var(--text-h)',
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <motion.div
+            initial={false}
+            animate={{ rotate: isDarkMode ? 360 : 0 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
-            {loading ? <CircularProgress size={24} /> : 'Sign In'}
-          </Button>
-        </Box>
+            {isDarkMode ? <Moon size={22} /> : <Sun size={22} />}
+          </motion.div>
+        </IconButton>
+      </Box>
 
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary">
-            Default credentials:
-          </Typography>
-          <Typography variant="caption" color="text.secondary" component="div">
-            admin@jmp.local / admin123
-          </Typography>
-          <Typography variant="caption" color="text.secondary" component="div">
-            tenant@jmp.local / tenant123
-          </Typography>
+      {/* Decorative Elements */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '10%',
+          left: '10%',
+          width: 300,
+          height: 300,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          animation: 'float 8s ease-in-out infinite',
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: '10%',
+          right: '10%',
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'float 10s ease-in-out infinite reverse',
+        }}
+      />
+
+      {/* Login Card */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        style={{ width: '100%', maxWidth: 420, zIndex: 1 }}
+      >
+        <Box
+          sx={{
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 'var(--radius-2xl)',
+            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(14, 165, 233, 0.1)',
+            p: { xs: 3, sm: 5 },
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Glow Effect */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -100,
+              left: -100,
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, transparent 70%)',
+              filter: 'blur(40px)',
+            }}
+          />
+
+          {/* Logo & Header */}
+          <motion.div variants={itemVariants}>
+            <Box sx={{ textAlign: 'center', mb: 4, position: 'relative' }}>
+              <Box
+                sx={{
+                  width: 72,
+                  height: 72,
+                  mx: 'auto',
+                  mb: 3,
+                  borderRadius: 'var(--radius-xl)',
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 50%, #ec4899 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 30px rgba(14, 165, 233, 0.4)',
+                  position: 'relative',
+                }}
+              >
+                <Video size={36} color="white" />
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Sparkles size={12} color="white" />
+                </Box>
+              </Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 800,
+                  mb: 1,
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                Welcome Back
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
+                Sign in to manage your video conferences
+              </Typography>
+            </Box>
+          </motion.div>
+
+          {/* Error Alert */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 3,
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  color: '#ef4444',
+                  '& .MuiAlert-icon': {
+                    color: '#ef4444',
+                  },
+                }}
+              >
+                {error}
+              </Alert>
+            </motion.div>
+          )}
+
+          {/* Form */}
+          <Box component="form" onSubmit={handleSubmit}>
+            <motion.div variants={itemVariants}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Mail size={20} color="var(--text-muted)" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 2.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'rgba(255, 255, 255, 0.5)',
+                    '& fieldset': {
+                      borderColor: 'var(--border)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--border-strong)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0ea5e9',
+                      borderWidth: 2,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--text-muted)',
+                    '&.Mui-focused': {
+                      color: '#0ea5e9',
+                    },
+                  },
+                }}
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock size={20} color="var(--text-muted)" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        sx={{ color: 'var(--text-muted)' }}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'rgba(255, 255, 255, 0.5)',
+                    '& fieldset': {
+                      borderColor: 'var(--border)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--border-strong)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0ea5e9',
+                      borderWidth: 2,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--text-muted)',
+                    '&.Mui-focused': {
+                      color: '#0ea5e9',
+                    },
+                  },
+                }}
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: '#0ea5e9',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  Forgot password?
+                </Typography>
+              </Box>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Button
+                type="submit"
+                fullWidth
+                size="large"
+                disabled={loading}
+                endIcon={<ArrowRight size={20} />}
+                sx={{
+                  py: 1.5,
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 20px rgba(14, 165, 233, 0.4)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #0284c7 0%, #9333ea 100%)',
+                    boxShadow: '0 6px 25px rgba(14, 165, 233, 0.5)',
+                  },
+                  '&:disabled': {
+                    background: 'var(--border-strong)',
+                    color: 'var(--text-muted)',
+                  },
+                }}
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </motion.div>
+          </Box>
+
+          {/* Demo Credentials */}
+          <motion.div variants={itemVariants}>
+            <Box
+              sx={{
+                mt: 4,
+                p: 2.5,
+                borderRadius: 'var(--radius-lg)',
+                background: 'rgba(14, 165, 233, 0.05)',
+                border: '1px dashed rgba(14, 165, 233, 0.3)',
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  mb: 1.5,
+                  color: 'var(--text-muted)',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Demo Credentials
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+                  <strong>Admin:</strong> admin@jmp.local / admin123
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+                  <strong>Tenant:</strong> tenant@jmp.local / tenant123
+                </Typography>
+              </Box>
+            </Box>
+          </motion.div>
         </Box>
-      </Paper>
+      </motion.div>
     </Box>
   );
 }

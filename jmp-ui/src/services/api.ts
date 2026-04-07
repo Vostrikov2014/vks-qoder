@@ -3,6 +3,60 @@ import { useAuthStore } from '../store/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
+// Analytics Types
+export interface DailyUsage {
+  date: string;
+  conferences: number;
+  participants: number;
+  recordings: number;
+}
+
+export interface DurationStats {
+  averageDuration: number;
+  totalDuration: number;
+  longestConference: number;
+  shortestConference: number;
+}
+
+export interface DashboardMetrics {
+  activeConferences: number;
+  totalParticipantsToday: number;
+  recordingsThisMonth: number;
+  storageUsedBytes: number;
+  durationStats: DurationStats;
+  weeklyUsage: DailyUsage[];
+}
+
+export interface UsageReport {
+  totalConferences: number;
+  totalParticipants: number;
+  totalDurationMinutes: number;
+  totalRecordings: number;
+  peakConcurrentConferences: number;
+  peakConcurrentParticipants: number;
+}
+
+export interface ParticipantAnalytics {
+  uniqueParticipants: number;
+  averageParticipantsPerConference: number;
+  maxConcurrentParticipants: number;
+  participantTrend: Record<string, number>;
+}
+
+export interface RecordingAnalytics {
+  totalRecordings: number;
+  totalStorageBytes: number;
+  averageDurationSeconds: number;
+  recordingsByType: Record<string, number>;
+}
+
+export interface SystemHealthMetrics {
+  cpuUsage: number;
+  memoryUsage: number;
+  activeConnections: number;
+  averageResponseTime: number;
+}
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -89,4 +143,16 @@ export const conferenceApi = {
   endConference: (id: string) => api.post(`/conferences/${id}/end`),
   generateToken: (id: string, data: unknown) =>
     api.post(`/conferences/${id}/token`, data),
+};
+
+// Analytics API
+export const analyticsApi = {
+  getDashboardMetrics: () => api.get<DashboardMetrics>('/analytics/dashboard'),
+  getUsageReport: (startDate: string, endDate: string) =>
+    api.get<UsageReport>('/analytics/usage-report', { params: { startDate, endDate } }),
+  getParticipantAnalytics: (startDate: string, endDate: string) =>
+    api.get<ParticipantAnalytics>('/analytics/participants', { params: { startDate, endDate } }),
+  getRecordingAnalytics: (startDate: string, endDate: string) =>
+    api.get<RecordingAnalytics>('/analytics/recordings', { params: { startDate, endDate } }),
+  getSystemHealth: () => api.get<SystemHealthMetrics>('/analytics/system-health'),
 };
