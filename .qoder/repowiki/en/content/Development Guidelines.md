@@ -16,7 +16,17 @@
 - [tsconfig.json](file://jmp-ui/tsconfig.json)
 - [eslint.config.js](file://jmp-ui/eslint.config.js)
 - [vite.config.ts](file://jmp-ui/vite.config.ts)
+- [JmpApplication.java](file://jmp-web/src/main/java/com/jmp/web/JmpApplication.java)
+- [settings.json](file://.qwen/settings.json)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Updated Maven multi-module architecture guidance to reflect the established modular structure
+- Added Qwen AI settings configuration documentation for development tooling
+- Enhanced development environment setup with comprehensive multi-service orchestration
+- Updated dependency management and build configuration documentation
+- Expanded troubleshooting guide with multi-module build and deployment considerations
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -31,10 +41,10 @@
 10. [Appendices](#appendices)
 
 ## Introduction
-This document provides comprehensive development guidelines for the Jitsi Management Platform (JMP). It covers coding standards for Java and TypeScript/JavaScript, Maven build and dependency management, React development practices, Git workflow, code review and quality processes, development environment setup, debugging approaches, contribution workflows, and security/performance best practices. The goal is to ensure consistent, maintainable, and secure development across the multi-module Spring Boot backend and React frontend.
+This document provides comprehensive development guidelines for the Jitsi Management Platform (JMP). It covers coding standards for Java and TypeScript/JavaScript, Maven build and dependency management, React development practices, Git workflow, code review and quality processes, development environment setup, debugging approaches, contribution workflows, and security/performance best practices. The platform now features a mature multi-module Maven architecture with dedicated modules for domain logic, application services, infrastructure concerns, API controllers, and web configuration, along with comprehensive development tooling including Qwen AI integration.
 
 ## Project Structure
-JMP follows a multi-module Maven layout with clear separation of concerns:
+JMP follows a sophisticated multi-module Maven layout with clear separation of concerns across five distinct modules:
 - Domain: Entities, value objects, repositories, and domain events
 - Application: Use cases, services, DTOs, and mapping logic
 - Infrastructure: Security, persistence, messaging, caching, and web configuration
@@ -44,32 +54,37 @@ JMP follows a multi-module Maven layout with clear separation of concerns:
 
 ```mermaid
 graph TB
-subgraph "Backend Modules"
-DOMAIN["jmp-domain"]
-APP["jmp-application"]
-INFRA["jmp-infrastructure"]
-API["jmp-api"]
-WEB["jmp-web"]
+subgraph "Multi-Module Maven Architecture"
+DOMAIN["jmp-domain<br/>Domain Layer"]
+APP["jmp-application<br/>Application Services"]
+INFRA["jmp-infrastructure<br/>Infrastructure Concerns"]
+API["jmp-api<br/>REST Controllers"]
+WEB["jmp-web<br/>Spring Boot Entry Point"]
+UI["jmp-ui<br/>React Frontend"]
 end
-subgraph "Frontend"
-UI["jmp-ui (React + Vite)"]
+subgraph "Development Tooling"
+QWEN[".qwen/settings.json<br/>Qwen AI Configuration"]
+COMPOSE["docker-compose.yml<br/>Multi-Service Orchestration"]
 end
-API --> APP
-APP --> DOMAIN
+DOMAIN --> APP
+APP --> API
 INFRA --> API
 INFRA --> APP
 WEB --> API
 WEB --> INFRA
 UI --> WEB
+QWEN -.-> COMPOSE
 ```
 
 **Diagram sources**
 - [pom.xml:40-46](file://pom.xml#L40-L46)
-- [docker-compose.yml:43-87](file://docker-compose.yml#L43-L87)
+- [docker-compose.yml:4-129](file://docker-compose.yml#L4-L129)
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
 
 **Section sources**
 - [pom.xml:40-46](file://pom.xml#L40-L46)
-- [docker-compose.yml:43-87](file://docker-compose.yml#L43-L87)
+- [docker-compose.yml:4-129](file://docker-compose.yml#L4-L129)
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
 
 ## Core Components
 - Java coding standards
@@ -89,6 +104,11 @@ UI --> WEB
   - State management: Zustand for lightweight local state; persisted store for auth tokens and user profile.
   - Tooling: ESLint flat config with TypeScript and React hooks recommended rules; Vite for fast dev/build; Material UI for components.
 
+- Qwen AI Development Tooling
+  - Configuration: Qwen AI settings allow Docker Compose commands for streamlined development workflows.
+  - Permissions: Explicitly configured Bash permissions for docker-compose operations.
+  - Integration: Seamless integration with development environment for automated tasks.
+
 **Section sources**
 - [AuthController.java:26-35](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L26-L35)
 - [UserService.java:24-32](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L24-L32)
@@ -101,9 +121,10 @@ UI --> WEB
 - [package.json:6-11](file://jmp-ui/package.json#L6-L11)
 - [eslint.config.js:8-23](file://jmp-ui/eslint.config.js#L8-L23)
 - [vite.config.ts:1-8](file://jmp-ui/vite.config.ts#L1-L8)
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
 
 ## Architecture Overview
-JMP employs a layered architecture:
+JMP employs a layered architecture with a robust multi-module Maven structure:
 - Presentation: React SPA (jmp-ui) with routing and state management
 - API: REST controllers (jmp-api) exposing domain features
 - Application: Services orchestrating use cases and DTO mapping
@@ -122,6 +143,11 @@ WEB["Spring Boot Web"] --> API
 WEB --> INFRA["Infrastructure Config"]
 WEB --> DB["PostgreSQL + Flyway"]
 WEB --> CACHE["Redis"]
+COMPOSE["Docker Compose Stack<br/>Multi-Service Orchestration"]
+COMPOSE --> DB
+COMPOSE --> CACHE
+COMPOSE --> MONITORING["Prometheus + Grafana"]
+COMPOSE --> STORAGE["MinIO S3"]
 ```
 
 **Diagram sources**
@@ -131,6 +157,7 @@ WEB --> CACHE["Redis"]
 - [User.java:23-28](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L28)
 - [SecurityConfig.java:42-61](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/SecurityConfig.java#L42-L61)
 - [application.yml:12-128](file://jmp-web/src/main/resources/application.yml#L12-L128)
+- [docker-compose.yml:4-129](file://docker-compose.yml#L4-L129)
 
 ## Detailed Component Analysis
 
@@ -237,23 +264,30 @@ API->>API : "Retry original request"
 - [api.ts:13-58](file://jmp-ui/src/services/api.ts#L13-L58)
 
 ## Dependency Analysis
-- Maven parent coordinates and modules define the build structure and shared versions.
-- Dependency management centralizes versions for Spring, Hibernate, Flyway, MapStruct, JWT, resilience, and testing libraries.
-- Plugins include compiler, Surefire/Failsafe, JaCoCo, SpotBugs, and Checkstyle; profiles activate dev/prod defaults.
+The multi-module Maven structure provides clear dependency relationships and centralized management:
+
+- Parent POM coordinates define the build structure with shared versions and plugin management
+- Module dependencies follow the layered architecture pattern with proper import/export boundaries
+- Dependency management centralizes versions for Spring Boot, Hibernate, Flyway, MapStruct, JWT, resilience, and testing libraries
+- Plugins include compiler, Surefire/Failsafe, JaCoCo, SpotBugs, and Checkstyle with comprehensive coverage
+- Profiles activate dev/prod defaults with environment-specific configurations
 
 ```mermaid
 graph TB
-POM["Parent POM<br/>Modules + Properties + DepMgmt + Plugins"] --> MOD1["jmp-domain"]
-POM --> MOD2["jmp-application"]
-POM --> MOD3["jmp-infrastructure"]
-POM --> MOD4["jmp-api"]
-POM --> MOD5["jmp-web"]
-MOD4 --> MOD2
-MOD2 --> MOD1
-MOD3 --> MOD4
-MOD3 --> MOD2
-MOD5 --> MOD4
-MOD5 --> MOD3
+PARENT["Parent POM<br/>jmp-parent<br/>Shared Properties & Plugins"] --> DOMAIN["jmp-domain<br/>Domain Layer"]
+PARENT --> APP["jmp-application<br/>Application Services"]
+PARENT --> INFRA["jmp-infrastructure<br/>Infrastructure"]
+PARENT --> API["jmp-api<br/>REST Controllers"]
+PARENT --> WEB["jmp-web<br/>Spring Boot Entry"]
+DOMAIN --> APP
+APP --> API
+INFRA --> API
+INFRA --> APP
+WEB --> API
+WEB --> INFRA
+DEPS["Dependency Management<br/>Centralized Versions"] --> PARENT
+PLUGINS["Plugin Management<br/>Compiler, Tests, Analysis"] --> PARENT
+PROFILES["Profiles<br/>dev, prod, docker"] --> PARENT
 ```
 
 **Diagram sources**
@@ -277,21 +311,29 @@ MOD5 --> MOD3
   - Lazy-load heavy routes and components; minimize re-renders with memoization.
   - Debounce search inputs; avoid unnecessary polling.
   - Persist auth state to localStorage/sessionStorage via Zustand persistence.
-
-[No sources needed since this section provides general guidance]
+- Multi-Module Build Performance
+  - Leverage Maven's parallel build capabilities across modules.
+  - Use Spring Boot layers plugin for optimized container builds.
+  - Implement selective module compilation during development.
 
 ## Troubleshooting Guide
 - Build failures
-  - Verify Java version matches project properties; ensure Maven wrapper is available.
+  - Verify Java version matches project properties (Java 21); ensure Maven wrapper is available.
   - Run tests with Surefire/Failsafe; check JaCoCo coverage thresholds.
   - Static analysis: SpotBugs and Checkstyle reports indicate violations.
+  - Multi-module builds: Use `mvn clean install -pl <module> -am` for targeted builds.
 - Runtime issues
   - Check application.yml for datasource, Redis, and JWT secrets; confirm Flyway migrations applied.
   - Inspect logs with structured JSON format; filter by trace IDs for correlation.
   - Confirm CORS origins and session policy in SecurityConfig.
+  - Docker Compose: Verify all services are healthy and network connectivity.
 - Frontend
   - Ensure VITE_API_URL points to the backend; verify interceptors attach Authorization headers.
   - On 401, confirm refresh endpoint availability and token persistence.
+- Qwen AI Integration
+  - Verify Qwen settings permissions for Docker operations.
+  - Check Bash command permissions in settings.json.
+  - Ensure development tooling compatibility with local environment.
 
 **Section sources**
 - [pom.xml:48-77](file://pom.xml#L48-L77)
@@ -299,21 +341,23 @@ MOD5 --> MOD3
 - [application.yml:12-128](file://jmp-web/src/main/resources/application.yml#L12-L128)
 - [SecurityConfig.java:42-89](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/SecurityConfig.java#L42-L89)
 - [api.ts:13-58](file://jmp-ui/src/services/api.ts#L13-L58)
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
 
 ## Conclusion
-These guidelines establish a consistent foundation for developing the Jitsi Management Platform. By adhering to the outlined standards, leveraging the multi-module Maven structure, and following React best practices, contributors can deliver secure, performant, and maintainable features while preserving clean separation of concerns across layers.
-
-[No sources needed since this section summarizes without analyzing specific files]
+These guidelines establish a comprehensive foundation for developing the Jitsi Management Platform with its mature multi-module Maven architecture. By adhering to the outlined standards, leveraging the established modular structure, integrating Qwen AI development tools, and following React best practices, contributors can deliver secure, performant, and maintainable features while preserving clean separation of concerns across layers. The combination of robust backend architecture, modern frontend development, and comprehensive development tooling creates an efficient development environment for the platform's complex requirements.
 
 ## Appendices
 
 ### A. Maven Build and Dependency Management
 - Build lifecycle
   - Compile, test, verify, package; Surefire/Failsafe for unit/integration tests; JaCoCo for coverage checks.
+  - Multi-module builds support parallel execution and selective compilation.
 - Dependency management
   - Centralized versions for Spring Boot, Hibernate, Flyway, MapStruct, JWT, resilience, and testing.
+  - Module-specific dependencies ensure proper layering and separation of concerns.
 - Plugins
   - Compiler with annotation processors (Lombok, MapStruct); SpotBugs and Checkstyle for static analysis.
+  - Spring Boot Maven Plugin with layer optimization for container deployments.
 
 **Section sources**
 - [pom.xml:79-167](file://pom.xml#L79-L167)
@@ -322,8 +366,9 @@ These guidelines establish a consistent foundation for developing the Jitsi Mana
 ### B. React Development Practices
 - Toolchain
   - Vite for dev server and builds; ESLint flat config with TypeScript and React hooks recommended rules.
+  - Material UI components with Emotion for styling; React Router for navigation.
 - Component structure
-  - Pages under src/pages, shared components under src/components, services under src/services, state under src/store.
+  - Pages under src/pages, shared components under src/components, services under src/services, state under src/store, types under src/types.
 - State management
   - Zustand for small-scale state; persist auth-related state to localStorage.
 - API client
@@ -340,11 +385,14 @@ These guidelines establish a consistent foundation for developing the Jitsi Mana
 
 ### C. Environment Setup and Debugging
 - Local compose stack
-  - PostgreSQL, Redis, JMP backend, JMP frontend, Prometheus, and Grafana containers with health checks.
+  - PostgreSQL, Redis, JMP backend, JMP frontend, Prometheus, Grafana, MinIO, and Jitsi services with health checks.
+  - Comprehensive monitoring stack with metrics and dashboards.
 - Secrets and configuration
   - Externalize secrets via environment variables; configure JWT secrets and database credentials.
+  - Profile-based configuration with dev/prod environments.
 - Debugging tips
   - Enable debug logging for specific packages; use structured logs for observability; verify CORS and session policy.
+  - Multi-module debugging with proper module isolation.
 
 **Section sources**
 - [docker-compose.yml:4-129](file://docker-compose.yml#L4-L129)
@@ -353,23 +401,27 @@ These guidelines establish a consistent foundation for developing the Jitsi Mana
 ### D. Git Workflow, Branching, and Pull Requests
 - Branching strategy
   - Feature branches from develop; release branches from develop; hotfixes from main.
+  - Multi-module projects require coordinated versioning across modules.
 - Commit hygiene
   - Clear, imperative commit messages; group related changes; reference issues.
+  - Consider module boundaries when committing changes.
 - Pull requests
   - Target develop for features; include tests and documentation; request reviews from maintainers.
+  - Multi-module PRs should consider inter-module dependencies.
 - Code review checklist
   - Correctness, readability, performance, security, tests, and adherence to standards.
-
-[No sources needed since this section provides general guidance]
+  - Verify module dependencies and architectural consistency.
 
 ### E. Testing Requirements and Quality Assurance
 - Backend
   - Unit tests with Spring Boot and AssertJ; integration tests with Testcontainers where applicable.
   - Coverage thresholds enforced via JaCoCo; static analysis via SpotBugs and Checkstyle.
+  - Multi-module test isolation and coordination.
 - Frontend
   - Component and integration tests with React Testing Library; linting via ESLint.
 - QA
   - Automated checks in CI; manual smoke tests for critical flows; monitor metrics and logs.
+  - End-to-end testing with Docker Compose orchestrated services.
 
 **Section sources**
 - [pom.xml:169-199](file://pom.xml#L169-L199)
@@ -379,13 +431,31 @@ These guidelines establish a consistent foundation for developing the Jitsi Mana
 ### F. Security Best Practices
 - Authentication and authorization
   - JWT-based stateless auth; BCrypt with configured cost; CORS restricted to trusted origins.
+  - Multi-module security configuration with proper layer isolation.
 - Secrets management
   - Never commit secrets; use environment variables and secret managers.
+  - Qwen AI settings should not contain sensitive information.
 - Input validation and sanitization
   - Validate and sanitize inputs; enforce constraints at API boundary and domain layer.
 - Network and transport
   - Enforce HTTPS in production; restrict exposed endpoints; enable compression.
+  - Container security with proper resource limits and network policies.
 
 **Section sources**
 - [SecurityConfig.java:42-89](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/SecurityConfig.java#L42-L89)
 - [application.yml:72-79](file://jmp-web/src/main/resources/application.yml#L72-L79)
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
+
+### G. Qwen AI Development Tooling
+- Configuration
+  - Qwen AI settings.json defines permissions for Docker operations.
+  - Explicit Bash permissions allow docker-compose commands for development workflows.
+- Integration
+  - Seamless integration with development environment for automated tasks.
+  - Permissions-based access control prevents unauthorized operations.
+- Best Practices
+  - Regularly review and update Qwen settings for security.
+  - Use Qwen for code generation and development assistance within project scope.
+
+**Section sources**
+- [settings.json:1-9](file://.qwen/settings.json#L1-L9)
