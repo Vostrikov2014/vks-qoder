@@ -1,12 +1,13 @@
 package com.jmp.application.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * DTOs for Conference entity.
@@ -19,6 +20,7 @@ public sealed interface ConferenceDto {
     String displayName();
     String description();
     String status();
+    String type();
     UUID tenantId();
     UUID createdById();
     String createdByName();
@@ -44,6 +46,7 @@ public sealed interface ConferenceDto {
         @NotBlank @Size(max = 100) String roomName,
         @NotBlank @Size(max = 255) String displayName,
         @Size(max = 2000) String description,
+        @NotNull String type,
         Instant scheduledStartAt,
         Instant scheduledEndAt,
         Boolean isRecurring,
@@ -72,6 +75,7 @@ public sealed interface ConferenceDto {
     record UpdateRequest(
         @Size(max = 255) String displayName,
         @Size(max = 2000) String description,
+        String type,
         Instant scheduledStartAt,
         Instant scheduledEndAt,
         Integer maxParticipants,
@@ -104,6 +108,7 @@ public sealed interface ConferenceDto {
         String displayName,
         String description,
         String status,
+        String type,
         UUID tenantId,
         UUID createdById,
         String createdByName,
@@ -132,6 +137,7 @@ public sealed interface ConferenceDto {
         String roomName,
         String displayName,
         String status,
+        String type,
         Instant scheduledStartAt,
         Instant scheduledEndAt,
         Integer currentParticipants,
