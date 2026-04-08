@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import type { Conference, ConferenceType } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
@@ -130,14 +131,43 @@ export const userApi = {
 };
 
 // Conference API
+export interface ConferenceCreateRequest {
+  roomName: string;
+  displayName: string;
+  description?: string;
+  type: ConferenceType;
+  scheduledStartAt?: string;
+  scheduledEndAt?: string;
+  maxParticipants?: number;
+  enableLobby?: boolean;
+  enableRecording: boolean;
+  enableLiveStreaming: boolean;
+  enableChat: boolean;
+  enableScreenSharing: boolean;
+}
+
+export interface ConferenceUpdateRequest {
+  displayName?: string;
+  description?: string;
+  type?: ConferenceType;
+  scheduledStartAt?: string;
+  scheduledEndAt?: string;
+  maxParticipants?: number;
+  enableLobby?: boolean;
+  enableRecording?: boolean;
+  enableLiveStreaming?: boolean;
+  enableChat?: boolean;
+  enableScreenSharing?: boolean;
+}
+
 export const conferenceApi = {
   getConferences: (params?: { page?: number; size?: number; search?: string }) =>
-    api.get('/conferences', { params }),
-  getActiveConferences: () => api.get('/conferences/active'),
-  getUpcomingConferences: () => api.get('/conferences/upcoming'),
-  getConference: (id: string) => api.get(`/conferences/${id}`),
-  createConference: (data: unknown) => api.post('/conferences', data),
-  updateConference: (id: string, data: unknown) => api.put(`/conferences/${id}`, data),
+    api.get<{ content: Conference[] }>('/conferences', { params }),
+  getActiveConferences: () => api.get<Conference[]>('/conferences/active'),
+  getUpcomingConferences: () => api.get<Conference[]>('/conferences/upcoming'),
+  getConference: (id: string) => api.get<Conference>(`/conferences/${id}`),
+  createConference: (data: ConferenceCreateRequest) => api.post<Conference>('/conferences', data),
+  updateConference: (id: string, data: ConferenceUpdateRequest) => api.put<Conference>(`/conferences/${id}`, data),
   deleteConference: (id: string) => api.delete(`/conferences/${id}`),
   startConference: (id: string) => api.post(`/conferences/${id}/start`),
   endConference: (id: string) => api.post(`/conferences/${id}/end`),

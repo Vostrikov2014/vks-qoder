@@ -17,7 +17,17 @@
 - [AnalyticsService.java](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java)
 - [AnalyticsController.java](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java)
 - [JwtService.java](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java)
+- [OpenApiConfig.java](file://jmp-api/src/main/java/com/jmp/api/config/OpenApiConfig.java)
+- [V6__add_conference_type.sql](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added comprehensive documentation for the new conference type field supporting SCHEDULED and PERMANENT conference types
+- Updated validation logic documentation for type-specific requirements
+- Enhanced API documentation with type field specifications
+- Added database migration documentation for the new type column
+- Updated Swagger/OpenAPI documentation with proper type field descriptions
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -25,14 +35,15 @@
 3. [Core Components](#core-components)
 4. [Architecture Overview](#architecture-overview)
 5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Dependency Analysis](#dependency-analysis)
-7. [Performance Considerations](#performance-considerations)
-8. [Troubleshooting Guide](#troubleshooting-guide)
-9. [Conclusion](#conclusion)
-10. [Appendices](#appendices)
+6. [Conference Types and Validation](#conference-types-and-validation)
+7. [Dependency Analysis](#dependency-analysis)
+8. [Performance Considerations](#performance-considerations)
+9. [Troubleshooting Guide](#troubleshooting-guide)
+10. [Conclusion](#conclusion)
+11. [Appendices](#appendices)
 
 ## Introduction
-This document provides comprehensive API documentation for the Conference Management Controller, focusing on the full lifecycle of conferences: creation, scheduling, participant management, and termination. It also covers real-time status updates, participant tracking, state transitions, room management, invitations, scheduling conflict handling, recording triggers, analytics, and WebSocket integration for live notifications. The documentation explains tenant isolation, participant restrictions, and integration with the Jitsi server for secure token generation and webhook-driven lifecycle updates.
+This document provides comprehensive API documentation for the Conference Management Controller, focusing on the full lifecycle of conferences: creation, scheduling, participant management, and termination. The system now supports two distinct conference types - SCHEDULED and PERMANENT - each with specific validation requirements and operational characteristics. It also covers real-time status updates, participant tracking, state transitions, room management, invitations, scheduling conflict handling, recording triggers, analytics, and WebSocket integration for live notifications. The documentation explains tenant isolation, participant restrictions, and integration with the Jitsi server for secure token generation and webhook-driven lifecycle updates.
 
 ## Project Structure
 The conference management system spans four layers:
@@ -106,10 +117,10 @@ WSC --> RES
 ## Core Components
 - ConferenceController: Exposes REST endpoints for conference lifecycle, token generation, and listing active/upcoming conferences
 - ConferenceService: Implements business rules for creation, updates, scheduling, and termination; coordinates with repositories and mappers
-- Conference Entity: Models conference state, scheduling, room options, and participant collection
+- Conference Entity: Models conference state, scheduling, room options, and participant collection with new type field support
 - ConferenceParticipant Entity: Tracks participant roles, statuses, and join/leave timestamps
 - ConferenceRepository: Provides queries for tenant scoping, search, upcoming/scheduled lists, and auto-start/end
-- DTOs and Mapper: Define request/response contracts and map between entities and DTOs
+- DTOs and Mapper: Define request/response contracts and map between entities and DTOs with type field inclusion
 - WebSocket Infrastructure: Configures STOMP endpoints and broadcasts real-time events per tenant
 - Jitsi Webhook Controller: Receives and processes Jitsi events for lifecycle and participant actions
 - RecordingService and Controller: Manage recording lifecycle and storage integration
@@ -185,8 +196,8 @@ CS->>RES : sendConferenceStatus(conferenceId, tenantId, "ACTIVE", ...)
 - Create Conference
   - Method: POST /api/v1/conferences
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
-  - Request: ConferenceDto.CreateRequest
-  - Behavior: Validates tenant/user existence, ensures unique room name, sets status to SCHEDULED, returns ConferenceDto.Response
+  - Request: ConferenceDto.CreateRequest (includes type field)
+  - Behavior: Validates tenant/user existence, ensures unique room name, validates type-specific requirements, sets status to SCHEDULED, returns ConferenceDto.Response
   - Complexity: O(1) database operations
 - Get Conference by ID
   - Method: GET /api/v1/conferences/{id}
@@ -208,8 +219,8 @@ CS->>RES : sendConferenceStatus(conferenceId, tenantId, "ACTIVE", ...)
 - Update Conference
   - Method: PUT /api/v1/conferences/{id}
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
-  - Request: ConferenceDto.UpdateRequest
-  - Constraints: Cannot update ENDED or CANCELLED conferences
+  - Request: ConferenceDto.UpdateRequest (includes type field)
+  - Constraints: Cannot update ENDED or CANCELLED conferences, validates type-specific requirements during updates
 - Start Conference
   - Method: POST /api/v1/conferences/{id}/start
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
@@ -299,6 +310,7 @@ class Conference {
 +UUID id
 +String roomName
 +ConferenceStatus status
++ConferenceType type
 +Set~ConferenceParticipant~ participants
 +Integer maxParticipants
 +Boolean enableLobby
@@ -481,6 +493,62 @@ AnalyticsController --> AnalyticsService : "delegates"
 - [AnalyticsController.java:89-95](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L89-L95)
 - [JwtService.java:94-126](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L94-L126)
 
+## Conference Types and Validation
+
+### Conference Type Field
+The conference system now supports two distinct types with specific validation requirements:
+
+#### SCHEDULED Conferences
+- **Purpose**: Fixed-time conferences with specific start/end times
+- **Validation Requirements**:
+  - Must have `scheduledStartAt` timestamp
+  - Can have optional `scheduledEndAt`
+  - Automatically transition to ACTIVE at scheduled start time
+  - Can auto-end at scheduled end time
+- **Lifecycle**: Follows standard conference lifecycle with scheduling constraints
+
+#### PERMANENT Conferences  
+- **Purpose**: Always-available conference rooms accessible at any time
+- **Validation Requirements**:
+  - No scheduled start/end times required
+  - Can be started manually by authorized users
+  - No automatic scheduling behavior
+- **Lifecycle**: Manual start/stop control without time constraints
+
+### Type Validation Logic
+The system enforces type-specific validation during creation and updates:
+
+```mermaid
+flowchart TD
+Create["Create Conference"] --> ValidateType{"Validate Type"}
+ValidateType --> |SCHEDULED| CheckStart{"Has scheduledStartAt?"}
+ValidateType --> |PERMANENT| ValidPerm["Valid PERMANENT"]
+CheckStart --> |No| ErrorStart["Error: Missing scheduledStartAt"]
+CheckStart --> |Yes| ValidSch["Valid SCHEDULED"]
+ErrorStart --> End["Stop"]
+ValidSch --> Save["Save Conference"]
+ValidPerm --> Save
+Save --> End
+```
+
+**Diagram sources**
+- [ConferenceService.java:56-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L56-L78)
+- [ConferenceService.java:139-161](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L139-L161)
+
+### Database Schema Changes
+The conference table now includes a type column with appropriate indexing:
+
+- **Column**: `type` (VARCHAR, NOT NULL, DEFAULT 'SCHEDULED')
+- **Index**: `idx_conferences_type` for type filtering
+- **Comment**: Describes conference type as either SCHEDULED or PERMANENT
+
+**Section sources**
+- [Conference.java:80-83](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L80-L83)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [ConferenceDto.java:49](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L49)
+- [ConferenceDto.java:78](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L78)
+- [V6__add_conference_type.sql:1-14](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L14)
+
 ## Dependency Analysis
 ```mermaid
 graph LR
@@ -532,11 +600,9 @@ WSC["WebSocketConfig"] --> RES
 ## Performance Considerations
 - Entity Graphs: Repository queries use @EntityGraph to eagerly fetch associations (createdBy, tenant, participants) to reduce N+1 queries during detailed reads
 - Pagination: Listing endpoints support Pageable for efficient large dataset traversal
-- Indexing: Queries filter by tenantId and status; ensure database indexes on tenant_id, status, scheduledStartAt/scheduledEndAt for optimal performance
+- Indexing: Queries filter by tenantId and status; ensure database indexes on tenant_id, status, scheduledStartAt/scheduledEndAt, and the new type column for optimal performance
 - WebSocket Scalability: In-memory broker suitable for development; production should use external brokers (e.g., RabbitMQ/Redis) for horizontal scaling
 - Token TTL: Jitsi tokens expire after 4 hours; align with conference duration to avoid unnecessary re-authentication
-
-[No sources needed since this section provides general guidance]
 
 ## Troubleshooting Guide
 - Conference Not Found
@@ -563,6 +629,10 @@ WSC["WebSocketConfig"] --> RES
   - Symptom: No real-time updates
   - Cause: Broker misconfiguration or client disconnect
   - Resolution: Validate WebSocketConfig and client subscriptions
+- Conference Type Validation Errors
+  - Symptom: 400 when creating/updating conference
+  - Cause: Invalid conference type or missing required fields for type
+  - Resolution: Ensure type is either 'SCHEDULED' or 'PERMANENT' and provide required fields (scheduledStartAt for SCHEDULED)
 
 **Section sources**
 - [ConferenceService.java:120-124](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L120-L124)
@@ -573,16 +643,14 @@ WSC["WebSocketConfig"] --> RES
 - [WebSocketConfig.java:32-50](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L32-L50)
 
 ## Conclusion
-The Conference Management Controller provides a robust, tenant-isolated solution for managing conference lifecycles, real-time updates, participant tracking, and integrations with Jitsi and storage systems. Its layered design promotes maintainability, while DTOs and mappers ensure clean data contracts. Real-time capabilities are powered by WebSocket infrastructure, and analytics services offer insights into usage and storage. Proper adherence to state transitions, tenant scoping, and access controls ensures secure and predictable operation.
-
-[No sources needed since this section summarizes without analyzing specific files]
+The Conference Management Controller provides a robust, tenant-isolated solution for managing conference lifecycles, real-time updates, participant tracking, and integrations with Jitsi and storage systems. The enhanced type field support enables flexible conference management with both scheduled and permanent room options. Its layered design promotes maintainability, while DTOs and mappers ensure clean data contracts. Real-time capabilities are powered by WebSocket infrastructure, and analytics services offer insights into usage and storage. Proper adherence to state transitions, tenant scoping, access controls, and type-specific validation ensures secure and predictable operation.
 
 ## Appendices
 
 ### API Reference: Conference Endpoints
 - POST /api/v1/conferences
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
-  - Request: ConferenceDto.CreateRequest
+  - Request: ConferenceDto.CreateRequest (includes type field)
   - Response: 201 ConferenceDto.Response
 - GET /api/v1/conferences/{id}
   - Auth: PARTICIPANT, MODERATOR, TENANT_ADMIN, SUPER_ADMIN
@@ -599,7 +667,7 @@ The Conference Management Controller provides a robust, tenant-isolated solution
   - Response: List<ConferenceDto.Summary>
 - PUT /api/v1/conferences/{id}
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
-  - Request: ConferenceDto.UpdateRequest
+  - Request: ConferenceDto.UpdateRequest (includes type field)
   - Response: ConferenceDto.Response
 - POST /api/v1/conferences/{id}/start
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
@@ -673,6 +741,25 @@ The Conference Management Controller provides a robust, tenant-isolated solution
 
 **Section sources**
 - [AnalyticsController.java:36-96](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L36-L96)
+
+### Conference Type Specifications
+- **ConferenceType Enum Values**:
+  - `SCHEDULED`: Conference with fixed start/end times
+  - `PERMANENT`: Always-available conference room
+- **Type Validation Rules**:
+  - SCHEDULED conferences require `scheduledStartAt`
+  - PERMANENT conferences have no time constraints
+  - Type cannot be changed to invalid values
+- **Database Schema**:
+  - Column: `type` (VARCHAR, NOT NULL, DEFAULT 'SCHEDULED')
+  - Index: `idx_conferences_type` for performance
+  - Comment: Describes conference type distinction
+
+**Section sources**
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [ConferenceService.java:56-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L56-L78)
+- [ConferenceService.java:139-161](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L139-L161)
+- [V6__add_conference_type.sql:1-14](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L14)
 
 ### Jitsi Webhook Events
 - Supported Types:

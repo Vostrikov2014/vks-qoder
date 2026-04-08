@@ -30,7 +30,7 @@ public interface ConferenceMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "type", source = "type")
+    @Mapping(target = "type", source = "type", qualifiedByName = "stringToConferenceType")
     @Mapping(target = "actualStartedAt", ignore = true)
     @Mapping(target = "actualEndedAt", ignore = true)
     @Mapping(target = "requirePassword", ignore = true)
@@ -49,6 +49,7 @@ public interface ConferenceMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roomName", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "type", source = "type", qualifiedByName = "stringToConferenceType")
     @Mapping(target = "isRecurring", ignore = true)
     @Mapping(target = "recurrenceRule", ignore = true)
     @Mapping(target = "actualStartedAt", ignore = true)
@@ -72,5 +73,13 @@ public interface ConferenceMapper {
             return null;
         }
         return user.getFirstName() + " " + user.getLastName();
+    }
+
+    @Named("stringToConferenceType")
+    default Conference.ConferenceType stringToConferenceType(String type) {
+        if (type == null) {
+            return Conference.ConferenceType.SCHEDULED;
+        }
+        return Conference.ConferenceType.valueOf(type);
     }
 }

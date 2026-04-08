@@ -14,7 +14,17 @@
 - [UserDto.java](file://jmp-application/src/main/java/com/jmp/application/dto/UserDto.java)
 - [ConferenceDto.java](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java)
 - [RecordingDto.java](file://jmp-application/src/main/java/com/jmp/application/dto/RecordingDto.java)
+- [Conference.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java)
+- [ConferenceRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java)
+- [ConferenceMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/ConferenceMapper.java)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Enhanced ConferenceService with comprehensive type validation logic
+- Added type-specific requirements handling for SCHEDULED vs PERMANENT conferences
+- Improved type transition validation during conference updates
+- Updated business logic documentation to reflect new type-aware operations
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -31,7 +41,7 @@
 ## Introduction
 This document provides a comprehensive analysis of the service layer implementations in the Jitsi Management Platform. It focuses on the business logic encapsulation, transaction boundaries, error handling strategies, method signatures, parameter validation, and return types for the following services:
 - UserService for user management operations
-- ConferenceService for conference lifecycle management
+- ConferenceService for conference lifecycle management with enhanced type validation
 - RecordingService for recording operations
 - AnalyticsService for metrics calculation
 - AuditService for compliance logging
@@ -68,7 +78,7 @@ StI --> |"implemented by"| S3
 
 **Diagram sources**
 - [UserService.java:1-190](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L1-L190)
-- [ConferenceService.java:1-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L1-L225)
+- [ConferenceService.java:1-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L1-L255)
 - [RecordingService.java:1-332](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L1-L332)
 - [AnalyticsService.java:1-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L1-L235)
 - [AuditService.java:1-207](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L1-L207)
@@ -79,7 +89,7 @@ StI --> |"implemented by"| S3
 
 **Section sources**
 - [UserService.java:1-190](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L1-L190)
-- [ConferenceService.java:1-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L1-L225)
+- [ConferenceService.java:1-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L1-L255)
 - [RecordingService.java:1-332](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L1-L332)
 - [AnalyticsService.java:1-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L1-L235)
 - [AuditService.java:1-207](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L1-L207)
@@ -98,10 +108,12 @@ This section outlines the responsibilities, transaction boundaries, and error ha
   - Validation: Uses DTO constraints and manual checks (e.g., email uniqueness).
   - Return Types: Returns UserDto.Response, UserDto.Summary, Page<UserDto.Summary>, boolean.
 
-- ConferenceService
-  - Responsibilities: Conference creation, retrieval, listing/searching, status transitions (start/end), soft deletion, scheduled auto-start/end processing.
+- ConferenceService **Updated**
+  - Responsibilities: Conference creation, retrieval, listing/searching, status transitions (start/end), soft deletion, scheduled auto-start/end processing, type validation and enforcement.
   - Transaction Boundaries: Write operations are @Transactional; read operations are @Transactional(readOnly=true).
-  - Error Handling: Validates status transitions and uniqueness; throws IllegalStateException for invalid state changes.
+  - Error Handling: Validates status transitions, type validation, and uniqueness; throws IllegalStateException for invalid state changes; throws IllegalArgumentException for invalid types or missing type-specific requirements.
+  - Type Validation: Comprehensive validation for ConferenceType enum values (SCHEDULED, PERMANENT) with type-specific business rules.
+  - Type-Specific Requirements: SCHEDULED conferences require scheduledStartAt; type changes are validated during updates.
   - Return Types: Returns ConferenceDto.Response, ConferenceDto.Summary, List<Summary>, Page<Summary>.
 
 - RecordingService
@@ -140,7 +152,7 @@ This section outlines the responsibilities, transaction boundaries, and error ha
 
 **Section sources**
 - [UserService.java:24-190](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L24-L190)
-- [ConferenceService.java:21-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L21-L225)
+- [ConferenceService.java:21-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L21-L255)
 - [RecordingService.java:23-332](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L23-L332)
 - [AnalyticsService.java:21-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L21-L235)
 - [AuditService.java:18-207](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L18-L207)
@@ -232,16 +244,24 @@ UserService --> UserDto : "returns"
 - [UserService.java:24-190](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L24-L190)
 - [UserDto.java:14-96](file://jmp-application/src/main/java/com/jmp/application/dto/UserDto.java#L14-L96)
 
-### ConferenceService Analysis
+### ConferenceService Analysis **Updated**
 - Business Logic Encapsulation
   - Validates room name uniqueness per tenant.
   - Manages status transitions: SCHEDULED → ACTIVE → ENDED.
+  - **Enhanced Type Validation**: Comprehensive validation for ConferenceType enum values with type-specific business rules.
+  - **Type-Specific Requirements**: SCHEDULED conferences require scheduledStartAt; PERMANENT conferences don't require scheduling.
+  - **Improved Type Transition Validation**: Validates type changes during updates and ensures type-specific requirements are met.
   - Provides scheduled auto-start/end processing via cron-triggered methods.
 - Transaction Boundaries
   - @Transactional for all mutations; @Transactional(readOnly=true) for queries.
 - Error Handling
-  - Throws IllegalArgumentException for missing entities.
+  - Throws IllegalArgumentException for missing entities, invalid types, or missing type-specific requirements.
   - Throws IllegalStateException for invalid state transitions.
+- Enhanced Type Validation Logic
+  - **Creation Validation**: Validates ConferenceType.valueOf(request.type()) and throws IllegalArgumentException for invalid types.
+  - **Type-Specific Requirements**: SCHEDULED type requires scheduledStartAt; throws IllegalArgumentException if missing.
+  - **Update Validation**: Validates type changes and ensures new type requirements are met.
+  - **Type Transition Validation**: Prevents invalid type transitions and ensures type-specific constraints.
 - Method Signatures and Return Types
   - createConference(tenantId, userId, request): returns ConferenceDto.Response
   - getConference(id): returns ConferenceDto.Response
@@ -264,20 +284,23 @@ participant Service as "ConferenceService"
 participant Repo as "ConferenceRepository"
 Client->>Controller : "POST /conferences"
 Controller->>Service : createConference(tenantId, userId, request)
+Service->>Service : Validate ConferenceType (SCHEDULED/PERMANENT)
 Service->>Repo : findByRoomNameAndTenantId(roomName, tenantId)
 Repo-->>Service : "empty"
+Service->>Service : Validate type-specific requirements
 Service->>Repo : save(conference)
 Service-->>Controller : ConferenceDto.Response
 Controller-->>Client : 201 Created
 ```
 
 **Diagram sources**
-- [ConferenceService.java:40-65](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L40-L65)
+- [ConferenceService.java:40-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L40-L78)
 - [ConferenceDto.java:42-67](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L42-L67)
 
 **Section sources**
-- [ConferenceService.java:21-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L21-L225)
-- [ConferenceDto.java:15-175](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L15-L175)
+- [ConferenceService.java:21-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L21-L255)
+- [ConferenceDto.java:15-182](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L15-L182)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
 
 ### RecordingService Analysis
 - Business Logic Encapsulation
@@ -550,6 +573,7 @@ StorageService <|.. S3StorageService
   - Services depend on repositories and mappers for domain entities.
   - RecordingService depends on StorageService for storage operations.
   - SsoService depends on JwtService and AuditService.
+  - **ConferenceService now depends on ConferenceType enum for type validation**.
 - External Dependencies
   - JwtService uses JWT library for signing/validating tokens.
   - SsoService uses RestTemplate for OIDC endpoints.
@@ -559,6 +583,7 @@ StorageService <|.. S3StorageService
 graph TB
 US["UserService"] --> UR["UserRepository"]
 CS["ConferenceService"] --> CR["ConferenceRepository"]
+CS --> CT["ConferenceType Enum"]
 RS["RecordingService"] --> RR["RecordingRepository"]
 RS --> StI["StorageService"]
 SS["SsoService"] --> JS["JwtService"]
@@ -569,6 +594,8 @@ S3["S3StorageService"] --> StI
 **Diagram sources**
 - [UserService.java:34-38](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L34-L38)
 - [ConferenceService.java:31-34](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L31-L34)
+- [ConferenceRepository.java:21-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L21-L110)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
 - [RecordingService.java:33-36](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L33-L36)
 - [SsoService.java:37-42](file://jmp-application/src/main/java/com/jmp/application/service/SsoService.java#L37-L42)
 - [StorageService.java:9-54](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L9-L54)
@@ -577,6 +604,8 @@ S3["S3StorageService"] --> StI
 **Section sources**
 - [UserService.java:34-38](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L34-L38)
 - [ConferenceService.java:31-34](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L31-L34)
+- [ConferenceRepository.java:21-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L21-L110)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
 - [RecordingService.java:33-36](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L33-L36)
 - [SsoService.java:37-42](file://jmp-application/src/main/java/com/jmp/application/service/SsoService.java#L37-L42)
 - [StorageService.java:9-54](file://jmp-application/src/main/java/com/jmp/application/service/StorageService.java#L9-L54)
@@ -592,20 +621,24 @@ S3["S3StorageService"] --> StI
   - Mapper usage reduces object overhead and simplifies serialization.
 - Indexing and Queries
   - Ensure database indexes exist for tenant-scoped lookups (e.g., findByTenantIdAndDeletedAtIsNull).
+  - **Conference type indexing helps optimize type-based queries**.
 - Storage Operations
   - Presigned URLs offload bandwidth and latency from the application server.
   - ScheduleDeletion and archival help manage storage lifecycle efficiently.
-
-[No sources needed since this section provides general guidance]
+- **Type Validation Performance**
+  - Conference type validation occurs at service level, adding minimal overhead.
+  - Type-specific requirement validation prevents invalid operations early.
 
 ## Troubleshooting Guide
 - Common Exceptions
-  - IllegalArgumentException: Thrown when entities are not found or validations fail (e.g., email uniqueness, room name uniqueness, invalid status transitions).
+  - IllegalArgumentException: Thrown when entities are not found or validations fail (e.g., email uniqueness, room name uniqueness, invalid status transitions, **invalid conference types**, **missing type-specific requirements**).
   - IllegalStateException: Thrown for invalid state changes (e.g., updating ended/cancelled conference, missing default roles).
+  - **Conference Type Validation Errors**: Invalid conference type values or missing scheduledStartAt for SCHEDULED conferences.
   - Audit Persistence Failures: Errors during audit logging are caught and logged; verify async executor configuration.
 - Validation Tips
   - Ensure DTO constraints are met before invoking services.
   - Verify tenant scoping and role availability for user operations.
+  - **For conference operations, validate type values (SCHEDULED, PERMANENT) and type-specific requirements**.
 - Storage Issues
   - Confirm StorageService provider configuration and credentials.
   - Check retention periods and readiness before generating download URLs.
@@ -616,22 +649,21 @@ S3["S3StorageService"] --> StI
 **Section sources**
 - [UserService.java:48-51](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java#L48-L51)
 - [ConferenceService.java:120-124](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L120-L124)
+- [ConferenceService.java:139-154](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L139-L154)
 - [RecordingService.java:146-152](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L146-L152)
 - [AuditService.java:69-71](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L69-L71)
 - [S3StorageService.java:32-59](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/storage/S3StorageService.java#L32-L59)
 
 ## Conclusion
-The service layer in the Jitsi Management Platform cleanly separates business logic from infrastructure concerns. Each service enforces domain rules, manages transactions appropriately, and integrates with repositories and DTOs. Storage operations are abstracted behind an interface, enabling pluggable providers. Audit logging is asynchronous and robust, ensuring compliance. The design supports scalability and maintainability while providing clear extension points for future enhancements.
-
-[No sources needed since this section summarizes without analyzing specific files]
+The service layer in the Jitsi Management Platform cleanly separates business logic from infrastructure concerns. Each service enforces domain rules, manages transactions appropriately, and integrates with repositories and DTOs. **The enhanced ConferenceService now provides comprehensive type validation and type-specific business rules, ensuring proper handling of both SCHEDULED and PERMANENT conference types.** Storage operations are abstracted behind an interface, enabling pluggable providers. Audit logging is asynchronous and robust, ensuring compliance. The design supports scalability and maintainability while providing clear extension points for future enhancements.
 
 ## Appendices
 - Testing Approaches
   - Unit Tests: Mock repositories and mappers; assert service behavior for valid/invalid inputs and boundary conditions.
   - Integration Tests: Use @DataJpaTest for repositories; configure test containers for storage and OIDC endpoints.
   - Async Auditing: Use @TestExecutionListeners to verify audit persistence without relying on real async executors.
+  - **Conference Type Testing**: Test type validation logic with various type combinations and type-specific requirement scenarios.
 - Integration Patterns
   - Domain Entities: Services operate on domain entities and return DTOs; mappers handle conversion.
   - Event Hooks: RecordingService integrates with StorageService for lifecycle operations; SsoService integrates with JwtService and AuditService.
-
-[No sources needed since this section provides general guidance]
+  - **Type-Aware Operations**: ConferenceService now handles type-specific business rules seamlessly.

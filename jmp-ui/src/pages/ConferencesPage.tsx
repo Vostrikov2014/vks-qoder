@@ -15,6 +15,9 @@ import {
   IconButton,
   InputAdornment,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
+  Alert,
 } from '@mui/material';
 import {
   Plus,
@@ -31,22 +34,13 @@ import {
   Mic,
   Monitor,
   Radio,
+  DoorOpen,
+  Infinity,
+  AlertCircle,
 } from 'lucide-react';
 import { conferenceApi } from '../services/api';
-
-interface Conference {
-  id: string;
-  roomName: string;
-  displayName: string;
-  description?: string;
-  status: string;
-  scheduledStartAt?: string;
-  scheduledEndAt?: string;
-  currentParticipants?: number;
-  maxParticipants?: number;
-  enableRecording: boolean;
-  enableLiveStreaming: boolean;
-}
+import { useAuthStore } from '../store/authStore';
+import type { Conference, ConferenceType } from '../types';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -103,6 +97,51 @@ const getStatusConfig = (status: string) => {
   }
 };
 
+const getTypeConfig = (type: ConferenceType) => {
+  switch (type) {
+    case 'SCHEDULED':
+      return {
+        color: '#0ea5e9',
+        bgColor: 'rgba(14, 165, 233, 0.15)',
+        icon: <Calendar size={12} />,
+        label: 'Conference',
+      };
+    case 'PERMANENT':
+      return {
+        color: '#a855f7',
+        bgColor: 'rgba(168, 85, 247, 0.15)',
+        icon: <DoorOpen size={12} />,
+        label: 'Room',
+      };
+    default:
+      return {
+        color: '#64748b',
+        bgColor: 'rgba(100, 116, 139, 0.15)',
+        icon: null,
+        label: type,
+      };
+  }
+};
+
+// Helper to format datetime for input
+const formatDateTimeForInput = (dateStr: string | undefined): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toISOString().slice(0, 16);
+};
+
+// Helper to format datetime for display
+const formatDateTimeDisplay = (dateStr: string | undefined): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
 export default function ConferencesPage() {
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,11 +152,16 @@ export default function ConferencesPage() {
     roomName: '',
     displayName: '',
     description: '',
+    type: 'SCHEDULED' as ConferenceType,
+    scheduledStartAt: '',
+    scheduledEndAt: '',
     enableRecording: false,
     enableLiveStreaming: false,
     enableChat: true,
     enableScreenSharing: true,
+    enableLobby: false,
   });
+  const [formError, setFormError] = useState<string | null>(null);
 
   const fetchConferences = async () => {
     try {
@@ -136,28 +180,38 @@ export default function ConferencesPage() {
 
   const handleCreate = () => {
     setEditingConference(null);
+    setFormError(null);
     setFormData({
       roomName: '',
       displayName: '',
       description: '',
+      type: 'SCHEDULED',
+      scheduledStartAt: '',
+      scheduledEndAt: '',
       enableRecording: false,
       enableLiveStreaming: false,
       enableChat: true,
       enableScreenSharing: true,
+      enableLobby: false,
     });
     setOpenDialog(true);
   };
 
   const handleEdit = (conference: Conference) => {
     setEditingConference(conference);
+    setFormError(null);
     setFormData({
       roomName: conference.roomName,
       displayName: conference.displayName,
       description: conference.description || '',
+      type: conference.type || 'SCHEDULED',
+      scheduledStartAt: formatDateTimeForInput(conference.scheduledStartAt),
+      scheduledEndAt: formatDateTimeForInput(conference.scheduledEndAt),
       enableRecording: conference.enableRecording,
       enableLiveStreaming: conference.enableLiveStreaming,
-      enableChat: true,
-      enableScreenSharing: true,
+      enableChat: conference.enableChat ?? true,
+      enableScreenSharing: conference.enableScreenSharing ?? true,
+      enableLobby: conference.enableLobby ?? false,
     });
     setOpenDialog(true);
   };
@@ -173,17 +227,44 @@ export default function ConferencesPage() {
     }
   };
 
+  // Helper to convert local datetime string to ISO-8601 instant format
+  const toInstantString = (dateStr: string | undefined): string | undefined => {
+    if (!dateStr) return undefined;
+    // Convert "2026-04-08T10:00" to "2026-04-08T10:00:00Z" (UTC)
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  };
+
   const handleSubmit = async () => {
     try {
+      setFormError(null);
+      // Build the payload based on conference type
+      const payload = {
+        ...formData,
+        // For PERMANENT conferences, clear scheduled times and set isAlwaysOn implicitly
+        ...(formData.type === 'PERMANENT' && {
+          scheduledStartAt: undefined,
+          scheduledEndAt: undefined,
+        }),
+        // For SCHEDULED conferences, convert datetime-local to ISO instant format
+        ...(formData.type === 'SCHEDULED' && {
+          scheduledStartAt: toInstantString(formData.scheduledStartAt),
+          scheduledEndAt: toInstantString(formData.scheduledEndAt),
+        }),
+      };
+
       if (editingConference) {
-        await conferenceApi.updateConference(editingConference.id, formData);
+        await conferenceApi.updateConference(editingConference.id, payload);
       } else {
-        await conferenceApi.createConference(formData);
+        await conferenceApi.createConference(payload);
       }
       setOpenDialog(false);
       fetchConferences();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save conference:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to save conference. Please try again.';
+      setFormError(errorMessage);
     }
   };
 
@@ -191,6 +272,19 @@ export default function ConferencesPage() {
     try {
       await conferenceApi.startConference(id);
       fetchConferences();
+
+      // Generate Jitsi token and open Jitsi Web
+      const user = useAuthStore.getState().user;
+      const displayName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : 'Guest';
+      const tokenResponse = await conferenceApi.generateToken(id, {
+        conferenceId: id,
+        displayName,
+        isModerator: true,
+      });
+      const { roomUrl } = tokenResponse.data;
+      if (roomUrl) {
+        window.open(roomUrl, '_blank');
+      }
     } catch (error) {
       console.error('Failed to start conference:', error);
     }
@@ -315,6 +409,7 @@ export default function ConferencesPage() {
           <AnimatePresence>
             {conferences.map((conference, index) => {
               const statusConfig = getStatusConfig(conference.status);
+              const typeConfig = getTypeConfig(conference.type);
               return (
                 <motion.div
                   key={conference.id}
@@ -383,19 +478,37 @@ export default function ConferencesPage() {
                           </Typography>
                         </Box>
                       </Box>
-                      <Chip
-                        size="small"
-                        icon={statusConfig.icon || undefined}
-                        label={statusConfig.label}
-                        sx={{
-                          background: statusConfig.bgColor,
-                          color: statusConfig.color,
-                          fontWeight: 600,
-                          '& .MuiChip-icon': {
-                            color: 'inherit',
-                          },
-                        }}
-                      />
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        {/* Type Badge */}
+                        <Chip
+                          size="small"
+                          icon={typeConfig.icon || undefined}
+                          label={typeConfig.label}
+                          sx={{
+                            background: typeConfig.bgColor,
+                            color: typeConfig.color,
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            '& .MuiChip-icon': {
+                              color: 'inherit',
+                            },
+                          }}
+                        />
+                        {/* Status Badge */}
+                        <Chip
+                          size="small"
+                          icon={statusConfig.icon || undefined}
+                          label={statusConfig.label}
+                          sx={{
+                            background: statusConfig.bgColor,
+                            color: statusConfig.color,
+                            fontWeight: 600,
+                            '& .MuiChip-icon': {
+                              color: 'inherit',
+                            },
+                          }}
+                        />
+                      </Box>
                     </Box>
 
                     {/* Description */}
@@ -413,11 +526,19 @@ export default function ConferencesPage() {
                           {conference.currentParticipants || 0} / {conference.maxParticipants || '∞'}
                         </Typography>
                       </Box>
-                      {conference.scheduledStartAt && (
+                      {conference.type === 'SCHEDULED' && conference.scheduledStartAt && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Clock size={16} color="var(--text-muted)" />
                           <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                            {new Date(conference.scheduledStartAt).toLocaleDateString()}
+                            {formatDateTimeDisplay(conference.scheduledStartAt)}
+                          </Typography>
+                        </Box>
+                      )}
+                      {conference.type === 'PERMANENT' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Infinity size={16} color="#a855f7" />
+                          <Typography variant="body2" sx={{ color: '#a855f7', fontWeight: 500 }}>
+                            Always Available
                           </Typography>
                         </Box>
                       )}
@@ -612,7 +733,10 @@ export default function ConferencesPage() {
       {/* Create/Edit Dialog */}
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={() => {
+          setOpenDialog(false);
+          setFormError(null);
+        }}
         maxWidth="sm"
         fullWidth
         PaperProps={{
@@ -626,11 +750,87 @@ export default function ConferencesPage() {
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingConference ? 'Edit Conference' : 'Create Conference'}
           </Typography>
         </DialogTitle>
         <DialogContent>
+          {/* Error Alert */}
+          {formError && (
+            <Alert
+              severity="error"
+              icon={<AlertCircle size={20} />}
+              onClose={() => setFormError(null)}
+              sx={{
+                mt: 2,
+                mb: 2,
+                background: 'rgba(239, 68, 68, 0.15)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 'var(--radius-lg)',
+                color: '#fca5a5',
+                '& .MuiAlert-icon': {
+                  color: '#ef4444',
+                },
+                '& .MuiAlert-message': {
+                  fontWeight: 500,
+                },
+                '& .MuiIconButton-root': {
+                  color: '#fca5a5',
+                  '&:hover': {
+                    background: 'rgba(239, 68, 68, 0.2)',
+                  },
+                },
+              }}
+            >
+              {formError}
+            </Alert>
+          )}
+          {/* Type Selector */}
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1, fontWeight: 500 }}>
+              Type
+            </Typography>
+            <ToggleButtonGroup
+              value={formData.type}
+              exclusive
+              onChange={(_, newType) => {
+                if (newType) {
+                  setFormData({ ...formData, type: newType });
+                }
+              }}
+              sx={{
+                width: '100%',
+                '& .MuiToggleButton-root': {
+                  flex: 1,
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  py: 1.5,
+                  '&.Mui-selected': {
+                    background: 'rgba(14, 165, 233, 0.15)',
+                    color: '#0ea5e9',
+                    borderColor: '#0ea5e9',
+                  },
+                  '&:hover': {
+                    background: 'var(--glass-bg)',
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="SCHEDULED">
+                <Calendar size={18} style={{ marginRight: 8 }} />
+                Conference
+              </ToggleButton>
+              <ToggleButton value="PERMANENT">
+                <DoorOpen size={18} style={{ marginRight: 8 }} />
+                Room
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+
           <TextField
             fullWidth
             label="Room Name"
@@ -697,6 +897,59 @@ export default function ConferencesPage() {
               },
             }}
           />
+
+          {/* Scheduled Date/Time Fields */}
+          {formData.type === 'SCHEDULED' && (
+            <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <TextField
+                label="Start Time"
+                type="datetime-local"
+                value={formData.scheduledStartAt}
+                onChange={(e) => setFormData({ ...formData, scheduledStartAt: e.target.value })}
+                sx={{
+                  flex: 1,
+                  minWidth: 200,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 'var(--radius-lg)',
+                    '& fieldset': {
+                      borderColor: 'var(--border)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--border-strong)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0ea5e9',
+                    },
+                  },
+                }}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                label="End Time"
+                type="datetime-local"
+                value={formData.scheduledEndAt}
+                onChange={(e) => setFormData({ ...formData, scheduledEndAt: e.target.value })}
+                sx={{
+                  flex: 1,
+                  minWidth: 200,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 'var(--radius-lg)',
+                    '& fieldset': {
+                      borderColor: 'var(--border)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'var(--border-strong)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0ea5e9',
+                    },
+                  },
+                }}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          )}
+
           <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
             <FormControlLabel
               control={
@@ -732,11 +985,31 @@ export default function ConferencesPage() {
               }
               label="Enable Live Streaming"
             />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.enableLobby}
+                  onChange={(e) => setFormData({ ...formData, enableLobby: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': {
+                      color: '#10b981',
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      backgroundColor: '#10b981',
+                    },
+                  }}
+                />
+              }
+              label="Enable Lobby"
+            />
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button
-            onClick={() => setOpenDialog(false)}
+            onClick={() => {
+              setOpenDialog(false);
+              setFormError(null);
+            }}
             sx={{
               borderRadius: 'var(--radius-lg)',
               color: 'var(--text)',

@@ -11,8 +11,10 @@
 - [Permission.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/Permission.java)
 - [IdentityProvider.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java)
 - [ConferenceParticipant.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java)
-- [UserRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/UserRepository.java)
+- [ConferenceService.java](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java)
+- [ConferenceDto.java](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java)
 - [ConferenceRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java)
+- [UserRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/UserRepository.java)
 - [RecordingRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/RecordingRepository.java)
 - [AuditLogRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/AuditLogRepository.java)
 - [RoleRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/RoleRepository.java)
@@ -21,7 +23,16 @@
 - [V3__create_recordings_table.sql](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql)
 - [V4__create_audit_logs_table.sql](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql)
 - [V5__create_identity_providers_table.sql](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql)
+- [V6__add_conference_type.sql](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Updated Conference entity documentation to include the new type field and ConferenceType enumeration
+- Added comprehensive validation logic for type-specific constraints
+- Updated Conference service validation rules and business constraints
+- Added database migration documentation for the new type column
+- Updated entity relationships and lifecycle management to reflect type-aware behavior
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -36,7 +47,7 @@
 10. [Appendices](#appendices)
 
 ## Introduction
-This document describes the Core Entities of the Jitsi Management Platform domain layer. It focuses on the persistent JPA entities that model the platform’s business domain: User, Conference, Recording, AuditLog, Tenant, Role, Permission, IdentityProvider, and ConferenceParticipant. For each entity, we explain JPA annotations, field definitions, business significance, validation rules, lifecycle management, and relationships with foreign keys and cardinalities. We also document immutable-like value objects (Role and Permission) that encapsulate business logic, and show how entities enforce business rules and maintain data integrity.
+This document describes the Core Entities of the Jitsi Management Platform domain layer. It focuses on the persistent JPA entities that model the platform's business domain: User, Conference, Recording, AuditLog, Tenant, Role, Permission, IdentityProvider, and ConferenceParticipant. For each entity, we explain JPA annotations, field definitions, business significance, validation rules, lifecycle management, and relationships with foreign keys and cardinalities. We also document immutable-like value objects (Role and Permission) that encapsulate business logic, and show how entities enforce business rules and maintain data integrity.
 
 ## Project Structure
 The domain layer is organized around entities, repositories, and value objects. Entities are annotated for JPA persistence and audited automatically. Repositories define typed queries and EntityGraph loading strategies to optimize access patterns.
@@ -65,6 +76,7 @@ M_V2["V2__seed_data.sql"]
 M_V3["V3__create_recordings_table.sql"]
 M_V4["V4__create_audit_logs_table.sql"]
 M_V5["V5__create_identity_providers_table.sql"]
+M_V6["V6__add_conference_type.sql"]
 end
 E_User --- E_Tenant
 E_User --- E_Role
@@ -89,11 +101,12 @@ M_V1 -. defines .- E_Part
 M_V3 -. defines .- E_Rec
 M_V4 -. defines .- E_Audit
 M_V5 -. defines .- E_IDP
+M_V6 -. adds .- E_Conf.type
 ```
 
 **Diagram sources**
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
-- [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
+- [Conference.java:25-245](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L245)
 - [Recording.java:24-203](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L24-L203)
 - [AuditLog.java:20-136](file://jmp-domain/src/main/java/com/jmp/domain/entity/AuditLog.java#L20-L136)
 - [Tenant.java:24-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L24-L174)
@@ -101,20 +114,19 @@ M_V5 -. defines .- E_IDP
 - [Permission.java:18-128](file://jmp-domain/src/main/java/com/jmp/domain/entity/Permission.java#L18-L128)
 - [IdentityProvider.java:23-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L23-L158)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
-- [UserRepository.java:18-82](file://jmp-domain/src/main/java/com/jmp/domain/repository/UserRepository.java#L18-L82)
 - [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
-- [RecordingRepository.java:19-100](file://jmp-domain/src/main/java/com/jmp/domain/repository/RecordingRepository.java#L19-L100)
-- [AuditLogRepository.java:18-85](file://jmp-domain/src/main/java/com/jmp/domain/repository/AuditLogRepository.java#L18-L85)
-- [RoleRepository.java:13-20](file://jmp-domain/src/main/java/com/jmp/domain/repository/RoleRepository.java#L13-L20)
+- [ConferenceService.java:25-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L255)
+- [ConferenceDto.java:16-182](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L16-L182)
 - [V1__init_schema.sql:10-172](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L10-L172)
 - [V2__seed_data.sql:4-131](file://jmp-web/src/main/resources/db/migration/V2__seed_data.sql#L4-L131)
 - [V3__create_recordings_table.sql:4-43](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql#L4-L43)
 - [V4__create_audit_logs_table.sql:4-36](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql#L4-L36)
 - [V5__create_identity_providers_table.sql:4-45](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L4-L45)
+- [V6__add_conference_type.sql:1-15](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L15)
 
 **Section sources**
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
-- [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
+- [Conference.java:25-245](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L245)
 - [Recording.java:24-203](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L24-L203)
 - [AuditLog.java:20-136](file://jmp-domain/src/main/java/com/jmp/domain/entity/AuditLog.java#L20-L136)
 - [Tenant.java:24-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L24-L174)
@@ -122,14 +134,18 @@ M_V5 -. defines .- E_IDP
 - [Permission.java:18-128](file://jmp-domain/src/main/java/com/jmp/domain/entity/Permission.java#L18-L128)
 - [IdentityProvider.java:23-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L23-L158)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
+- [ConferenceService.java:25-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L255)
+- [ConferenceDto.java:16-182](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L16-L182)
+- [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
 - [V1__init_schema.sql:10-172](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L10-L172)
 - [V2__seed_data.sql:4-131](file://jmp-web/src/main/resources/db/migration/V2__seed_data.sql#L4-L131)
 - [V3__create_recordings_table.sql:4-43](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql#L4-L43)
 - [V4__create_audit_logs_table.sql:4-36](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql#L4-L36)
 - [V5__create_identity_providers_table.sql:4-45](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L4-L45)
+- [V6__add_conference_type.sql:1-15](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L15)
 
 ## Core Components
-This section summarizes each entity’s purpose, annotations, key fields, and business significance.
+This section summarizes each entity's purpose, annotations, key fields, and business significance.
 
 - User
   - Purpose: Represents a platform user scoped to a Tenant with RBAC via Roles. Supports soft-delete and status lifecycle.
@@ -138,10 +154,11 @@ This section summarizes each entity’s purpose, annotations, key fields, and bu
   - Validation: @NotNull, @Email, @Size constraints; unique email enforced by schema.
 
 - Conference
-  - Purpose: Represents a Jitsi conference room with scheduling, options, and participant tracking.
-  - Key fields: roomName, displayName, description, tenant (many-to-one), createdBy (many-to-one), status, scheduling timestamps, flags (password, lobby, recording, streaming), jitsiOptions/metadata, participants (one-to-many).
+  - Purpose: Represents a Jitsi conference room with scheduling, options, and participant tracking. Now includes type distinction between scheduled and permanent conferences.
+  - Key fields: roomName, displayName, description, tenant (many-to-one), createdBy (many-to-one), status, type (SCHEDULED or PERMANENT), scheduling timestamps, flags (password, lobby, recording, streaming), jitsiOptions/metadata, participants (one-to-many).
   - Lifecycle: start(), end(), softDelete(), isActive(), isEnded(), getCurrentParticipantCount().
-  - Validation: @NotNull, @Size; unique roomName per tenant enforced by composite index.
+  - Validation: @NotNull, @Size; unique roomName per tenant enforced by composite index; type-specific validation logic ensures scheduled conferences have start times.
+  - Type-specific constraints: SCHEDULED requires scheduledStartAt; PERMANENT conferences operate differently in scheduling logic.
 
 - Recording
   - Purpose: Stores metadata and lifecycle for conference recordings.
@@ -185,7 +202,7 @@ This section summarizes each entity’s purpose, annotations, key fields, and bu
 
 **Section sources**
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
-- [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
+- [Conference.java:25-245](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L245)
 - [Recording.java:24-203](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L24-L203)
 - [AuditLog.java:20-136](file://jmp-domain/src/main/java/com/jmp/domain/entity/AuditLog.java#L20-L136)
 - [Tenant.java:24-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L24-L174)
@@ -193,9 +210,11 @@ This section summarizes each entity’s purpose, annotations, key fields, and bu
 - [Permission.java:18-128](file://jmp-domain/src/main/java/com/jmp/domain/entity/Permission.java#L18-L128)
 - [IdentityProvider.java:23-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L23-L158)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
+- [ConferenceService.java:25-255](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L255)
+- [ConferenceDto.java:16-182](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L16-L182)
 
 ## Architecture Overview
-The entities form a cohesive domain model with clear ownership and cascading behavior. Tenants own Users and Conferences. Conferences own Participants and Recordings. Users may be linked to Participants. Roles and Permissions underpin access control. Audit logs capture cross-cutting events.
+The entities form a cohesive domain model with clear ownership and cascading behavior. Tenants own Users and Conferences. Conferences own Participants and Recordings. Users may be linked to Participants. Roles and Permissions underpin access control. Audit logs capture cross-cutting events. The new ConferenceType enumeration introduces type-aware behavior for conference management.
 
 ```mermaid
 classDiagram
@@ -272,6 +291,7 @@ class Conference {
 +Tenant tenant
 +User createdBy
 +ConferenceStatus status
++ConferenceType type
 +Instant scheduledStartAt
 +Instant scheduledEndAt
 +Instant actualStartedAt
@@ -398,6 +418,11 @@ class IdentityProvider {
 +Instant createdAt
 +Instant updatedAt
 }
+class ConferenceType {
+<<enumeration>>
+SCHEDULED
+PERMANENT
+}
 Tenant "1" --> "*" User : "owns"
 Tenant "1" --> "*" Conference : "owns"
 Tenant "1" --> "*" Recording : "owns"
@@ -407,11 +432,12 @@ Conference "1" --> "*" ConferenceParticipant : "has participants"
 Conference "1" --> "*" Recording : "generates"
 User "1" --> "*" Role : "has roles"
 Role "1" --> "*" Permission : "grants"
+Conference --> "--" ConferenceType : "has type"
 ```
 
 **Diagram sources**
 - [User.java:28-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L28-L164)
-- [Conference.java:30-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L30-L217)
+- [Conference.java:30-245](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L30-L245)
 - [Recording.java:29-203](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L29-L203)
 - [AuditLog.java:25-136](file://jmp-domain/src/main/java/com/jmp/domain/entity/AuditLog.java#L25-L136)
 - [Tenant.java:29-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L29-L174)
@@ -419,6 +445,7 @@ Role "1" --> "*" Permission : "grants"
 - [Permission.java:23-128](file://jmp-domain/src/main/java/com/jmp/domain/entity/Permission.java#L23-L128)
 - [IdentityProvider.java:28-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L28-L158)
 - [ConferenceParticipant.java:23-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L23-L150)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
 
 ## Detailed Component Analysis
 
@@ -436,14 +463,22 @@ Role "1" --> "*" Permission : "grants"
 
 ### Conference
 - JPA annotations: @Entity, @Table(schema="jmp"), @EntityListeners(AuditingEntityListener), @JdbcTypeCode(Json), @Enumerated.
-- Fields: id, roomName (unique per tenant), displayName, description, tenant (many-to-one), createdBy (many-to-one), status with defaults, scheduling timestamps, flags for features, jitsiOptions/metadata, participants (one-to-many), createdAt/updatedAt/deletedAt.
+- Fields: id, roomName (unique per tenant), displayName, description, tenant (many-to-one), createdBy (many-to-one), status with defaults, **type with default SCHEDULED**, scheduling timestamps, flags for features, jitsiOptions/metadata, participants (one-to-many), createdAt/updatedAt/deletedAt.
 - Relationships: owned by Tenant; owned by User (creator); owns ConferenceParticipant; produces Recording.
 - Business rules: start()/end() set status and timestamps; softDelete cancels; isActive/isEnded compute state; participant counting filters by JOINED.
-- Validation: not-null room/display name; size limits; composite unique index on roomName+tenant.
+- Validation: not-null room/display name; size limits; composite unique index on roomName+tenant; **type-specific validation ensures scheduled conferences have start times**.
+- **Type-specific constraints**: SCHEDULED conferences require scheduledStartAt; PERMANENT conferences operate differently in scheduling logic and auto-start processing.
+- **Lifecycle management**: ConferenceService validates type changes and enforces type-specific business rules during creation and updates.
+
+**Updated** Added ConferenceType enumeration with SCHEDULED and PERMANENT variants, including comprehensive validation logic and type-specific constraints.
 
 **Section sources**
-- [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
+- [Conference.java:25-245](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L245)
+- [ConferenceService.java:56-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L56-L78)
+- [ConferenceService.java:139-154](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L139-L154)
+- [ConferenceDto.java:45-70](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L45-L70)
 - [V1__init_schema.sql:89-139](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L89-L139)
+- [V6__add_conference_type.sql:1-15](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L15)
 - [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
 
 ### Recording
@@ -525,7 +560,7 @@ Role "1" --> "*" Permission : "grants"
 - [V1__init_schema.sql:121-139](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L121-L139)
 
 ## Dependency Analysis
-This section maps entity dependencies and foreign keys defined in the schema migrations.
+This section maps entity dependencies and foreign keys defined in the schema migrations, including the new type column.
 
 ```mermaid
 erDiagram
@@ -593,6 +628,7 @@ text description
 uuid tenant_id FK
 uuid created_by FK
 varchar status
+varchar type
 timestamptz scheduled_start_at
 timestamptz scheduled_end_at
 timestamptz actual_started_at
@@ -722,6 +758,7 @@ IDENTITY_PROVIDERS }o--|| TENANTS : "configured by"
 - [V3__create_recordings_table.sql:4-43](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql#L4-L43)
 - [V4__create_audit_logs_table.sql:4-36](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql#L4-L36)
 - [V5__create_identity_providers_table.sql:4-45](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L4-L45)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)
 
 **Section sources**
 - [V1__init_schema.sql:10-172](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L10-L172)
@@ -729,19 +766,21 @@ IDENTITY_PROVIDERS }o--|| TENANTS : "configured by"
 - [V3__create_recordings_table.sql:4-43](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql#L4-L43)
 - [V4__create_audit_logs_table.sql:4-36](file://jmp-web/src/main/resources/db/migration/V4__create_audit_logs_table.sql#L4-L36)
 - [V5__create_identity_providers_table.sql:4-45](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L4-L45)
+- [V6__add_conference_type.sql:1-15](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L15)
 
 ## Performance Considerations
 - Indexes and unique constraints are defined in schema migrations to optimize frequent queries:
   - Users: email, tenant, status, plus composite external auth index.
   - Tenants: slug, domain, status.
-  - Conferences: tenant, status, created_by, scheduled range, room_name unique per tenant.
+  - Conferences: tenant, status, created_by, scheduled range, room_name unique per tenant, **type index for type filtering**.
   - Participants: conference, user, status.
   - Recordings: conference, tenant, status, retention, created desc, tenant+status.
   - Audit logs: tenant, user, event_type, entity, created desc, tenant+created desc, success=false filter.
   - Identity providers: tenant, enabled, tenant+name unique.
 - EntityGraph usage in repositories reduces N+1 selects for related entities during reads.
+- **Type-based filtering performance**: The new type column includes an index specifically for filtering conferences by type, improving query performance for type-specific operations.
 
-[No sources needed since this section provides general guidance]
+**Updated** Added performance considerations for the new type column and its associated index.
 
 ## Troubleshooting Guide
 - Soft-deleted records:
@@ -749,22 +788,30 @@ IDENTITY_PROVIDERS }o--|| TENANTS : "configured by"
 - Status transitions:
   - Conference lifecycle: SCHEDULED → ACTIVE → ENDED/CANCELLED; use start()/end() helpers to maintain correctness.
   - Recording lifecycle: PENDING → PROCESSING → READY/FAILED/ARCHIVED/DELETED; use markReady() to finalize.
+- **Type-specific issues**:
+  - **SCHEDULED conferences must have scheduledStartAt**: ConferenceService validates that scheduled conferences include a start time; errors indicate missing scheduledStartAt.
+  - **Type validation errors**: ConferenceService throws IllegalArgumentException for invalid conference types (only SCHEDULED and PERMANENT are accepted).
+  - **Type change restrictions**: ConferenceService prevents type changes that would violate type-specific constraints.
 - Access control:
   - Role.hasPermission() and Permission constants help validate authorizations; ensure permissions are seeded and roles assigned.
 - Audit trails:
   - Use AuditLogRepository search filters and security event queries to investigate failures and suspicious activity.
 
+**Updated** Added troubleshooting guidance for type-specific issues and validation errors.
+
 **Section sources**
 - [User.java:112-122](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L112-L122)
 - [Conference.java:140-159](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L140-L159)
+- [ConferenceService.java:64-67](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L64-L67)
+- [ConferenceService.java:148-153](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L148-L153)
 - [Recording.java:140-151](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L140-L151)
 - [AuditLogRepository.java:44-70](file://jmp-domain/src/main/java/com/jmp/domain/repository/AuditLogRepository.java#L44-L70)
 - [V2__seed_data.sql:42-95](file://jmp-web/src/main/resources/db/migration/V2__seed_data.sql#L42-L95)
 
 ## Conclusion
-The Core Entities form a robust, validated, and audited domain model for the Jitsi Management Platform. They enforce business rules through lifecycle methods, immutability-like value objects (Role and Permission), and schema-level constraints. Repositories complement entities with optimized queries and eager loading strategies. Together, they ensure data integrity, tenant isolation, and scalable access control.
+The Core Entities form a robust, validated, and audited domain model for the Jitsi Management Platform. They enforce business rules through lifecycle methods, immutability-like value objects (Role and Permission), and schema-level constraints. **The addition of ConferenceType enumeration enhances conference management capabilities by distinguishing between scheduled and permanent conference types, with comprehensive validation logic ensuring type-specific constraints are maintained.** Repositories complement entities with optimized queries and eager loading strategies. Together, they ensure data integrity, tenant isolation, and scalable access control.
 
-[No sources needed since this section summarizes without analyzing specific files]
+**Updated** Enhanced conclusion to reflect the new ConferenceType enumeration and its impact on conference management capabilities.
 
 ## Appendices
 
@@ -774,8 +821,8 @@ The Core Entities form a robust, validated, and audited domain model for the Jit
   - Modification: update personal info, status, and flags; use isActive() for access checks.
   - Deletion: softDelete() to mark deletedAt and status; keep for auditability.
 - Conference
-  - Creation: set roomName, tenant, createdBy; schedule or start as needed; enable features via flags.
-  - Modification: adjust scheduling, options, and participant policies; track participant counts.
+  - Creation: set roomName, tenant, createdBy; select type (SCHEDULED or PERMANENT); for SCHEDULED, set scheduledStartAt; schedule or start as needed; enable features via flags.
+  - Modification: adjust scheduling, options, and participant policies; track participant counts; **validate type changes to ensure type-specific constraints are maintained**.
   - Deletion: softDelete() to cancel; rely on status transitions for lifecycle.
 - Recording
   - Creation: associate with Conference and Tenant; set recordingKey; process and markReady().
@@ -792,9 +839,13 @@ The Core Entities form a robust, validated, and audited domain model for the Jit
 - ConferenceParticipant
   - Creation: link to Conference and optional User; set role/status; markJoined()/markLeft() on events.
 
+**Updated** Added type-specific creation and modification patterns for Conference entities.
+
 **Section sources**
 - [User.java:112-130](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L112-L130)
 - [Conference.java:140-184](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L140-L184)
+- [ConferenceService.java:40-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L40-L78)
+- [ConferenceService.java:126-161](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L126-L161)
 - [Recording.java:131-161](file://jmp-domain/src/main/java/com/jmp/domain/entity/Recording.java#L131-L161)
 - [AuditLog.java:25-136](file://jmp-domain/src/main/java/com/jmp/domain/entity/AuditLog.java#L25-L136)
 - [Tenant.java:92-112](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L92-L112)
@@ -804,18 +855,26 @@ The Core Entities form a robust, validated, and audited domain model for the Jit
 - [ConferenceParticipant.java:91-109](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L91-L109)
 
 ### Validation Rules and Business Constraints
-- Not-null constraints on critical fields (e.g., email, names, status, room/display names).
+- Not-null constraints on critical fields (e.g., email, names, status, room/display names, **type**).
 - Size limits for strings to prevent overflow.
 - Unique constraints enforced by schema:
   - Users.email
   - Tenants.name, slug, domain
-  - Conferences.roomName (per tenant)
+  - Conferences.roomName (per tenant), **Conferences.type** (with type-specific filtering)
   - Recordings.recordingKey
   - IdentityProviders.tenant+name
-- Enumerations constrain allowable values for status, role types, actions, and resource types.
+- Enumerations constrain allowable values for status, role types, actions, resource types, **and conference types**.
+- **Type-specific constraints**:
+  - ConferenceType: SCHEDULED (requires scheduledStartAt), PERMANENT (no fixed schedule)
+  - ConferenceService validates type changes and enforces type-specific business rules
 - Embedded TenantQuotas gate features and capacity.
+
+**Updated** Added validation rules for the new ConferenceType enumeration and type-specific constraints.
 
 **Section sources**
 - [V1__init_schema.sql:140-163](file://jmp-web/src/main/resources/db/migration/V1__init_schema.sql#L140-L163)
 - [V3__create_recordings_table.sql:8-30](file://jmp-web/src/main/resources/db/migration/V3__create_recordings_table.sql#L8-L30)
 - [V5__create_identity_providers_table.sql:33-34](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql#L33-L34)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [ConferenceService.java:56-78](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L56-L78)
+- [ConferenceService.java:139-154](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L139-L154)

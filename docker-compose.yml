@@ -159,7 +159,7 @@ services:
   jitsi-web:
     image: jitsi/web:stable
     container_name: jmp-jitsi-web
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
