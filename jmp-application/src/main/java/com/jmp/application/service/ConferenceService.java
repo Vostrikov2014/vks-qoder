@@ -53,6 +53,19 @@ public class ConferenceService {
                 throw new IllegalArgumentException("Room name already exists: " + request.roomName());
             });
 
+        // Validate conference type
+        Conference.ConferenceType type;
+        try {
+            type = Conference.ConferenceType.valueOf(request.type());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid conference type: " + request.type() + ". Valid types: SCHEDULED, PERMANENT");
+        }
+
+        // For SCHEDULED type, require scheduled start time
+        if (type == Conference.ConferenceType.SCHEDULED && request.scheduledStartAt() == null) {
+            throw new IllegalArgumentException("Scheduled conferences must have a scheduledStartAt");
+        }
+
         Conference conference = conferenceMapper.toEntity(request);
         conference.setTenant(tenant);
         conference.setCreatedBy(user);
@@ -121,6 +134,23 @@ public class ConferenceService {
         if (conference.getStatus() == Conference.ConferenceStatus.ENDED ||
             conference.getStatus() == Conference.ConferenceStatus.CANCELLED) {
             throw new IllegalStateException("Cannot update ended or cancelled conference");
+        }
+
+        // Validate type change if provided
+        if (request.type() != null) {
+            Conference.ConferenceType newType;
+            try {
+                newType = Conference.ConferenceType.valueOf(request.type());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid conference type: " + request.type() + ". Valid types: SCHEDULED, PERMANENT");
+            }
+
+            // If changing to SCHEDULED, require scheduled start time
+            if (newType == Conference.ConferenceType.SCHEDULED &&
+                request.scheduledStartAt() == null &&
+                conference.getScheduledStartAt() == null) {
+                throw new IllegalArgumentException("Scheduled conferences must have a scheduledStartAt");
+            }
         }
 
         conferenceMapper.updateEntityFromDto(request, conference);

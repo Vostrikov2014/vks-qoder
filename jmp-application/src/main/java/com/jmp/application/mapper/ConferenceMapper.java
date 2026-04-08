@@ -1,12 +1,13 @@
 package com.jmp.application.mapper;
 
-import com.jmp.application.dto.ConferenceDto;
-import com.jmp.domain.entity.Conference;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import com.jmp.application.dto.ConferenceDto;
+import com.jmp.domain.entity.Conference;
 
 /**
  * MapStruct mapper for Conference entity and DTOs.
@@ -29,6 +30,7 @@ public interface ConferenceMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "type", source = "type")
     @Mapping(target = "actualStartedAt", ignore = true)
     @Mapping(target = "actualEndedAt", ignore = true)
     @Mapping(target = "requirePassword", ignore = true)
