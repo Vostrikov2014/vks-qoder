@@ -173,6 +173,8 @@ export const conferenceApi = {
   endConference: (id: string) => api.post(`/conferences/${id}/end`),
   generateToken: (id: string, data: unknown) =>
     api.post(`/conferences/${id}/token`, data),
+  generateShareLink: (id: string, data: { displayName: string }) =>
+    api.post<{ shareUrl: string; expiresAt: string }>(`/conferences/${id}/share`, data),
 };
 
 // Analytics API

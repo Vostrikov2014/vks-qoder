@@ -7,7 +7,7 @@ INSERT INTO jmp.tenants (id, name, slug, description, status, domain, jitsi_doma
     max_conference_duration_minutes, allowed_features)
 VALUES 
     ('11111111-1111-1111-1111-111111111111', 'Default Tenant', 'default', 
-     'Default tenant for initial setup', 'ACTIVE', 'localhost', 'localhost:8443',
+     'Default tenant for initial setup', 'ACTIVE', 'localhost', 'localhost:8000',
      50, 100, 51200, 240, 'chat,screen_share,recording,live_streaming');
 
 -- Insert system permissions

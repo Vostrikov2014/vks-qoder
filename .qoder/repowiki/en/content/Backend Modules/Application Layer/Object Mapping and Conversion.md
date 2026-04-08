@@ -14,6 +14,13 @@
 - [ConferenceService.java](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java)
 </cite>
 
+## Update Summary
+**Changes Made**
+- Enhanced ConferenceMapper documentation to reflect improved type handling and string-to-conference-type conversion
+- Updated mapping strategies section to include the new `stringToConferenceType` custom method
+- Added detailed explanation of the enhanced type conversion logic and validation
+- Updated troubleshooting guide with specific guidance for conference type mapping issues
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Project Structure](#project-structure)
@@ -85,7 +92,7 @@ CE --> UE
 
 ## Core Components
 - UserMapper: Defines mappings between User and UserDto variants, including custom methods for role name conversion and computed properties via expression mapping.
-- ConferenceMapper: Defines mappings between Conference and ConferenceDto variants, including computed participant counts and nested user-to-name mapping.
+- ConferenceMapper: Defines mappings between Conference and ConferenceDto variants, including computed participant counts and nested user-to-name mapping. **Enhanced with improved type handling and string-to-conference-type conversion**.
 - DTOs: Sealed interfaces with records define request/response/summary DTOs for both User and Conference.
 - Domain Entities: Rich entities with relationships and computed helpers used by mappers.
 
@@ -94,6 +101,7 @@ Key mapping characteristics:
 - Null handling strategy set to ignore null properties during mapping.
 - Explicitly ignored target properties to prevent accidental writebacks of internal fields.
 - Computed properties mapped via expressions and custom named methods.
+- **Enhanced type conversion with robust validation and default handling**.
 
 **Section sources**
 - [UserMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/UserMapper.java)
@@ -233,8 +241,9 @@ ConferenceMapper converts between Conference entities and ConferenceDto variants
 - CreateRequest mapping: ignores server-controlled fields and sets defaults.
 - UpdateRequest mapping: ignores immutable/derived fields and updates only provided attributes.
 
-Custom mapping methods:
+**Enhanced** Custom mapping methods:
 - userToName: Builds a full name from a User entity.
+- **stringToConferenceType**: **New enhanced method** that converts String type to Conference.ConferenceType enum with robust validation and default handling.
 - Computed property: currentParticipants derived from participant stream.
 
 ```mermaid
@@ -245,6 +254,7 @@ class ConferenceMapper {
 +toEntity(dto) : Conference
 +updateEntityFromDto(dto, conference) : void
 +userToName(user) : String
++stringToConferenceType(type) : ConferenceType
 }
 class Conference {
 +UUID id
@@ -252,6 +262,7 @@ class Conference {
 +String displayName
 +String description
 +ConferenceStatus status
++ConferenceType type
 +UUID tenantId
 +UUID createdById
 +Instant scheduledStartAt
@@ -309,6 +320,10 @@ ConferenceDto <.. ConferenceMapper : "uses"
 - Null safety:
   - NullValuePropertyMappingStrategy.IGNORE prevents nulls from overwriting existing values.
   - Custom method rolesToStrings returns an empty set when input is null.
+- **Enhanced type handling**:
+  - **Conference type conversion now uses robust validation with Conference.ConferenceType.valueOf()**.
+  - **Null input automatically defaults to Conference.ConferenceType.SCHEDULED**.
+  - **Explicit mapping configuration in both create and update operations**.
 - Computed properties:
   - UserDto.Response includes roles as Set<String>.
   - ConferenceDto.Response includes currentParticipants computed from participant count.
@@ -317,9 +332,17 @@ ConferenceDto <.. ConferenceMapper : "uses"
   - tenant.id flattened to tenantId in DTOs.
   - createdBy mapped to createdById and createdByName.
 
+**Updated** Enhanced type conversion logic:
+The `stringToConferenceType` method provides robust type conversion with the following behavior:
+- **Null input handling**: Returns `Conference.ConferenceType.SCHEDULED` as default when type is null.
+- **Validation**: Uses `Conference.ConferenceType.valueOf(type)` for strict validation against enum values.
+- **Error handling**: Throws `IllegalArgumentException` for invalid enum values.
+- **Consistent mapping**: Applied in both create and update operations for uniform behavior.
+
 **Section sources**
 - [UserMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/UserMapper.java)
 - [ConferenceMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/ConferenceMapper.java)
+- [Conference.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java)
 
 ### Complex Mapping Scenarios
 - Collections:
@@ -329,6 +352,9 @@ ConferenceDto <.. ConferenceMapper : "uses"
 - Computed properties:
   - Current participant count computed from participant collection.
   - Full name constructed from first and last name.
+- **Enhanced type conversion**:
+  - **String conference types converted to ConferenceType enum with validation**.
+  - **Automatic defaulting to SCHEDULED type when null is provided**.
 
 **Section sources**
 - [UserMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/UserMapper.java)
@@ -339,9 +365,11 @@ ConferenceDto <.. ConferenceMapper : "uses"
 - Validation:
   - DTOs use Jakarta Bean Validation annotations for input constraints.
   - Services validate uniqueness and existence before mapping and persisting.
+  - **Enhanced conference type validation in ConferenceService with Conference.ConferenceType.valueOf()**.
 - Error handling:
   - Services throw IllegalArgumentException for invalid inputs (e.g., missing tenant/user, duplicate email/room name).
   - ConferenceService enforces state transitions for start/end operations.
+  - **ConferenceService validates conference types with specific error messages for invalid values**.
 
 **Section sources**
 - [UserDto.java](file://jmp-application/src/main/java/com/jmp/application/dto/UserDto.java)
@@ -355,15 +383,19 @@ Recommended testing approaches for mappers:
   - Correct property mapping between entities and DTOs.
   - Computed properties (e.g., currentParticipants, rolesToStrings).
   - Null safety behavior (ignoring nulls, returning empty sets).
+  - **Enhanced type conversion testing**:
+    - **Test null input handling returning SCHEDULED type**.
+    - **Test valid string values converting to correct enum values**.
+    - **Test invalid string values throwing IllegalArgumentException**.
 - Integration tests validating:
   - Service-layer mapping flows (create/update/list).
   - DTO validation and error propagation.
+  - **Conference type conversion validation in service layer**.
 - Property coverage:
   - Test ignored fields remain untouched.
   - Test nested relationships flattened correctly.
   - Test expression-based computed properties.
-
-[No sources needed since this section provides general guidance]
+  - **Test custom type conversion methods thoroughly**.
 
 ## Dependency Analysis
 Mappers depend on DTOs and domain entities. Services depend on repositories and mappers. There are no circular dependencies between application and domain layers for mapping concerns.
@@ -376,6 +408,7 @@ UM --> UDTO["UserDto"]
 UM --> UE["User"]
 CM --> CDTO["ConferenceDto"]
 CM --> CE["Conference"]
+CE --> CT["ConferenceType"]
 UE --> TE["Tenant"]
 UE --> RE["Role"]
 CE --> TE
@@ -406,8 +439,7 @@ CE --> UE
 - Computed properties via expressions avoid loading extra entities when not needed.
 - Prefer summary DTOs for list endpoints to reduce payload size.
 - Avoid mapping large nested structures unless required; flatten where possible.
-
-[No sources needed since this section provides general guidance]
+- **Enhanced type conversion is efficient and performed only when type field is present**.
 
 ## Troubleshooting Guide
 Common issues and resolutions:
@@ -421,10 +453,24 @@ Common issues and resolutions:
   - Confirm rolesToStrings is invoked via qualifiedByName and handles null input gracefully.
 - Nested relationships not flattened:
   - Map tenant.id to tenantId and createdBy to createdById/createdByName explicitly.
+- **Conference type conversion errors**:
+  - **Verify that the type string matches ConferenceType enum values (SCHEDULED, PERMANENT)**.
+  - **Check that stringToConferenceType method is properly annotated with @Named**.
+  - **Confirm that ConferenceService validation complements mapper validation**.
+  - **Test null type handling to ensure default SCHEDULED type is applied**.
+
+**Updated** Conference type conversion troubleshooting:
+When encountering conference type conversion issues:
+1. **Validate input values**: Ensure the type string exactly matches enum constants (SCHEDULED, PERMANENT).
+2. **Check null handling**: Verify that null input correctly defaults to SCHEDULED type.
+3. **Review service validation**: Confirm that ConferenceService validation complements mapper validation.
+4. **Test custom method**: Ensure the `stringToConferenceType` method is properly registered with @Named annotation.
+5. **Debug mapping**: Verify that the mapping target and source are correctly configured in both create and update operations.
 
 **Section sources**
 - [UserMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/UserMapper.java)
 - [ConferenceMapper.java](file://jmp-application/src/main/java/com/jmp/application/mapper/ConferenceMapper.java)
+- [ConferenceService.java](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java)
 
 ## Conclusion
-The MapStruct-based mapping layer cleanly separates presentation concerns from domain logic. UserMapper and ConferenceMapper provide robust, null-safe conversions with custom methods for complex mappings, computed properties, and flattened relationships. Services orchestrate validation and persistence, ensuring reliable and maintainable object mapping across the application.
+The MapStruct-based mapping layer cleanly separates presentation concerns from domain logic. UserMapper and ConferenceMapper provide robust, null-safe conversions with custom methods for complex mappings, computed properties, and flattened relationships. **The enhanced ConferenceMapper now includes improved type handling with robust string-to-conference-type conversion, automatic null handling, and comprehensive validation.** Services orchestrate validation and persistence, ensuring reliable and maintainable object mapping across the application.

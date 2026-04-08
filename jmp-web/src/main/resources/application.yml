@@ -41,6 +41,7 @@ spring:
     locations: classpath:db/migration
     schemas: jmp
     baseline-on-migrate: true
+    create-schemas: true
 
   data:
     redis:
@@ -109,6 +110,12 @@ management:
         enabled: true
     tags:
       application: ${spring.application.name}
+
+# Jitsi Configuration
+jitsi:
+  domain: ${JITSI_DOMAIN:meet.jit.si}
+  app-id: ${JITSI_APP_ID:jmp-app}
+  secret: ${JITSI_SECRET:your-jitsi-secret}
 
 # OpenAPI Configuration
 springdoc:

@@ -1,5 +1,6 @@
 package com.jmp.api.controller;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +24,9 @@ import com.jmp.application.dto.ConferenceDto;
 import com.jmp.application.service.ConferenceService;
 import com.jmp.application.service.JwtService;
 import com.jmp.domain.entity.Conference;
+import com.jmp.domain.entity.User;
 import com.jmp.domain.repository.ConferenceRepository;
+import com.jmp.domain.repository.UserRepository;
 import com.jmp.infrastructure.security.JwtAuthenticationFilter;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,6 +50,7 @@ public class ConferenceController {
 
     private final ConferenceService conferenceService;
     private final ConferenceRepository conferenceRepository;
+    private final UserRepository userRepository;
     private final JwtService jwtService;
 
     @PostMapping
@@ -147,31 +151,68 @@ public class ConferenceController {
             @PathVariable UUID id,
             @Valid @RequestBody ConferenceDto.TokenRequest request,
             Authentication authentication) {
-        
+
         UUID userId = extractUserId(authentication);
-        
-        Conference conference = conferenceRepository.findById(id)
+
+        Conference conference = conferenceRepository.findWithDetailsById(id)
             .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
-        
-        com.jmp.domain.entity.User user = new com.jmp.domain.entity.User();
-        user.setId(userId);
-        user.setEmail(request.displayName()); // Using display name as email for guest
-        user.setFirstName(request.displayName());
-        user.setLastName("");
-        user.setTenant(conference.getTenant());
-        
-        String token = jwtService.generateJitsiToken(conference, user, 
+
+        // Load user from database instead of creating transient object
+        User user = userRepository.findWithRolesById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        // Validate jitsiDomain is configured
+        String jitsiDomain = conference.getTenant().getJitsiDomain();
+        if (jitsiDomain == null || jitsiDomain.isBlank()) {
+            throw new IllegalStateException("Jitsi domain not configured for tenant");
+        }
+
+        String token = jwtService.generateJitsiToken(conference, user,
             request.isModerator() != null ? request.isModerator() : false);
-        
-        String roomUrl = String.format("https://%s/%s?jwt=%s",
-            conference.getTenant().getJitsiDomain(),
+
+        String roomUrl = String.format("http://%s/%s?jwt=%s",
+            jitsiDomain,
             conference.getRoomName(),
             token);
-        
+
         return ResponseEntity.ok(new ConferenceDto.TokenResponse(
             token,
             roomUrl,
             jwtService.getExpirationTime(token)
+        ));
+    }
+
+    @PostMapping("/{id}/share")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Generate shareable link for conference")
+    public ResponseEntity<ConferenceDto.ShareResponse> generateShareLink(
+            @PathVariable UUID id,
+            @Valid @RequestBody ConferenceDto.ShareRequest request,
+            Authentication authentication) {
+
+        Conference conference = conferenceRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        String displayName = request.displayName() != null ? request.displayName() : "Guest";
+
+        // Validate jitsiDomain is configured
+        String jitsiDomain = conference.getTenant().getJitsiDomain();
+        if (jitsiDomain == null || jitsiDomain.isBlank()) {
+            throw new IllegalStateException("Jitsi domain not configured for tenant");
+        }
+
+        String token = jwtService.generateGuestToken(conference, displayName, false);
+
+        String roomUrl = String.format("http://%s/%s?jwt=%s",
+            jitsiDomain,
+            conference.getRoomName(),
+            token);
+
+        Instant expiresAt = jwtService.getGuestTokenExpiration();
+
+        return ResponseEntity.ok(new ConferenceDto.ShareResponse(
+            roomUrl,
+            expiresAt
         ));
     }
 

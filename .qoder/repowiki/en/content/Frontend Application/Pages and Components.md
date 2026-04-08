@@ -12,20 +12,22 @@
 - [api.ts](file://jmp-ui/src/services/api.ts)
 - [authStore.ts](file://jmp-ui/src/store/authStore.ts)
 - [themeStore.ts](file://jmp-ui/src/store/themeStore.ts)
+- [index.ts](file://jmp-ui/src/types/index.ts)
 - [index.css](file://jmp-ui/src/index.css)
 - [package.json](file://jmp-ui/package.json)
 - [index.html](file://jmp-ui/index.html)
+- [V6__add_conference_type.sql](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql)
+- [Conference.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Enhanced DashboardPage with advanced analytics cards, charting capabilities using Recharts, and system health monitoring
-- Modernized Layout component with glassmorphism design, dark/light theme switching, and enhanced navigation
-- Improved ConferencesPage with advanced filtering, real-time participant tracking, and enhanced conference cards
-- Upgraded UsersPage with avatar system, role-based styling, and improved user management interface
-- Added comprehensive theme management system with Zustand store and persistent theme preferences
-- Implemented modern glassmorphism design system with Aurora background animations
-- Enhanced LoginPage with theme toggle, animated backgrounds, and improved user experience
+- Enhanced ConferencesPage with new SCHEDULED/PERMANENT conference type support and improved form handling
+- Integrated TypeScript type system with strong typing for ConferenceType and ConferenceFormData
+- Added comprehensive conference type validation and conditional field handling
+- Updated database schema with new type column and indexing
+- Enhanced conference cards with type-specific styling and badges
+- Improved conference creation/editing dialogs with type selection and validation
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -33,7 +35,7 @@
 3. [Core Components](#core-components)
 4. [Architecture Overview](#architecture-overview)
 5. [Detailed Component Analysis](#detailed-component-analysis)
-6. [Enhanced Theme System](#enhanced-theme-system)
+6. [Enhanced Conference Type System](#enhanced-conference-type-system)
 7. [Advanced Analytics Features](#advanced-analytics-features)
 8. [Modern UI Design System](#modern-ui-design-system)
 9. [Dependency Analysis](#dependency-analysis)
@@ -52,6 +54,7 @@ The frontend is a modern React application built with Vite and TypeScript, featu
 - Services: Advanced API client with analytics endpoints and interceptors
 - Store: Zustand-based authentication and theme state management with persistence
 - Design System: Comprehensive CSS custom properties and Aurora animations
+- Types: Strongly typed TypeScript interfaces for conference management
 
 ```mermaid
 graph TB
@@ -72,6 +75,11 @@ subgraph "Advanced Design System"
 CSS["index.css"]
 ThemeSystem["Glassmorphism + Aurora"]
 end
+subgraph "Type System"
+Types["index.ts"]
+DomainModel["Conference.java"]
+DBMigration["V6__add_conference_type.sql"]
+end
 subgraph "Routing"
 Router["React Router DOM"]
 end
@@ -91,18 +99,24 @@ Dashboard --> ThemeStore
 Layout --> ThemeStore
 API --> AuthStore
 API --> ThemeStore
+API --> Types
+Types --> DomainModel
+DomainModel --> DBMigration
 ```
 
 **Diagram sources**
 - [App.tsx:10-31](file://jmp-ui/src/App.tsx#L10-L31)
 - [Layout.tsx:48-520](file://jmp-ui/src/components/Layout.tsx#L48-L520)
 - [DashboardPage.tsx:160-599](file://jmp-ui/src/pages/DashboardPage.tsx#L160-L599)
-- [ConferencesPage.tsx:106-768](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L768)
+- [ConferencesPage.tsx:106-1054](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L1054)
 - [UsersPage.tsx:118-710](file://jmp-ui/src/pages/UsersPage.tsx#L118-L710)
 - [LoginPage.tsx:41-457](file://jmp-ui/src/pages/LoginPage.tsx#L41-L457)
-- [api.ts:60-159](file://jmp-ui/src/services/api.ts#L60-L159)
+- [api.ts:60-191](file://jmp-ui/src/services/api.ts#L60-L191)
 - [authStore.ts:23-46](file://jmp-ui/src/store/authStore.ts#L23-L46)
 - [themeStore.ts:10-22](file://jmp-ui/src/store/themeStore.ts#L10-L22)
+- [index.ts:1-43](file://jmp-ui/src/types/index.ts#L1-L43)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [V6__add_conference_type.sql:1-15](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L15)
 
 **Section sources**
 - [App.tsx:10-31](file://jmp-ui/src/App.tsx#L10-L31)
@@ -113,21 +127,23 @@ API --> ThemeStore
 This section outlines the enhanced core components and their advanced responsibilities:
 - **Enhanced Layout**: Provides glassmorphism navigation with Aurora backgrounds, theme switching, and responsive design with mobile/desktop variants
 - **Advanced DashboardPage**: Features comprehensive analytics with Recharts integration, system health monitoring, and interactive dashboard metrics
-- **Enhanced ConferencesPage**: Implements advanced filtering, real-time participant tracking, conference cards with status indicators, and enhanced CRUD operations
+- **Enhanced ConferencesPage**: Implements advanced filtering, real-time participant tracking, conference cards with status indicators, enhanced CRUD operations, and comprehensive conference type management
 - **Modern UsersPage**: Includes avatar system with gradient backgrounds, role-based styling, user status management, and improved user interface
 - **Enhanced LoginPage**: Features theme toggle integration, animated backgrounds, demo credentials, and improved authentication experience
 - **Advanced API Service**: Extends beyond basic HTTP client to include comprehensive analytics endpoints and enhanced error handling
 - **Dual Store System**: Combines Zustand stores for authentication and theme management with persistent state across sessions
+- **Strong Type System**: Comprehensive TypeScript interfaces for conference management with compile-time type safety
 
 **Section sources**
 - [Layout.tsx:48-520](file://jmp-ui/src/components/Layout.tsx#L48-L520)
 - [DashboardPage.tsx:160-599](file://jmp-ui/src/pages/DashboardPage.tsx#L160-L599)
-- [ConferencesPage.tsx:106-768](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L768)
+- [ConferencesPage.tsx:106-1054](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L1054)
 - [UsersPage.tsx:118-710](file://jmp-ui/src/pages/UsersPage.tsx#L118-L710)
 - [LoginPage.tsx:41-457](file://jmp-ui/src/pages/LoginPage.tsx#L41-L457)
-- [api.ts:60-159](file://jmp-ui/src/services/api.ts#L60-L159)
+- [api.ts:60-191](file://jmp-ui/src/services/api.ts#L60-L191)
 - [authStore.ts:23-46](file://jmp-ui/src/store/authStore.ts#L23-L46)
 - [themeStore.ts:10-22](file://jmp-ui/src/store/themeStore.ts#L10-L22)
+- [index.ts:1-43](file://jmp-ui/src/types/index.ts#L1-L43)
 
 ## Architecture Overview
 The application follows an enhanced layered architecture with modern design patterns:
@@ -135,6 +151,7 @@ The application follows an enhanced layered architecture with modern design patt
 - **Service Layer**: Advanced Axios-based API client with comprehensive analytics endpoints and interceptors
 - **State Management**: Dual Zustand stores for authentication and theme management with persistence
 - **Design System**: CSS custom properties with light/dark mode support and Aurora animations
+- **Type System**: Comprehensive TypeScript interfaces ensuring compile-time type safety
 - **Routing**: React Router DOM with protected routes and enhanced layout outlet
 
 ```mermaid
@@ -153,8 +170,8 @@ Layout->>Page : Render child page
 Page->>API : Make advanced request
 API->>Auth : Read token from store
 API->>Theme : Access theme state
-API-->>Page : Response with analytics data
-Page-->>Browser : Render enhanced UI
+API-->>Page : Response with typed conference data
+Page-->>Browser : Render enhanced UI with type safety
 ```
 
 **Diagram sources**
@@ -166,6 +183,77 @@ Page-->>Browser : Render enhanced UI
 - [themeStore.ts:13-15](file://jmp-ui/src/store/themeStore.ts#L13-L15)
 
 ## Detailed Component Analysis
+
+### Enhanced ConferencesPage
+**Updated** Major enhancements include comprehensive conference type management, improved form handling, and TypeScript integration.
+
+Purpose:
+- Manages conference listings with advanced search and filtering capabilities
+- Displays conference cards with status indicators, participant counts, and type-specific styling
+- Supports create, edit, delete operations with enhanced modal dialogs and type validation
+- Implements real-time participant tracking and status management
+- Provides comprehensive conference type management with SCHEDULED and PERMANENT options
+
+Key behaviors:
+- Advanced conference cards with type-based styling and gradient accents
+- Real-time participant count display with current/max participants
+- Type-specific feature badges for recording, live streaming, and screen sharing
+- Enhanced search functionality with debounced input handling
+- Status-based action buttons (Start/End) with conditional rendering
+- Comprehensive form validation with type-specific requirements
+- Type selector with ToggleButtonGroup for intuitive conference type selection
+
+State and props:
+- Local state: conferences array, loading states, search filters, dialog management, form data with ConferenceFormData type
+- Enhanced status configuration with color-coded chips and icons
+- Strongly typed form state with ConferenceType union type
+- Type-specific validation rules and conditional field handling
+
+Event handlers:
+- handleCreate, handleEdit, handleDelete for CRUD operations
+- handleStart, handleEnd for conference lifecycle management
+- Enhanced form handling with type-specific validation and payload construction
+- Type change handler with conditional field updates
+
+Material-UI integration:
+- Advanced grid layout with responsive design, enhanced chip components, and comprehensive form controls
+- ToggleButtonGroup for type selection with glassmorphism styling
+- Conditional form fields based on selected conference type
+
+**Section sources**
+- [ConferencesPage.tsx:106-1054](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L1054)
+- [index.ts:29-42](file://jmp-ui/src/types/index.ts#L29-L42)
+
+### Enhanced Conference Type System
+**New Section** Comprehensive conference type management system with TypeScript integration and database support.
+
+The application now features a robust conference type system supporting both SCHEDULED and PERMANENT conference types:
+
+#### Conference Type Definitions
+- **SCHEDULED**: Fixed-time conferences with start/end dates and times
+- **PERMANENT**: Always-available rooms with no scheduled times
+- **Type Safety**: Strongly typed using TypeScript union type `ConferenceType`
+- **Default Value**: Database defaults to SCHEDULED for backward compatibility
+
+#### Frontend Implementation
+- **Type Selector**: ToggleButtonGroup with calendar and door icons
+- **Conditional Validation**: Different validation rules for each type
+- **Payload Construction**: Automatic field handling based on conference type
+- **UI Styling**: Distinct color schemes and badges for each type
+
+#### Backend Integration
+- **Database Schema**: New `type` column with ENUM-like behavior
+- **Indexing**: Optimized queries with type-based indexes
+- **Migration Support**: Non-breaking schema evolution
+- **Status Management**: Separate ConferenceStatus enum for lifecycle management
+
+**Section sources**
+- [ConferencesPage.tsx:100-124](file://jmp-ui/src/pages/ConferencesPage.tsx#L100-L124)
+- [ConferencesPage.tsx:802-845](file://jmp-ui/src/pages/ConferencesPage.tsx#L802-L845)
+- [ConferencesPage.tsx:239-282](file://jmp-ui/src/pages/ConferencesPage.tsx#L239-L282)
+- [index.ts:1](file://jmp-ui/src/types/index.ts#L1)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)
 
 ### Enhanced DashboardPage
 **Updated** Major enhancements include advanced analytics, charting capabilities, and system health monitoring.
@@ -195,37 +283,6 @@ Material-UI integration:
 
 **Section sources**
 - [DashboardPage.tsx:160-599](file://jmp-ui/src/pages/DashboardPage.tsx#L160-L599)
-
-### Enhanced ConferencesPage
-**Updated** Significant improvements include advanced filtering, real-time participant tracking, and enhanced conference cards.
-
-Purpose:
-- Manages conference listings with advanced search and filtering capabilities
-- Displays conference cards with status indicators, participant counts, and feature badges
-- Supports create, edit, delete operations with enhanced modal dialogs
-- Implements real-time participant tracking and status management
-
-Key behaviors:
-- Advanced conference cards with status-based styling and gradient accents
-- Real-time participant count display with current/max participants
-- Feature badges for recording, live streaming, and screen sharing
-- Enhanced search functionality with debounced input handling
-- Status-based action buttons (Start/End) with conditional rendering
-
-State and props:
-- Local state: conferences array, loading states, search filters, dialog management, form data
-- Enhanced status configuration with color-coded chips and icons
-
-Event handlers:
-- handleCreate, handleEdit, handleDelete for CRUD operations
-- handleStart, handleEnd for conference lifecycle management
-- Enhanced form handling with additional conference settings
-
-Material-UI integration:
-- Advanced grid layout with responsive design, enhanced chip components, and comprehensive form controls
-
-**Section sources**
-- [ConferencesPage.tsx:106-768](file://jmp-ui/src/pages/ConferencesPage.tsx#L106-L768)
 
 ### Modern UsersPage
 **Updated** Complete redesign with avatar system, role-based styling, and improved user management.
@@ -331,56 +388,66 @@ Purpose:
 - Manages dual state management with authentication and theme persistence
 - Provides comprehensive analytics API endpoints for dashboard metrics
 - Implements advanced error handling and token refresh mechanisms
+- Supports strongly typed conference management operations
 
 Key behaviors:
 - Request interceptor with enhanced authorization header management
 - Response interceptor with comprehensive token refresh and error handling
 - Analytics API endpoints for dashboard metrics, usage reports, and system health
-- Enhanced user and conference management endpoints
-- Comprehensive TypeScript interfaces for all API responses
+- Enhanced user and conference management endpoints with TypeScript support
+- Comprehensive TypeScript interfaces for all API responses and requests
 
 State and props:
 - Enhanced auth store with partial serialization for selective persistence
 - New theme store with automatic preference detection and persistence
-- Comprehensive API endpoint definitions with TypeScript support
+- Comprehensive API endpoint definitions with strong TypeScript typing
 
 Event handlers:
 - None (store actions exposed via hooks)
 - Enhanced API interceptors with comprehensive error handling
 
 **Section sources**
-- [api.ts:60-159](file://jmp-ui/src/services/api.ts#L60-L159)
+- [api.ts:60-191](file://jmp-ui/src/services/api.ts#L60-L191)
 - [authStore.ts:23-46](file://jmp-ui/src/store/authStore.ts#L23-L46)
 - [themeStore.ts:10-22](file://jmp-ui/src/store/themeStore.ts#L10-L22)
 
-## Enhanced Theme System
-**New Section** Comprehensive theme management system with dark/light mode switching and persistent preferences.
+## Enhanced Conference Type System
+**New Section** Comprehensive conference type management system with TypeScript integration and database support.
 
-The application features a sophisticated theme management system built on Zustand with persistent storage:
+### Conference Type Architecture
+The application now supports two distinct conference types with comprehensive type safety:
 
-### Theme Store Implementation
-- **Automatic Preference Detection**: Detects user's preferred color scheme using `prefers-color-scheme` media query
-- **Persistent Storage**: Uses Zustand middleware for localStorage persistence across browser sessions
-- **Dynamic Class Application**: Automatically applies 'dark' class to document element for seamless theme switching
-- **Animation Integration**: Theme toggle includes smooth rotation animations for enhanced user experience
+#### ConferenceType Union Type
+- **SCHEDULED**: Fixed-time conferences requiring start/end datetime validation
+- **PERMANENT**: Always-available rooms with no scheduled time constraints
+- **Type Safety**: Compile-time enforcement preventing invalid type assignments
+- **Default Behavior**: Maintains backward compatibility with SCHEDULED as default
 
-### Design System Architecture
-- **CSS Custom Properties**: Comprehensive design tokens with light/dark mode variants
-- **Glassmorphism Effects**: Backdrop blur, transparency, and modern elevation shadows
-- **Aurora Animations**: Subtle background animations with gradient effects
-- **Responsive Typography**: Flexible font sizing with breakpoint adjustments
+#### Frontend Type Management
+- **Type Selector Interface**: ToggleButtonGroup with intuitive calendar/door icons
+- **Conditional Field Handling**: Dynamic form fields based on selected type
+- **Validation Logic**: Type-specific validation rules and error messages
+- **UI Styling**: Distinct color schemes and badges for each conference type
 
-### Theme Features
-- **Light Mode**: Traditional light theme with soft gradients and subtle shadows
-- **Dark Mode**: Deep space theme with enhanced contrast and glow effects
-- **Smooth Transitions**: CSS transitions for all property changes with custom timing functions
-- **Accent Color System**: Consistent color palette with primary, secondary, and accent colors
+#### Backend Type Integration
+- **Database Schema**: New `type` column with ENUM-like behavior
+- **Migration Strategy**: Non-breaking schema evolution with default values
+- **Query Optimization**: Type-based indexing for improved performance
+- **Status Separation**: Independent ConferenceStatus enum for lifecycle management
+
+### Type-Specific Features
+- **SCHEDULED Conferences**: Require datetime validation, scheduled start/end times
+- **PERMANENT Conferences**: Always available, no time constraints, special "Always Available" indicator
+- **Feature Differences**: Different UI representations and validation requirements
+- **Backend Mapping**: Proper serialization/deserialization of type values
 
 **Section sources**
-- [themeStore.ts:10-22](file://jmp-ui/src/store/themeStore.ts#L10-L22)
-- [index.css:1-345](file://jmp-ui/src/index.css#L1-L345)
-- [Layout.tsx:57-64](file://jmp-ui/src/components/Layout.tsx#L57-L64)
-- [LoginPage.tsx:51-58](file://jmp-ui/src/pages/LoginPage.tsx#L51-L58)
+- [ConferencesPage.tsx:100-124](file://jmp-ui/src/pages/ConferencesPage.tsx#L100-L124)
+- [ConferencesPage.tsx:802-845](file://jmp-ui/src/pages/ConferencesPage.tsx#L802-L845)
+- [ConferencesPage.tsx:239-282](file://jmp-ui/src/pages/ConferencesPage.tsx#L239-L282)
+- [index.ts:1](file://jmp-ui/src/types/index.ts#L1)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)
 
 ## Advanced Analytics Features
 **New Section** Comprehensive analytics capabilities with real-time data visualization and system monitoring.
@@ -406,7 +473,7 @@ The application features a sophisticated theme management system built on Zustan
 
 **Section sources**
 - [DashboardPage.tsx:210-229](file://jmp-ui/src/pages/DashboardPage.tsx#L210-L229)
-- [api.ts:148-159](file://jmp-ui/src/services/api.ts#L148-L159)
+- [api.ts:180-191](file://jmp-ui/src/services/api.ts#L180-L191)
 
 ## Modern UI Design System
 **New Section** Comprehensive glassmorphism design system with Aurora animations and modern aesthetics.
@@ -460,6 +527,10 @@ Dashboard --> ThemeStore
 Layout --> ThemeStore
 API --> AuthStore
 API --> ThemeStore
+API --> Types["index.ts"]
+Types --> ConferenceType["ConferenceType"]
+ConferenceType --> DomainModel["Conference.java"]
+DomainModel --> DBMigration["V6__add_conference_type.sql"]
 ```
 
 **Diagram sources**
@@ -471,12 +542,16 @@ API --> ThemeStore
 - [api.ts:2](file://jmp-ui/src/services/api.ts#L2)
 - [authStore.ts:1](file://jmp-ui/src/store/authStore.ts#L1)
 - [themeStore.ts:1](file://jmp-ui/src/store/themeStore.ts#L1)
+- [index.ts:1](file://jmp-ui/src/types/index.ts#L1)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)
 
 **Section sources**
 - [App.tsx:10-31](file://jmp-ui/src/App.tsx#L10-L31)
-- [api.ts:60-159](file://jmp-ui/src/services/api.ts#L60-L159)
+- [api.ts:60-191](file://jmp-ui/src/services/api.ts#L60-L191)
 - [authStore.ts:23-46](file://jmp-ui/src/store/authStore.ts#L23-L46)
 - [themeStore.ts:10-22](file://jmp-ui/src/store/themeStore.ts#L10-L22)
+- [index.ts:1-43](file://jmp-ui/src/types/index.ts#L1-L43)
 
 ## Performance Considerations
 Enhanced performance optimizations for the modernized application:
@@ -488,7 +563,8 @@ Enhanced performance optimizations for the modernized application:
 - **Optimized Re-renders**: Memoized derived data and shallow comparisons for improved performance
 - **Efficient Animations**: Hardware-accelerated CSS animations with proper performance optimization
 - **Bundle Optimization**: Tree-shaking for unused components and libraries
-- **Critical CSS**: Extracted critical CSS for faster initial page loads
+- **TypeScript Compilation**: Compile-time type checking reduces runtime errors and improves performance
+- **Conditional Rendering**: Type-specific rendering optimizations for conference cards and forms
 
 ## Troubleshooting Guide
 Enhanced troubleshooting for the modernized application:
@@ -508,29 +584,45 @@ Enhanced troubleshooting for the modernized application:
 - **Store Persistence**: Check both 'jmp-auth-storage' and 'jmp-theme-storage' for proper data persistence
 - **Session Management**: Monitor authentication state across page reloads and browser tabs
 
+### Conference Type Issues
+- **Type Validation**: Verify ConferenceType union type is properly enforced in form submissions
+- **Database Migration**: Ensure V6__add_conference_type.sql migration has been applied successfully
+- **Type Display**: Check that conference cards properly render type-specific styling and badges
+- **Form Handling**: Verify conditional form fields appear/disappear based on selected conference type
+
 ### Component-Specific Issues
 - **Glassmorphism Effects**: Verify backdrop-filter support in target browsers
 - **Responsive Layouts**: Test mobile/desktop variants thoroughly across different screen sizes
 - **Animation Performance**: Monitor frame rates for complex animations and consider performance optimizations
+- **TypeScript Errors**: Check for compile-time type errors in conference-related components
 
 **Section sources**
 - [api.ts:79-112](file://jmp-ui/src/services/api.ts#L79-L112)
 - [authStore.ts:30-35](file://jmp-ui/src/store/authStore.ts#L30-L35)
 - [themeStore.ts:13-15](file://jmp-ui/src/store/themeStore.ts#L13-L15)
+- [ConferencesPage.tsx:239-282](file://jmp-ui/src/pages/ConferencesPage.tsx#L239-L282)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)
 - [LoginPage.tsx:71-76](file://jmp-ui/src/pages/LoginPage.tsx#L71-L76)
 
 ## Conclusion
 The enhanced application provides a modern, sophisticated React frontend with glassmorphism design, comprehensive analytics capabilities, and advanced theme management. The upgraded pages feature real-time data visualization, enhanced user experiences, and responsive design patterns. The dual store system ensures persistent state management, while the comprehensive theme system delivers seamless light/dark mode switching. The integration of modern design principles with functional requirements creates a robust foundation for continued development and feature expansion.
+
+The addition of comprehensive conference type management with TypeScript integration represents a significant architectural improvement, providing compile-time type safety and enhanced developer experience. The database migration strategy ensures backward compatibility while enabling future feature development.
 
 ## Appendices
 - **Enhanced Theming**: Comprehensive CSS custom properties system with light/dark mode variants and smooth transitions
 - **Advanced Routing**: Protected routes with enhanced layout outlet and responsive navigation
 - **Comprehensive API**: Extended API endpoints for analytics, user management, and conference operations
 - **Modern Build Tools**: Vite configuration with TypeScript, ESLint, and modern development workflow
+- **Type Safety**: Comprehensive TypeScript interfaces ensuring compile-time type checking and enhanced developer experience
+- **Database Evolution**: Non-breaking schema migrations supporting future feature development
 
 **Section sources**
 - [main.tsx:9-31](file://jmp-ui/src/main.tsx#L9-L31)
 - [App.tsx:15-27](file://jmp-ui/src/App.tsx#L15-L27)
-- [api.ts:60-159](file://jmp-ui/src/services/api.ts#L60-L159)
+- [api.ts:60-191](file://jmp-ui/src/services/api.ts#L60-L191)
 - [package.json:12-42](file://jmp-ui/package.json#L12-L42)
 - [index.html:1-14](file://jmp-ui/index.html#L1-L14)
+- [index.ts:1-43](file://jmp-ui/src/types/index.ts#L1-L43)
+- [Conference.java:240-243](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L240-L243)
+- [V6__add_conference_type.sql:4-11](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L4-L11)

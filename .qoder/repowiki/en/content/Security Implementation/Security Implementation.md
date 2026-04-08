@@ -18,7 +18,16 @@
 - [AuditLogRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/AuditLogRepository.java)
 - [AuditController.java](file://jmp-api/src/main/java/com/jmp/api/controller/AuditController.java)
 - [IdentityProvider.java](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java)
+- [AnalyticsController.java](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java)
+- [UserService.java](file://jmp-application/src/main/java/com/jmp/application/service/UserService.java)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Enhanced JWT authentication filter with automatic role prefixing (ROLE_) for consistent role-based access control
+- Updated RBAC implementation documentation to reflect the automatic role prefixing mechanism
+- Added security considerations for role naming conventions and access control enforcement
+- Updated troubleshooting guidance for role-based access issues
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -34,6 +43,8 @@
 
 ## Introduction
 This document provides comprehensive security documentation for the Jitsi Management Platform. It covers JWT-based authentication, token generation and validation, refresh mechanisms, role-based access control (RBAC) with tenant isolation, Spring Security configuration, custom filters, and authentication providers. It also documents password security practices, session management, CSRF protection, input validation, SQL injection prevention, XSS protection, secure API design, audit logging for security events and compliance reporting, external authentication integration points, and security monitoring approaches. Finally, it outlines secure development practices and vulnerability mitigation strategies.
+
+**Updated** Enhanced JWT authentication filter now automatically prefixes roles with "ROLE_" for consistent role-based access control, ensuring seamless integration with Spring Security's @PreAuthorize annotations.
 
 ## Project Structure
 Security-related components are distributed across infrastructure, application, domain, and API layers:
@@ -66,6 +77,7 @@ subgraph "API"
 AC["AuthController"]
 SSC["SsoController"]
 AUCC["AuditController"]
+ANAC["AnalyticsController"]
 end
 AC --> JS
 SSC --> SS
@@ -75,6 +87,7 @@ JAF --> UDS
 WSA --> JS
 AS --> AL
 AUCC --> AS
+ANAC --> JAF
 U --> R
 U --> T
 SS --> IP
@@ -90,6 +103,7 @@ SS --> IP
 - [AuthController.java:42-100](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L42-L100)
 - [SsoController.java:56-110](file://jmp-api/src/main/java/com/jmp/api/controller/SsoController.java#L56-L110)
 - [AuditController.java:40-73](file://jmp-api/src/main/java/com/jmp/api/controller/AuditController.java#L40-L73)
+- [AnalyticsController.java:36-84](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L36-L84)
 - [Role.java:22-131](file://jmp-domain/src/main/java/com/jmp/domain/entity/Role.java#L22-L131)
 - [Tenant.java:24-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L24-L174)
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
@@ -102,16 +116,19 @@ SS --> IP
 - [AuthController.java:42-100](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L42-L100)
 - [SsoController.java:56-110](file://jmp-api/src/main/java/com/jmp/api/controller/SsoController.java#L56-L110)
 - [AuditController.java:40-73](file://jmp-api/src/main/java/com/jmp/api/controller/AuditController.java#L40-L73)
+- [AnalyticsController.java:36-84](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L36-L84)
 
 ## Core Components
 - JWT Service: Generates access and refresh tokens, validates tokens, extracts claims, and computes expiration
 - Authentication Controller: Handles login and token refresh
-- JWT Authentication Filter: Extracts and validates JWTs, sets authentication in SecurityContext, and injects tenant/user details
+- JWT Authentication Filter: Extracts and validates JWTs, sets authentication in SecurityContext, injects tenant/user details, and automatically prefixes roles with "ROLE_"
 - User Details Service: Loads users by ID for authentication and builds authorities from roles
 - SSO Controller and Service: Integrates external identity providers via OIDC, manages state/nonce, and provisions users
 - WebSocket Authentication Interceptor: Validates JWTs for STOMP WebSocket connections
-- RBAC Model: Roles, permissions, and tenant scoping
+- RBAC Model: Roles, permissions, and tenant scoping with automatic role prefixing
 - Audit Service and Controllers: Logs security and operational events, supports compliance reporting
+
+**Updated** The JWT Authentication Filter now automatically ensures all roles have the "ROLE_" prefix, providing consistent role-based access control regardless of how roles are stored or provided.
 
 **Section sources**
 - [JwtService.java:49-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L49-L236)
@@ -126,7 +143,7 @@ SS --> IP
 - [AuditController.java:40-73](file://jmp-api/src/main/java/com/jmp/api/controller/AuditController.java#L40-L73)
 
 ## Architecture Overview
-The security architecture enforces stateless authentication using JWTs, with method-level authorization and tenant-aware access control. External identity providers are integrated via OIDC with state/nonce validation and optional user provisioning.
+The security architecture enforces stateless authentication using JWTs, with method-level authorization and tenant-aware access control. External identity providers are integrated via OIDC with state/nonce validation and optional user provisioning. The enhanced JWT authentication filter ensures consistent role-based access control through automatic role prefixing.
 
 ```mermaid
 sequenceDiagram
@@ -143,7 +160,7 @@ UR-->>AC : "User with roles"
 AC->>JS : "Generate access/refresh tokens"
 JS-->>AC : "Tokens"
 AC-->>C : "AuthResponse(accessToken, refreshToken, expiresAt)"
-Note over AC,JS : "Access token contains roles and tenant_id<br/>Refresh token is signed separately"
+Note over AC,JS : "Access token contains roles and tenant_id<br/>JWT filter automatically prefixes roles with ROLE_<br/>Refresh token is signed separately"
 ```
 
 **Diagram sources**
@@ -170,8 +187,10 @@ Note over AC,JS : "Access token contains roles and tenant_id<br/>Refresh token i
   - Expiration and role extraction exposed via service methods
 - Authentication Flow
   - Authorization header "Bearer <token>" parsed by filter
-  - Claims validated and mapped to authorities
+  - Claims validated and mapped to authorities with automatic "ROLE_" prefixing
   - Authentication injected into SecurityContext for method security
+
+**Updated** The JWT Authentication Filter now automatically ensures all roles have the "ROLE_" prefix when building authorities, preventing role-based access control issues.
 
 ```mermaid
 flowchart TD
@@ -183,7 +202,8 @@ Validate --> Valid{"Valid?"}
 Valid --> |No| ClearCtx["Clear SecurityContext"] --> Continue
 Valid --> |Yes| LoadUser["Load User by ID"]
 LoadUser --> BuildAuth["Build Authentication Token with Roles"]
-BuildAuth --> Inject["Inject into SecurityContext"]
+BuildAuth --> PrefixRoles["Automatically Prefix Roles with ROLE_"]
+PrefixRoles --> Inject["Inject into SecurityContext"]
 Inject --> Continue
 ```
 
@@ -202,14 +222,18 @@ Inject --> Continue
   - Role entity defines permissions via a many-to-many relationship
   - Role types include super admin, tenant admin, moderator, participant, auditor, service account
   - Global vs tenant-specific roles supported via optional tenant association
+  - Predefined role constants already include "ROLE_" prefix for Spring Security compatibility
 - User Tenancy
   - User belongs to a Tenant and holds a set of Roles scoped to that Tenant
   - Active/inactive status and soft-deleted users excluded from access
 - Method-Level Authorization
   - Controllers use @PreAuthorize with role constants aligned to Role names
+  - The JWT filter automatically ensures consistent "ROLE_" prefixing for access control
   - Audit endpoints restrict access to tenant admin, super admin, and auditor roles
 - Tenant-Aware Claims
   - JWT filter exposes tenant_id via WebAuthenticationDetails for downstream use
+
+**Updated** Enhanced role prefixing mechanism ensures that roles are consistently prefixed with "ROLE_" regardless of how they're stored or provided, eliminating access control issues.
 
 ```mermaid
 classDiagram
@@ -220,6 +244,12 @@ class Role {
 +Set~Permission~ permissions
 +boolean hasPermission(name)
 +boolean isGlobal()
++static final String ROLE_SUPER_ADMIN = "ROLE_SUPER_ADMIN"
++static final String ROLE_TENANT_ADMIN = "ROLE_TENANT_ADMIN"
++static final String ROLE_MODERATOR = "ROLE_MODERATOR"
++static final String ROLE_PARTICIPANT = "ROLE_PARTICIPANT"
++static final String ROLE_AUDITOR = "ROLE_AUDITOR"
++static final String ROLE_SERVICE_ACCOUNT = "ROLE_SERVICE_ACCOUNT"
 }
 class Permission {
 +UUID id
@@ -237,16 +267,22 @@ class User {
 +Tenant tenant
 +boolean isActive()
 }
+class JwtAuthenticationFilter {
++SimpleGrantedAuthority[] buildAuthorities(String[] roles)
++automatically prefix roles with "ROLE_"
+}
 Role --> Permission : "has many"
 User --> Role : "has many"
 User --> Tenant : "belongs to"
 Role --> Tenant : "optional"
+JwtAuthenticationFilter --> Role : "ensures ROLE_ prefix"
 ```
 
 **Diagram sources**
 - [Role.java:22-131](file://jmp-domain/src/main/java/com/jmp/domain/entity/Role.java#L22-L131)
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
 - [Tenant.java:24-174](file://jmp-domain/src/main/java/com/jmp/domain/entity/Tenant.java#L24-L174)
+- [JwtAuthenticationFilter.java:54-56](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/JwtAuthenticationFilter.java#L54-L56)
 
 **Section sources**
 - [Role.java:22-131](file://jmp-domain/src/main/java/com/jmp/domain/entity/Role.java#L22-L131)
@@ -266,6 +302,9 @@ Role --> Tenant : "optional"
 - Filter Chain
   - Custom JwtAuthenticationFilter added before UsernamePasswordAuthenticationFilter
   - Public endpoints explicitly permitted (auth, webhooks, health, docs)
+  - Enhanced filter now handles automatic role prefixing for consistent access control
+
+**Updated** The filter chain now includes enhanced role prefixing capabilities that ensure consistent role-based access control across all authenticated requests.
 
 ```mermaid
 graph TB
@@ -276,6 +315,7 @@ HS --> AUTHZ["Authorize Requests"]
 AUTHZ --> PERMITALL["Public Endpoints"]
 AUTHZ --> AUTHENTICATED["Other Requests Authenticated"]
 HS --> FILTER["Add JwtAuthenticationFilter Before UsernamePasswordAuthenticationFilter"]
+FILTER --> ROLEPREFIX["Automatic ROLE_ Prefixing"]
 HS --> AM["AuthenticationManager with DaoAuthenticationProvider"]
 ```
 
@@ -325,35 +365,7 @@ HS --> AM["AuthenticationManager with DaoAuthenticationProvider"]
   - Auto-provision users if configured; otherwise reject unknown users
   - Map IdP attributes to platform fields
 - Token Issuance
-  - On successful callback, issue platform access/refresh tokens
-
-```mermaid
-sequenceDiagram
-participant B as "Browser"
-participant SSC as "SsoController"
-participant SSRV as "SsoService"
-participant IDP as "Identity Provider"
-participant UR as "UserRepository"
-participant JS as "JwtService"
-B->>SSC : "GET /sso/login/{providerId}"
-SSC->>SSR : "Generate state/nonce, store in session"
-SSC->>IDP : "Redirect to authorization endpoint"
-IDP-->>B : "Redirect to /sso/callback?code&state"
-B->>SSC : "GET /sso/callback?code&state"
-SSC->>SSR : "Validate state, process callback"
-SSR->>IDP : "Exchange code for tokens"
-SSR->>IDP : "Fetch user info"
-SSR->>UR : "Find/Create user"
-UR-->>SSR : "User"
-SSR->>JS : "Generate access/refresh tokens"
-JS-->>SSR : "Tokens"
-SSR-->>B : "SsoAuthenticationResponse"
-```
-
-**Diagram sources**
-- [SsoController.java:56-110](file://jmp-api/src/main/java/com/jmp/api/controller/SsoController.java#L56-L110)
-- [SsoService.java:69-131](file://jmp-application/src/main/java/com/jmp/application/service/SsoService.java#L69-L131)
-- [IdentityProvider.java:23-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L23-L158)
+  - On successful callback, issue platform access/refresh tokens with consistent role handling
 
 **Section sources**
 - [SsoController.java:56-110](file://jmp-api/src/main/java/com/jmp/api/controller/SsoController.java#L56-L110)
@@ -365,6 +377,7 @@ SSR-->>B : "SsoAuthenticationResponse"
   - Extracts Bearer token from Authorization header or login parameter
   - Validates token and populates Spring Security context with authorities
   - Stores tenantId in session attributes for channel access control
+  - Benefits from automatic role prefixing for consistent access control
 
 **Section sources**
 - [WebSocketAuthInterceptor.java:33-73](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L33-L73)
@@ -417,6 +430,9 @@ AC-->>C : "200 OK"
   - Apply at API gateway or Spring Actuator endpoints
 - Least Privilege
   - RBAC enforced via @PreAuthorize and tenant-scoped data access
+  - Automatic role prefixing ensures consistent access control enforcement
+
+**Updated** Enhanced role prefixing mechanism ensures that @PreAuthorize annotations work consistently across all controllers and services.
 
 **Section sources**
 - [AuthController.java:103-112](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L103-L112)
@@ -424,9 +440,11 @@ AC-->>C : "200 OK"
 ## Dependency Analysis
 The security subsystem exhibits low coupling and clear separation of concerns:
 - JwtService depends on domain entities for claims but is isolated from HTTP concerns
-- JwtAuthenticationFilter depends on JwtService and UserDetailsService
+- JwtAuthenticationFilter depends on JwtService and UserDetailsService with enhanced role prefixing
 - SsoService orchestrates external provider interactions and integrates with JwtService
 - AuditService encapsulates persistence and asynchronous logging
+
+**Updated** Enhanced dependency relationships now include automatic role prefixing capabilities that improve access control consistency.
 
 ```mermaid
 graph LR
@@ -435,9 +453,11 @@ SSC["SsoController"] --> SS["SsoService"]
 SS --> JS
 JAF["JwtAuthenticationFilter"] --> JS
 JAF --> UDS["UserDetailsServiceImpl"]
+JAF --> ROLEPREFIX["Automatic Role Prefixing"]
 WSA["WebSocketAuthInterceptor"] --> JS
 AS["AuditService"] --> ALR["AuditLogRepository"]
 AUCC["AuditController"] --> AS
+ANAC["AnalyticsController"] --> JAF
 SS --> IP["IdentityProvider"]
 U["User"] --> R["Role"]
 U --> T["Tenant"]
@@ -452,6 +472,7 @@ U --> T["Tenant"]
 - [WebSocketAuthInterceptor.java](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L31)
 - [AuditService.java](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L27)
 - [AuditController.java](file://jmp-api/src/main/java/com/jmp/api/controller/AuditController.java#L38)
+- [AnalyticsController.java](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L31)
 - [IdentityProvider.java:23-158](file://jmp-domain/src/main/java/com/jmp/domain/entity/IdentityProvider.java#L23-L158)
 - [User.java:23-164](file://jmp-domain/src/main/java/com/jmp/domain/entity/User.java#L23-L164)
 - [Role.java:22-131](file://jmp-domain/src/main/java/com/jmp/domain/entity/Role.java#L22-L131)
@@ -468,16 +489,19 @@ U --> T["Tenant"]
   - AuditService uses async executor to minimize request latency
 - Stateless Design
   - Avoid server-side session storage to reduce memory footprint
+- Automatic Role Prefixing
+  - Minimal performance impact during authentication; ensures consistent access control
 - Recommendations
   - Monitor token validation latencies and failures
   - Tune BCrypt cost factor and JWT key sizes appropriately
 
-[No sources needed since this section provides general guidance]
+**Updated** Automatic role prefixing adds negligible overhead during authentication while significantly improving access control reliability.
 
 ## Troubleshooting Guide
 - Authentication Failures
   - Verify token validity and expiration; check token type for refresh token validation
   - Confirm user active status and roles loaded by UserDetailsService
+  - **New** Check for role prefixing issues - ensure roles are properly prefixed with "ROLE_"
 - SSO Callback Issues
   - Validate state parameter matches stored value; ensure provider configuration is enabled
   - Check attribute mapping and userinfo endpoint availability
@@ -485,6 +509,12 @@ U --> T["Tenant"]
   - Ensure async executor bean is configured; verify repository connectivity
 - WebSocket Authentication
   - Confirm Authorization header format and token presence; verify tenantId propagation
+- **New** Role-Based Access Control Issues
+  - Verify that @PreAuthorize annotations match role names with "ROLE_" prefix
+  - Check that roles are consistently stored with "ROLE_" prefix in the database
+  - Ensure automatic role prefixing is functioning correctly in JwtAuthenticationFilter
+
+**Updated** Added troubleshooting guidance for role prefixing issues that may arise from the enhanced JWT authentication filter.
 
 **Section sources**
 - [JwtService.java:165-188](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L165-L188)
@@ -493,11 +523,12 @@ U --> T["Tenant"]
 - [SsoService.java:136-166](file://jmp-application/src/main/java/com/jmp/application/service/SsoService.java#L136-L166)
 - [AuditService.java:69-71](file://jmp-application/src/main/java/com/jmp/application/service/AuditService.java#L69-L71)
 - [WebSocketAuthInterceptor.java:40-47](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketAuthInterceptor.java#L40-L47)
+- [JwtAuthenticationFilter.java:54-56](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/JwtAuthenticationFilter.java#L54-L56)
 
 ## Conclusion
-The Jitsi Management Platform implements a robust, stateless JWT-based authentication system with strong RBAC and tenant isolation. External identity provider integration is handled securely via OIDC with state/nonce validation and optional user provisioning. Comprehensive audit logging supports compliance reporting and incident investigation. The design emphasizes least privilege, secure defaults, and extensibility for future enhancements such as session cookies, advanced rate limiting, and enhanced monitoring.
+The Jitsi Management Platform implements a robust, stateless JWT-based authentication system with strong RBAC and tenant isolation. The enhanced JWT authentication filter now automatically prefixes roles with "ROLE_" for consistent role-based access control, eliminating common access control issues. External identity provider integration is handled securely via OIDC with state/nonce validation and optional user provisioning. Comprehensive audit logging supports compliance reporting and incident investigation. The design emphasizes least privilege, secure defaults, and extensibility for future enhancements such as session cookies, advanced rate limiting, and enhanced monitoring.
 
-[No sources needed since this section summarizes without analyzing specific files]
+**Updated** The automatic role prefixing enhancement significantly improves the reliability and consistency of the role-based access control system, ensuring seamless integration with Spring Security's @PreAuthorize annotations.
 
 ## Appendices
 
@@ -510,5 +541,7 @@ The Jitsi Management Platform implements a robust, stateless JWT-based authentic
 - Apply principle of least privilege and just-in-time access
 - Monitor and alert on anomalies (failed authentications, unusual access patterns)
 - Regularly review and update RBAC policies
+- **New** Ensure consistent role naming with "ROLE_" prefix for all role-based access control
+- **New** Test role-based access control thoroughly after any role name changes
 
-[No sources needed since this section provides general guidance]
+**Updated** Added security best practices specifically for role prefixing and access control consistency.

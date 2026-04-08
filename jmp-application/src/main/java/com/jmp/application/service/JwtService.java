@@ -126,6 +126,13 @@ public class JwtService {
     }
 
     /**
+     * Get guest token expiration time (4 hours from now).
+     */
+    public Instant getGuestTokenExpiration() {
+        return Instant.now().plus(4, ChronoUnit.HOURS);
+    }
+
+    /**
      * Generate guest token for external participants.
      */
     public String generateGuestToken(Conference conference, String displayName, boolean isModerator) {
@@ -134,9 +141,11 @@ public class JwtService {
         Tenant tenant = conference.getTenant();
         Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS);
 
+        String guestId = "guest-" + UUID.randomUUID();
+        
         Map<String, Object> claims = new HashMap<>();
         claims.put("room", conference.getRoomName());
-        claims.put("sub", "guest-" + UUID.randomUUID());
+        claims.put("sub", guestId);
         claims.put("tenant_id", tenant.getSlug());
         claims.put("mod", isModerator);
         claims.put("context", Map.of(
@@ -152,7 +161,7 @@ public class JwtService {
 
         return Jwts.builder()
             .claims(claims)
-            .subject("guest-" + UUID.randomUUID())
+            .subject(guestId)
             .issuedAt(Date.from(Instant.now()))
             .expiration(Date.from(expiration))
             .signWith(accessTokenKey)

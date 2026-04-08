@@ -37,9 +37,11 @@ import {
   DoorOpen,
   Infinity,
   AlertCircle,
+  Share2,
 } from 'lucide-react';
 import { conferenceApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import ShareModal from '../components/ShareModal';
 import type { Conference, ConferenceType } from '../types';
 
 const containerVariants = {
@@ -148,6 +150,8 @@ export default function ConferencesPage() {
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
+  const [shareConference, setShareConference] = useState<Conference | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     roomName: '',
     displayName: '',
@@ -239,6 +243,19 @@ export default function ConferencesPage() {
   const handleSubmit = async () => {
     try {
       setFormError(null);
+      
+      // Validate required fields
+      if (!formData.roomName.trim() || !formData.displayName.trim()) {
+        setFormError('Room Name and Display Name are required.');
+        return;
+      }
+
+      // Validate SCHEDULED conference requirements
+      if (formData.type === 'SCHEDULED' && !formData.scheduledStartAt) {
+        setFormError('Scheduled conferences must have a start time.');
+        return;
+      }
+
       // Build the payload based on conference type
       const payload = {
         ...formData,
@@ -297,6 +314,11 @@ export default function ConferencesPage() {
     } catch (error) {
       console.error('Failed to end conference:', error);
     }
+  };
+
+  const handleShare = (conference: Conference) => {
+    setShareConference(conference);
+    setShareModalOpen(true);
   };
 
   return (
@@ -632,6 +654,22 @@ export default function ConferencesPage() {
                           End
                         </Button>
                       )}
+                      <Tooltip title="Share">
+                        <IconButton
+                          onClick={() => handleShare(conference)}
+                          sx={{
+                            p: 1,
+                            borderRadius: 'var(--radius-lg)',
+                            color: 'var(--text-muted)',
+                            '&:hover': {
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#10b981',
+                            },
+                          }}
+                        >
+                          <Share2 size={18} />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="Edit">
                         <IconButton
                           onClick={() => handleEdit(conference)}
@@ -1035,6 +1073,13 @@ export default function ConferencesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Share Modal */}
+      <ShareModal
+        conference={shareConference}
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
     </motion.div>
   );
 }

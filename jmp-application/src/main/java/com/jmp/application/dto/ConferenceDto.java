@@ -178,4 +178,19 @@ public sealed interface ConferenceDto {
         String roomUrl,
         Instant expiresAt
     ) {}
+
+    /**
+     * DTO for share link generation response.
+     */
+    record ShareResponse(
+        String shareUrl,
+        Instant expiresAt
+    ) {}
+
+    /**
+     * DTO for share link generation request.
+     */
+    record ShareRequest(
+        @NotBlank String displayName
+    ) {}
 }
