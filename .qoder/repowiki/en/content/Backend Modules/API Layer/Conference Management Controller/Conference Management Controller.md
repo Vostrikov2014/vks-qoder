@@ -19,15 +19,17 @@
 - [JwtService.java](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java)
 - [OpenApiConfig.java](file://jmp-api/src/main/java/com/jmp/api/config/OpenApiConfig.java)
 - [V6__add_conference_type.sql](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql)
+- [ShareModal.tsx](file://jmp-ui/src/components/ShareModal.tsx)
+- [api.ts](file://jmp-ui/src/services/api.ts)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added comprehensive documentation for the new conference type field supporting SCHEDULED and PERMANENT conference types
-- Updated validation logic documentation for type-specific requirements
-- Enhanced API documentation with type field specifications
-- Added database migration documentation for the new type column
-- Updated Swagger/OpenAPI documentation with proper type field descriptions
+- Added comprehensive documentation for the new sharing endpoint '/{id}/share' that generates temporary shareable links for conferences
+- Enhanced JWT service documentation with guest token generation capabilities and 4-hour expiration policy
+- Updated API documentation with new ShareResponse and ShareRequest DTOs
+- Added UI integration documentation for the ShareModal component
+- Enhanced conference lifecycle documentation to include guest participant workflows
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -36,14 +38,15 @@
 4. [Architecture Overview](#architecture-overview)
 5. [Detailed Component Analysis](#detailed-component-analysis)
 6. [Conference Types and Validation](#conference-types-and-validation)
-7. [Dependency Analysis](#dependency-analysis)
-8. [Performance Considerations](#performance-considerations)
-9. [Troubleshooting Guide](#troubleshooting-guide)
-10. [Conclusion](#conclusion)
-11. [Appendices](#appendices)
+7. [Guest Sharing and External Participant Management](#guest-sharing-and-external-participant-management)
+8. [Dependency Analysis](#dependency-analysis)
+9. [Performance Considerations](#performance-considerations)
+10. [Troubleshooting Guide](#troubleshooting-guide)
+11. [Conclusion](#conclusion)
+12. [Appendices](#appendices)
 
 ## Introduction
-This document provides comprehensive API documentation for the Conference Management Controller, focusing on the full lifecycle of conferences: creation, scheduling, participant management, and termination. The system now supports two distinct conference types - SCHEDULED and PERMANENT - each with specific validation requirements and operational characteristics. It also covers real-time status updates, participant tracking, state transitions, room management, invitations, scheduling conflict handling, recording triggers, analytics, and WebSocket integration for live notifications. The documentation explains tenant isolation, participant restrictions, and integration with the Jitsi server for secure token generation and webhook-driven lifecycle updates.
+This document provides comprehensive API documentation for the Conference Management Controller, focusing on the full lifecycle of conferences: creation, scheduling, participant management, and termination. The system now supports two distinct conference types - SCHEDULED and PERMANENT - each with specific validation requirements and operational characteristics. It also covers real-time status updates, participant tracking, state transitions, room management, invitations, scheduling conflict handling, recording triggers, analytics, and WebSocket integration for live notifications. The documentation explains tenant isolation, participant restrictions, and integration with the Jitsi server for secure token generation and webhook-driven lifecycle updates. **Updated** to include the new guest sharing functionality that enables temporary shareable links for external participants using JWT guest tokens with 4-hour expiration.
 
 ## Project Structure
 The conference management system spans four layers:
@@ -89,7 +92,7 @@ WSC --> RES
 ```
 
 **Diagram sources**
-- [ConferenceController.java:37-189](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L189)
+- [ConferenceController.java:37-233](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L233)
 - [ConferenceService.java:25-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L225)
 - [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
@@ -99,10 +102,10 @@ WSC --> RES
 - [JitsiWebhookController.java:24-125](file://jmp-api/src/main/java/com/jmp/api/controller/JitsiWebhookController.java#L24-L125)
 - [RecordingService.java:27-332](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L27-L332)
 - [AnalyticsService.java:25-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L25-L235)
-- [JwtService.java:25-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L236)
+- [JwtService.java:25-245](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L245)
 
 **Section sources**
-- [ConferenceController.java:37-189](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L189)
+- [ConferenceController.java:37-233](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L233)
 - [ConferenceService.java:25-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L225)
 - [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
@@ -112,7 +115,7 @@ WSC --> RES
 - [JitsiWebhookController.java:24-125](file://jmp-api/src/main/java/com/jmp/api/controller/JitsiWebhookController.java#L24-L125)
 - [RecordingService.java:27-332](file://jmp-application/src/main/java/com/jmp/application/service/RecordingService.java#L27-L332)
 - [AnalyticsService.java:25-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L25-L235)
-- [JwtService.java:25-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L236)
+- [JwtService.java:25-245](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L245)
 
 ## Core Components
 - ConferenceController: Exposes REST endpoints for conference lifecycle, token generation, and listing active/upcoming conferences
@@ -125,15 +128,15 @@ WSC --> RES
 - Jitsi Webhook Controller: Receives and processes Jitsi events for lifecycle and participant actions
 - RecordingService and Controller: Manage recording lifecycle and storage integration
 - AnalyticsService and Controller: Provide dashboard, usage, participant, and recording analytics
-- JwtService: Generates Jitsi JWT tokens with tenant-aware claims and moderator context
+- JwtService: Generates Jitsi JWT tokens with tenant-aware claims and moderator context, including guest token generation
 
 **Section sources**
-- [ConferenceController.java:37-189](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L189)
+- [ConferenceController.java:37-233](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L233)
 - [ConferenceService.java:25-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L225)
 - [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
 - [ConferenceParticipant.java:18-150](file://jmp-domain/src/main/java/com/jmp/domain/entity/ConferenceParticipant.java#L18-L150)
 - [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
-- [ConferenceDto.java:15-176](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L15-L176)
+- [ConferenceDto.java:15-196](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L15-L196)
 - [ConferenceMapper.java:15-75](file://jmp-application/src/main/java/com/jmp/application/mapper/ConferenceMapper.java#L15-L75)
 - [WebSocketConfig.java:23-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L23-L70)
 - [RealtimeEventService.java:17-142](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L17-L142)
@@ -142,7 +145,7 @@ WSC --> RES
 - [RecordingController.java:35-138](file://jmp-api/src/main/java/com/jmp/api/controller/RecordingController.java#L35-L138)
 - [AnalyticsService.java:25-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L25-L235)
 - [AnalyticsController.java:26-96](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L26-L96)
-- [JwtService.java:25-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L236)
+- [JwtService.java:25-245](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L245)
 
 ## Architecture Overview
 The system follows layered architecture with clear separation of concerns:
@@ -184,7 +187,7 @@ CS->>RES : sendConferenceStatus(conferenceId, tenantId, "ACTIVE", ...)
 - [RealtimeEventService.java:44-52](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/RealtimeEventService.java#L44-L52)
 
 **Section sources**
-- [ConferenceController.java:37-189](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L189)
+- [ConferenceController.java:37-233](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L233)
 - [ConferenceService.java:25-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L225)
 - [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
 - [Conference.java:25-217](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L25-L217)
@@ -233,6 +236,12 @@ CS->>RES : sendConferenceStatus(conferenceId, tenantId, "ACTIVE", ...)
   - Method: DELETE /api/v1/conferences/{id}
   - Auth: MODERATOR, TENANT_ADMIN, SUPER_ADMIN
   - Behavior: Soft deletes by setting status to CANCELLED and marking deletedAt
+- **Generate Shareable Link** *(New)*
+  - Method: POST /api/v1/conferences/{id}/share
+  - Auth: PARTICIPANT, MODERATOR, TENANT_ADMIN, SUPER_ADMIN
+  - Request: ConferenceDto.ShareRequest (displayName)
+  - Response: ConferenceDto.ShareResponse (shareUrl, expiresAt)
+  - Behavior: Generates temporary JWT guest token with 4-hour expiration for external participants
 
 ```mermaid
 flowchart TD
@@ -251,6 +260,7 @@ Broadcast --> Done(["Done"])
 
 **Section sources**
 - [ConferenceController.java:49-138](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L49-L138)
+- [ConferenceController.java:185-217](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L185-L217)
 - [ConferenceService.java:40-189](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L40-L189)
 - [ConferenceRepository.java:48-60](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L48-L60)
 - [Conference.java:140-159](file://jmp-domain/src/main/java/com/jmp/domain/entity/Conference.java#L140-L159)
@@ -549,6 +559,64 @@ The conference table now includes a type column with appropriate indexing:
 - [ConferenceDto.java:78](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L78)
 - [V6__add_conference_type.sql:1-14](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql#L1-L14)
 
+## Guest Sharing and External Participant Management
+
+### Shareable Link Generation
+The system now supports generating temporary shareable links for external participants through the new `/conferences/{id}/share` endpoint. This functionality enables:
+
+- **Guest Token Generation**: Creates JWT tokens specifically designed for external participants
+- **Temporary Access**: Tokens expire after 4 hours, providing controlled temporary access
+- **External Participation**: Allows guests to join conferences without requiring platform accounts
+- **UI Integration**: Frontend components provide seamless sharing experience
+
+### Endpoint Specification
+- **Method**: POST /api/v1/conferences/{id}/share
+- **Auth**: PARTICIPANT, MODERATOR, TENANT_ADMIN, SUPER_ADMIN
+- **Request**: ConferenceDto.ShareRequest (displayName)
+- **Response**: ConferenceDto.ShareResponse (shareUrl, expiresAt)
+- **Behavior**: Generates JWT guest token with 4-hour expiration and returns shareable URL
+
+### JWT Guest Token Implementation
+The JwtService has been enhanced with guest token capabilities:
+
+- **Token Type**: Specialized JWT tokens for external participants
+- **Expiration Policy**: Fixed 4-hour TTL (consistent with conference duration)
+- **Claims Structure**: Includes room access, guest identity, and limited feature permissions
+- **Security Context**: Inherits tenant context while restricting guest privileges
+
+### UI Integration
+The frontend includes a ShareModal component that provides:
+
+- **User-Friendly Interface**: Simple button to generate shareable links
+- **Automatic Copy**: One-click copying to clipboard functionality
+- **Expiration Display**: Clear indication of token expiration time
+- **Error Handling**: Comprehensive error reporting and user feedback
+
+```mermaid
+sequenceDiagram
+participant Client as "Client"
+participant CC as "ConferenceController"
+participant CS as "ConferenceService"
+participant CR as "ConferenceRepository"
+participant JS as "JwtService"
+Client->>CC : POST /api/v1/conferences/{id}/share
+CC->>CR : findById(id)
+CC->>JS : generateGuestToken(conference, displayName, false)
+JS-->>CC : guestToken
+CC-->>Client : ShareResponse {shareUrl, expiresAt}
+```
+
+**Diagram sources**
+- [ConferenceController.java:185-217](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L185-L217)
+- [JwtService.java:138-169](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L138-L169)
+
+**Section sources**
+- [ConferenceController.java:185-217](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L185-L217)
+- [JwtService.java:128-169](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L128-L169)
+- [ConferenceDto.java:182-196](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L182-L196)
+- [ShareModal.tsx:33-53](file://jmp-ui/src/components/ShareModal.tsx#L33-L53)
+- [api.ts:176-177](file://jmp-ui/src/services/api.ts#L176-L177)
+
 ## Dependency Analysis
 ```mermaid
 graph LR
@@ -579,10 +647,10 @@ WSC["WebSocketConfig"] --> RES
 - [AnalyticsController.java:26-96](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L26-L96)
 - [AnalyticsService.java:25-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L25-L235)
 - [WebSocketConfig.java:23-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L23-L70)
-- [JwtService.java:25-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L236)
+- [JwtService.java:25-245](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L245)
 
 **Section sources**
-- [ConferenceController.java:37-189](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L189)
+- [ConferenceController.java:37-233](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L37-L233)
 - [ConferenceService.java:25-225](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L25-L225)
 - [ConferenceRepository.java:20-110](file://jmp-domain/src/main/java/com/jmp/domain/repository/ConferenceRepository.java#L20-L110)
 - [ConferenceMapper.java:15-75](file://jmp-application/src/main/java/com/jmp/application/mapper/ConferenceMapper.java#L15-L75)
@@ -595,7 +663,7 @@ WSC["WebSocketConfig"] --> RES
 - [AnalyticsController.java:26-96](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L26-L96)
 - [AnalyticsService.java:25-235](file://jmp-application/src/main/java/com/jmp/application/service/AnalyticsService.java#L25-L235)
 - [WebSocketConfig.java:23-70](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L23-L70)
-- [JwtService.java:25-236](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L236)
+- [JwtService.java:25-245](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L25-L245)
 
 ## Performance Considerations
 - Entity Graphs: Repository queries use @EntityGraph to eagerly fetch associations (createdBy, tenant, participants) to reduce N+1 queries during detailed reads
@@ -603,6 +671,7 @@ WSC["WebSocketConfig"] --> RES
 - Indexing: Queries filter by tenantId and status; ensure database indexes on tenant_id, status, scheduledStartAt/scheduledEndAt, and the new type column for optimal performance
 - WebSocket Scalability: In-memory broker suitable for development; production should use external brokers (e.g., RabbitMQ/Redis) for horizontal scaling
 - Token TTL: Jitsi tokens expire after 4 hours; align with conference duration to avoid unnecessary re-authentication
+- **Guest Token Optimization**: Guest tokens are lightweight and cached appropriately to minimize JWT generation overhead
 
 ## Troubleshooting Guide
 - Conference Not Found
@@ -625,6 +694,14 @@ WSC["WebSocketConfig"] --> RES
   - Symptom: 404 when retrieving conference for token
   - Cause: Conference not found or tenant mismatch
   - Resolution: Confirm conferenceId and tenant association
+- **Guest Link Generation Issues** *(New)*
+  - Symptom: 500 errors when generating shareable links
+  - Cause: Jitsi domain not configured for tenant or invalid conference
+  - Resolution: Verify tenant Jitsi domain configuration and conference existence
+- **Guest Token Expiration** *(New)*
+  - Symptom: Guests receive access denied after 4 hours
+  - Cause: Default 4-hour expiration period
+  - Resolution: Inform guests about expiration and regenerate link if needed
 - WebSocket Delivery Failures
   - Symptom: No real-time updates
   - Cause: Broker misconfiguration or client disconnect
@@ -640,10 +717,12 @@ WSC["WebSocketConfig"] --> RES
 - [ConferenceService.java:164-166](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L164-L166)
 - [ConferenceService.java:50-54](file://jmp-application/src/main/java/com/jmp/application/service/ConferenceService.java#L50-L54)
 - [ConferenceController.java:150-151](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L150-L151)
+- [ConferenceController.java:193-194](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L193-L194)
+- [JwtService.java:131-133](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L131-L133)
 - [WebSocketConfig.java:32-50](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/websocket/WebSocketConfig.java#L32-L50)
 
 ## Conclusion
-The Conference Management Controller provides a robust, tenant-isolated solution for managing conference lifecycles, real-time updates, participant tracking, and integrations with Jitsi and storage systems. The enhanced type field support enables flexible conference management with both scheduled and permanent room options. Its layered design promotes maintainability, while DTOs and mappers ensure clean data contracts. Real-time capabilities are powered by WebSocket infrastructure, and analytics services offer insights into usage and storage. Proper adherence to state transitions, tenant scoping, access controls, and type-specific validation ensures secure and predictable operation.
+The Conference Management Controller provides a robust, tenant-isolated solution for managing conference lifecycles, real-time updates, participant tracking, and integrations with Jitsi and storage systems. The enhanced type field support enables flexible conference management with both scheduled and permanent room options. **Updated** with guest sharing capabilities that allow external participants to join conferences temporarily through secure JWT guest tokens with 4-hour expiration. Its layered design promotes maintainability, while DTOs and mappers ensure clean data contracts. Real-time capabilities are powered by WebSocket infrastructure, and analytics services offer insights into usage and storage. Proper adherence to state transitions, tenant scoping, access controls, type-specific validation, and guest token management ensures secure and predictable operation.
 
 ## Appendices
 
@@ -682,9 +761,13 @@ The Conference Management Controller provides a robust, tenant-isolated solution
   - Auth: PARTICIPANT, MODERATOR, TENANT_ADMIN, SUPER_ADMIN
   - Request: ConferenceDto.TokenRequest
   - Response: ConferenceDto.TokenResponse
+- **POST /api/v1/conferences/{id}/share** *(New)*
+  - Auth: PARTICIPANT, MODERATOR, TENANT_ADMIN, SUPER_ADMIN
+  - Request: ConferenceDto.ShareRequest
+  - Response: ConferenceDto.ShareResponse
 
 **Section sources**
-- [ConferenceController.java:49-173](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L49-L173)
+- [ConferenceController.java:49-217](file://jmp-api/src/main/java/com/jmp/api/controller/ConferenceController.java#L49-L217)
 
 ### API Reference: Recording Endpoints
 - POST /api/v1/recordings
@@ -742,6 +825,26 @@ The Conference Management Controller provides a robust, tenant-isolated solution
 **Section sources**
 - [AnalyticsController.java:36-96](file://jmp-api/src/main/java/com/jmp/api/controller/AnalyticsController.java#L36-L96)
 
+### DTO Specifications: ShareResponse and ShareRequest
+- **ShareResponse** *(New)*
+  - Fields: shareUrl (string), expiresAt (instant)
+  - Purpose: Contains the generated shareable URL and expiration timestamp
+- **ShareRequest** *(New)*
+  - Fields: displayName (string, required)
+  - Purpose: Specifies the display name for the guest participant
+
+**Section sources**
+- [ConferenceDto.java:182-196](file://jmp-application/src/main/java/com/jmp/application/dto/ConferenceDto.java#L182-L196)
+
+### JWT Guest Token Specifications
+- **Expiration Policy**: 4 hours from token generation
+- **Claims Structure**: room, sub, tenant_id, mod, context with user and features
+- **Feature Restrictions**: Livestreaming and recording disabled for guests
+- **Security Context**: Inherits tenant slug and room access
+
+**Section sources**
+- [JwtService.java:128-169](file://jmp-application/src/main/java/com/jmp/application/service/JwtService.java#L128-L169)
+
 ### Conference Type Specifications
 - **ConferenceType Enum Values**:
   - `SCHEDULED`: Conference with fixed start/end times
@@ -771,3 +874,12 @@ The Conference Management Controller provides a robust, tenant-isolated solution
 
 **Section sources**
 - [JitsiWebhookController.java:54-109](file://jmp-api/src/main/java/com/jmp/api/controller/JitsiWebhookController.java#L54-L109)
+
+### UI Integration Components
+- **ShareModal** *(New)*: React component providing user interface for generating and managing shareable links
+- **Frontend API Integration**: Conference API includes generateShareLink method for seamless integration
+- **User Experience**: One-click link generation, automatic copy-to-clipboard, and clear expiration indication
+
+**Section sources**
+- [ShareModal.tsx:26-269](file://jmp-ui/src/components/ShareModal.tsx#L26-L269)
+- [api.ts:176-177](file://jmp-ui/src/services/api.ts#L176-L177)

@@ -67,29 +67,29 @@ const getStatusConfig = (status: string) => {
   switch (status) {
     case 'ACTIVE':
       return {
-        color: '#10b981',
-        bgColor: 'rgba(16, 185, 129, 0.15)',
+        color: '#22c55e',
+        bgColor: 'rgba(34, 197, 94, 0.12)',
         icon: <CheckCircle2 size={14} />,
         label: 'Active',
       };
     case 'PENDING_VERIFICATION':
       return {
         color: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.15)',
+        bgColor: 'rgba(245, 158, 11, 0.12)',
         icon: <Clock size={14} />,
         label: 'Pending',
       };
     case 'SUSPENDED':
       return {
         color: '#ef4444',
-        bgColor: 'rgba(239, 68, 68, 0.15)',
+        bgColor: 'rgba(239, 68, 68, 0.12)',
         icon: <AlertCircle size={14} />,
         label: 'Suspended',
       };
     default:
       return {
-        color: '#64748b',
-        bgColor: 'rgba(100, 116, 139, 0.15)',
+        color: '#6b7280',
+        bgColor: 'rgba(107, 114, 128, 0.08)',
         icon: null,
         label: status,
       };
@@ -100,18 +100,18 @@ const getRoleColor = (role: string) => {
   switch (role) {
     case 'SUPER_ADMIN':
     case 'ROLE_SUPER_ADMIN':
-      return '#ef4444';
+      return '#3b82b6';
     case 'TENANT_ADMIN':
     case 'ROLE_TENANT_ADMIN':
-      return '#a855f7';
+      return '#2563eb';
     case 'MODERATOR':
     case 'ROLE_MODERATOR':
-      return '#0ea5e9';
+      return '#60a5fa';
     case 'PARTICIPANT':
     case 'ROLE_PARTICIPANT':
-      return '#10b981';
+      return '#6b7280';
     default:
-      return '#64748b';
+      return '#9ca3af';
   }
 };
 
@@ -200,11 +200,11 @@ export default function UsersPage() {
 
   const getAvatarGradient = (id: string) => {
     const gradients = [
-      'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
-      'linear-gradient(135deg, #ec4899 0%, #f97316 100%)',
-      'linear-gradient(135deg, #10b981 0%, #0ea5e9 100%)',
-      'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-      'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+      'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+      'linear-gradient(135deg, #60a5fa 0%, #3b82b6 100%)',
+      'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+      'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+      'linear-gradient(135deg, #3b82b6 0%, #1d4ed8 100%)',
     ];
     const index = id.charCodeAt(0) % gradients.length;
     return gradients[index];
@@ -231,14 +231,14 @@ export default function UsersPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(14, 165, 233, 0.4)',
+              boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #0284c7 0%, #9333ea 100%)',
-                boxShadow: '0 6px 25px rgba(14, 165, 233, 0.5)',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
               },
             }}
           >
@@ -283,7 +283,7 @@ export default function UsersPage() {
                   borderColor: 'var(--border)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#0ea5e9',
+                  borderColor: '#3b82b6',
                 },
               },
             }}
@@ -413,7 +413,7 @@ export default function UsersPage() {
                         Roles
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {user.roles.map((role) => (
+                        {(user.roles || []).map((role) => (
                           <Chip
                             key={role}
                             size="small"
@@ -440,7 +440,7 @@ export default function UsersPage() {
                         gap: 1,
                         p: 1.5,
                         borderRadius: 'var(--radius-lg)',
-                        background: 'rgba(148, 163, 184, 0.08)',
+                        background: 'rgba(59, 130, 182, 0.08)',
                       }}
                     >
                       <User size={16} color="var(--text-muted)" />
@@ -464,8 +464,8 @@ export default function UsersPage() {
                           fontWeight: 600,
                           textTransform: 'none',
                           '&:hover': {
-                            borderColor: '#0ea5e9',
-                            background: 'rgba(14, 165, 233, 0.08)',
+                            borderColor: '#3b82b6',
+                            background: 'rgba(59, 130, 182, 0.08)',
                           },
                         }}
                       >
@@ -523,13 +523,13 @@ export default function UsersPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)',
+                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Users size={40} color="#0ea5e9" />
+              <Users size={40} color="#3b82b6" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
               No users yet
@@ -543,7 +543,7 @@ export default function UsersPage() {
               onClick={handleCreate}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
@@ -602,7 +602,7 @@ export default function UsersPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#0ea5e9',
+                  borderColor: '#3b82b6',
                 },
               },
             }}
@@ -624,7 +624,7 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#0ea5e9',
+                    borderColor: '#525252',
                   },
                 },
               }}
@@ -645,7 +645,7 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#0ea5e9',
+                    borderColor: '#525252',
                   },
                 },
               }}
@@ -669,7 +669,7 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#0ea5e9',
+                    borderColor: '#525252',
                   },
                 },
               }}
@@ -693,7 +693,7 @@ export default function UsersPage() {
             variant="contained"
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',

@@ -35,9 +35,9 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { text: 'Dashboard', icon: LayoutDashboard, path: '/', color: '#0ea5e9' },
-  { text: 'Conferences', icon: Video, path: '/conferences', color: '#a855f7' },
-  { text: 'Users', icon: Users, path: '/users', color: '#ec4899' },
+  { text: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6' },
+  { text: 'Conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6' },
+  { text: 'Users', icon: Users, path: '/dashboard/users', color: '#3b82b6' },
 ];
 
 const itemVariants = {
@@ -89,7 +89,7 @@ export default function Layout() {
           display: 'flex',
           alignItems: 'center',
           gap: 2,
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
         }}
       >
         <Box
@@ -97,11 +97,11 @@ export default function Layout() {
             width: 44,
             height: 44,
             borderRadius: 'var(--radius-xl)',
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 50%, #ec4899 100%)',
+            background: 'linear-gradient(135deg, #3b82b6 0%, #60a5fa 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 15px rgba(14, 165, 233, 0.4)',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
           }}
         >
           <Video size={24} color="white" />
@@ -116,15 +116,12 @@ export default function Layout() {
               variant="h6"
               sx={{
                 fontWeight: 700,
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: '#ffffff',
               }}
             >
               JMP
             </Typography>
-            <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', display: 'block' }}>
               Management Platform
             </Typography>
           </motion.div>
@@ -138,7 +135,7 @@ export default function Layout() {
           sx={{
             px: collapsed ? 0 : 2,
             py: 1,
-            color: 'var(--text-muted)',
+            color: 'rgba(255, 255, 255, 0.6)',
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
@@ -181,20 +178,20 @@ export default function Layout() {
                               left: 0,
                               top: '50%',
                               transform: 'translateY(-50%)',
-                              width: 4,
+                              width: 0,
                               height: '60%',
                               borderRadius: '0 4px 4px 0',
                               background: item.color,
                             }
                           : {},
                         '&.Mui-selected': {
-                          background: `linear-gradient(135deg, ${item.color}15 0%, ${item.color}08 100%)`,
+                          background: 'rgba(255, 255, 255, 0.15)',
                           '&:hover': {
-                            background: `linear-gradient(135deg, ${item.color}20 0%, ${item.color}10 100%)`,
+                            background: 'rgba(255, 255, 255, 0.2)',
                           },
                         },
                         '&:hover': {
-                          background: 'rgba(148, 163, 184, 0.08)',
+                          background: 'rgba(255, 255, 255, 0.08)',
                         },
                       }}
                     >
@@ -202,7 +199,7 @@ export default function Layout() {
                         sx={{
                           minWidth: collapsed ? 0 : 40,
                           mr: collapsed ? 0 : 2,
-                          color: isActive ? item.color : 'var(--text-muted)',
+                          color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
                           justifyContent: 'center',
                         }}
                       >
@@ -213,13 +210,13 @@ export default function Layout() {
                           primary={item.text}
                           primaryTypographyProps={{
                             fontWeight: isActive ? 600 : 500,
-                            color: isActive ? 'var(--text-h)' : 'var(--text)',
+                            color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
                             fontSize: '0.95rem',
                           }}
                         />
                       )}
                       {!collapsed && isActive && (
-                        <ChevronRight size={16} color={item.color} />
+                        <ChevronRight size={16} color="#ffffff" />
                       )}
                     </ListItemButton>
                   </Tooltip>
@@ -231,7 +228,7 @@ export default function Layout() {
       </Box>
 
       {/* Bottom Section */}
-      <Box sx={{ p: 2, borderTop: '1px solid var(--border)' }}>
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.15)' }}>
         <Tooltip title={collapsed ? 'Settings' : ''} placement="right">
           <ListItemButton
             sx={{
@@ -239,7 +236,7 @@ export default function Layout() {
               justifyContent: collapsed ? 'center' : 'initial',
               py: 1.5,
               '&:hover': {
-                background: 'rgba(148, 163, 184, 0.08)',
+                background: 'rgba(255, 255, 255, 0.08)',
               },
             }}
           >
@@ -247,7 +244,7 @@ export default function Layout() {
               sx={{
                 minWidth: collapsed ? 0 : 40,
                 mr: collapsed ? 0 : 2,
-                color: 'var(--text-muted)',
+                color: 'rgba(255, 255, 255, 0.7)',
                 justifyContent: 'center',
               }}
             >
@@ -258,7 +255,7 @@ export default function Layout() {
                 primary="Settings"
                 primaryTypographyProps={{
                   fontWeight: 500,
-                  color: 'var(--text)',
+                  color: 'rgba(255, 255, 255, 0.9)',
                 }}
               />
             )}
@@ -298,9 +295,7 @@ export default function Layout() {
           sx={{
             ml: 2,
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: '#3b82b6',
           }}
         >
           JMP
@@ -323,9 +318,8 @@ export default function Layout() {
             '& .MuiDrawer-paper': {
               width: collapsed ? 80 : DRAWER_WIDTH,
               boxSizing: 'border-box',
-              background: 'var(--glass-bg)',
-              backdropFilter: 'blur(20px)',
-              borderRight: '1px solid var(--glass-border)',
+              background: 'var(--sidebar-bg)',
+              borderRight: 'none',
               transition: 'width 0.3s ease',
             },
           }}
@@ -345,9 +339,8 @@ export default function Layout() {
           display: { xs: 'block', sm: 'none' },
           '& .MuiDrawer-paper': {
             width: DRAWER_WIDTH,
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
-            borderRight: '1px solid var(--glass-border)',
+            background: 'var(--sidebar-bg)',
+            borderRight: 'none',
           },
         }}
       >
@@ -444,7 +437,7 @@ export default function Layout() {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                  background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
                   fontWeight: 600,
                   fontSize: '0.875rem',
                 }}
@@ -485,8 +478,8 @@ export default function Layout() {
                   my: 0.5,
                   color: 'var(--text)',
                   '&:hover': {
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    color: '#ef4444',
+                    background: 'rgba(0, 0, 0, 0.05)',
+                    color: '#171717',
                   },
                 }}
               >

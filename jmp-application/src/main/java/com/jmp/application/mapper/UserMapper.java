@@ -25,6 +25,7 @@ public interface UserMapper {
     @Mapping(target = "tenantId", source = "tenant.id")
     UserDto.Response toResponse(User user);
 
+    @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
     @Mapping(target = "status", source = "status")
     UserDto.Summary toSummary(User user);
 

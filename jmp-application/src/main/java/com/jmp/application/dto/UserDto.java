@@ -85,12 +85,12 @@ public sealed interface UserDto {
         String email,
         String firstName,
         String lastName,
-        String status
+        String status,
+        Set<String> roles,
+        Instant createdAt
     ) implements UserDto {
         @Override public Boolean emailVerified() { return null; }
         @Override public Instant lastLoginAt() { return null; }
-        @Override public Set<String> roles() { return null; }
         @Override public UUID tenantId() { return null; }
-        @Override public Instant createdAt() { return null; }
     }
 }

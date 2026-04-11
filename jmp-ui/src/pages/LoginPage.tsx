@@ -10,7 +10,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Sun, Moon } from 'lucide-react';
+import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sparkles, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { authApi } from '../services/api';
@@ -67,7 +67,7 @@ export default function LoginPage() {
       const { accessToken, refreshToken, user } = response.data;
 
       setAuth(user, accessToken, refreshToken);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid email or password');
     } finally {
@@ -90,6 +90,39 @@ export default function LoginPage() {
     >
       {/* Aurora Background */}
       <div className="aurora-bg" />
+
+      {/* Back to Home */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 24,
+          left: 24,
+          zIndex: 10,
+        }}
+      >
+        <IconButton
+          onClick={() => navigate('/')}
+          aria-label="Back to Home"
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 'var(--radius-xl)',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-muted)',
+            boxShadow: 'var(--shadow-lg)',
+            '&:hover': {
+              background: 'var(--glass-bg)',
+              color: 'var(--text-h)',
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <ArrowLeft size={22} />
+        </IconButton>
+      </Box>
 
       {/* Theme Toggle */}
       <Box
@@ -138,7 +171,7 @@ export default function LoginPage() {
           width: 300,
           height: 300,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(59, 130, 182, 0.12) 0%, transparent 70%)',
           filter: 'blur(60px)',
           animation: 'float 8s ease-in-out infinite',
         }}
@@ -151,7 +184,7 @@ export default function LoginPage() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'float 10s ease-in-out infinite reverse',
         }}
@@ -170,7 +203,7 @@ export default function LoginPage() {
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-2xl)',
-            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(14, 165, 233, 0.1)',
+            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
             p: { xs: 3, sm: 5 },
             position: 'relative',
             overflow: 'hidden',
@@ -185,7 +218,7 @@ export default function LoginPage() {
               width: 200,
               height: 200,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(59, 130, 182, 0.15) 0%, transparent 70%)',
               filter: 'blur(40px)',
             }}
           />
@@ -200,11 +233,11 @@ export default function LoginPage() {
                   mx: 'auto',
                   mb: 3,
                   borderRadius: 'var(--radius-xl)',
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 50%, #ec4899 100%)',
+                  background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 50%, #1d4ed8 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 8px 30px rgba(14, 165, 233, 0.4)',
+                  boxShadow: '0 8px 30px rgba(59, 130, 182, 0.35)',
                   position: 'relative',
                 }}
               >
@@ -217,7 +250,7 @@ export default function LoginPage() {
                     width: 24,
                     height: 24,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    background: 'linear-gradient(135deg, #60a5fa, #3b82b6)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -231,10 +264,7 @@ export default function LoginPage() {
                 sx={{
                   fontWeight: 800,
                   mb: 1,
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
+                  color: 'var(--text-h)',
                 }}
               >
                 Welcome Back
@@ -257,9 +287,9 @@ export default function LoginPage() {
                 sx={{
                   mb: 3,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  color: '#ef4444',
+                  background: 'rgba(239, 68, 68, 0.06)',
+                  border: '1px solid rgba(239, 68, 68, 0.15)',
+                  color: '#dc2626',
                   '& .MuiAlert-icon': {
                     color: '#ef4444',
                   },
@@ -292,7 +322,7 @@ export default function LoginPage() {
                   mb: 2.5,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-lg)',
-                    background: 'rgba(255, 255, 255, 0.5)',
+                    background: 'var(--bg-elevated)',
                     '& fieldset': {
                       borderColor: 'var(--border)',
                     },
@@ -300,15 +330,18 @@ export default function LoginPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0ea5e9',
+                      borderColor: '#3b82b6',
                       borderWidth: 2,
                     },
                   },
                   '& .MuiInputLabel-root': {
                     color: 'var(--text-muted)',
                     '&.Mui-focused': {
-                      color: '#0ea5e9',
+                      color: 'var(--text-h)',
                     },
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: 'var(--text-h)',
                   },
                 }}
               />
@@ -344,7 +377,7 @@ export default function LoginPage() {
                   mb: 1,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-lg)',
-                    background: 'rgba(255, 255, 255, 0.5)',
+                    background: 'var(--bg-elevated)',
                     '& fieldset': {
                       borderColor: 'var(--border)',
                     },
@@ -352,15 +385,18 @@ export default function LoginPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0ea5e9',
+                      borderColor: '#3b82b6',
                       borderWidth: 2,
                     },
                   },
                   '& .MuiInputLabel-root': {
                     color: 'var(--text-muted)',
                     '&.Mui-focused': {
-                      color: '#0ea5e9',
+                      color: 'var(--text-h)',
                     },
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: 'var(--text-h)',
                   },
                 }}
               />
@@ -371,7 +407,7 @@ export default function LoginPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: '#0ea5e9',
+                    color: '#3b82b6',
                     cursor: 'pointer',
                     fontWeight: 500,
                     '&:hover': {
@@ -394,15 +430,15 @@ export default function LoginPage() {
                 sx={{
                   py: 1.5,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                  background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
                   color: 'white',
                   fontWeight: 600,
                   fontSize: '1rem',
                   textTransform: 'none',
-                  boxShadow: '0 4px 20px rgba(14, 165, 233, 0.4)',
+                  boxShadow: '0 4px 20px rgba(59, 130, 182, 0.35)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #0284c7 0%, #9333ea 100%)',
-                    boxShadow: '0 6px 25px rgba(14, 165, 233, 0.5)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    boxShadow: '0 6px 25px rgba(59, 130, 182, 0.45)',
                   },
                   '&:disabled': {
                     background: 'var(--border-strong)',
@@ -422,8 +458,8 @@ export default function LoginPage() {
                 mt: 4,
                 p: 2.5,
                 borderRadius: 'var(--radius-lg)',
-                background: 'rgba(14, 165, 233, 0.05)',
-                border: '1px dashed rgba(14, 165, 233, 0.3)',
+                background: 'rgba(59, 130, 182, 0.06)',
+                border: '1px dashed rgba(59, 130, 182, 0.25)',
               }}
             >
               <Typography

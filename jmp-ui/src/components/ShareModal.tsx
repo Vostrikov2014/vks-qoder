@@ -159,14 +159,14 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                 py: 1.5,
                 px: 4,
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%)',
+                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(14, 165, 233, 0.4)',
+                boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #0284c7 0%, #9333ea 100%)',
-                  boxShadow: '0 6px 25px rgba(14, 165, 233, 0.5)',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
                 },
               }}
             >
@@ -175,7 +175,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Alert severity="success" sx={{ mb: 1 }}>
+            <Alert severity="success" sx={{ mb: 1, background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
               Share link generated successfully!
             </Alert>
 
@@ -198,10 +198,10 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                       sx={{
                         p: 1,
                         borderRadius: 'var(--radius-md)',
-                        color: copied ? '#10b981' : 'var(--text-muted)',
+                        color: copied ? '#22c55e' : 'var(--text-muted)',
                         '&:hover': {
-                          background: copied ? 'rgba(16, 185, 129, 0.1)' : 'rgba(14, 165, 233, 0.1)',
-                          color: copied ? '#10b981' : '#0ea5e9',
+                          background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 182, 0.08)',
+                          color: copied ? '#16a34a' : '#3b82b6',
                         },
                       }}
                     >
@@ -222,7 +222,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                     borderColor: 'var(--border)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#0ea5e9',
+                    borderColor: '#3b82b6',
                   },
                 },
               }}
@@ -233,15 +233,15 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                 label="Link copied to clipboard!"
                 size="small"
                 sx={{
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: '#10b981',
+                  background: 'rgba(34, 197, 94, 0.15)',
+                  color: '#16a34a',
                   fontWeight: 600,
                   alignSelf: 'center',
                 }}
               />
             )}
 
-            <Alert severity="info" sx={{ mt: 1 }}>
+            <Alert severity="info" sx={{ mt: 1, background: 'rgba(59, 130, 182, 0.08)', color: '#3b82b6', border: '1px solid rgba(59, 130, 182, 0.2)' }}>
               <Typography variant="caption">
                 <strong>How to use:</strong> Send this link to your friend. They can open it directly
                 in their browser to join the conference without needing an account.

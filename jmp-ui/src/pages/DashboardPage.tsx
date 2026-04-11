@@ -138,8 +138,8 @@ const StatCard = ({ title, value, icon, trend, color, bgGradient }: StatCardProp
           icon={trend >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
           label={`${Math.abs(trend)}%`}
           sx={{
-            background: trend >= 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            color: trend >= 0 ? '#10b981' : '#ef4444',
+            background: trend >= 0 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            color: trend >= 0 ? '#16a34a' : '#dc2626',
             fontWeight: 600,
             '& .MuiChip-icon': {
               color: 'inherit',
@@ -229,8 +229,8 @@ export default function DashboardPage() {
   }, [isAdmin]);
 
   const getProgressColor = (value: number): string => {
-    if (value < 60) return '#10b981';
-    if (value <= 80) return '#f59e0b';
+    if (value < 60) return '#22c55e';
+    if (value <= 80) return '#3b82b6';
     return '#ef4444';
   };
 
@@ -270,32 +270,32 @@ export default function DashboardPage() {
           value={stats.activeConferences}
           icon={<Video size={24} />}
           trend={12}
-          color="#0ea5e9"
-          bgGradient="linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(168, 85, 247, 0.05) 100%)"
+          color="#3b82b6"
+          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Upcoming"
           value={stats.upcomingConferences}
           icon={<Calendar size={24} />}
           trend={8}
-          color="#a855f7"
-          bgGradient="linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(236, 72, 153, 0.05) 100%)"
+          color="#60a5fa"
+          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Active Participants"
           value={stats.totalParticipants}
           icon={<Users size={24} />}
           trend={-3}
-          color="#ec4899"
-          bgGradient="linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(249, 115, 22, 0.05) 100%)"
+          color="#2563eb"
+          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Recordings"
           value={dashboardMetrics?.recordingsThisMonth || 0}
           icon={<HardDrive size={24} />}
           trend={24}
-          color="#10b981"
-          bgGradient="linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 165, 233, 0.05) 100%)"
+          color="#1d4ed8"
+          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
       </Box>
 
@@ -325,8 +325,8 @@ export default function DashboardPage() {
                 icon={<TrendingUp size={14} />}
                 label="Live"
                 sx={{
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: '#10b981',
+                  background: 'rgba(59, 130, 182, 0.15)',
+                  color: '#2563eb',
                   fontWeight: 600,
                 }}
               />
@@ -347,12 +347,12 @@ export default function DashboardPage() {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorConferences" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorParticipants" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -381,7 +381,7 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="conferences"
-                    stroke="#0ea5e9"
+                    stroke="#3b82f6"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorConferences)"
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="participants"
-                    stroke="#a855f7"
+                    stroke="#60a5fa"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorParticipants)"
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Cpu size={18} color="#0ea5e9" />
+                      <Cpu size={18} color="#3b82b6" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
                         CPU Usage
                       </Typography>
@@ -449,7 +449,7 @@ export default function DashboardPage() {
                     sx={{
                       height: 8,
                       borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                      backgroundColor: 'rgba(59, 130, 246, 0.2)',
                       '& .MuiLinearProgress-bar': {
                         backgroundColor: getProgressColor(systemHealth.cpuUsage),
                         borderRadius: 'var(--radius-full)',
@@ -462,7 +462,7 @@ export default function DashboardPage() {
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <MemoryStick size={18} color="#a855f7" />
+                      <MemoryStick size={18} color="#60a5fa" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
                         Memory Usage
                       </Typography>
@@ -477,7 +477,7 @@ export default function DashboardPage() {
                     sx={{
                       height: 8,
                       borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                      backgroundColor: 'rgba(96, 165, 250, 0.2)',
                       '& .MuiLinearProgress-bar': {
                         backgroundColor: getProgressColor(systemHealth.memoryUsage),
                         borderRadius: 'var(--radius-full)',
@@ -492,13 +492,13 @@ export default function DashboardPage() {
                     sx={{
                       p: 2,
                       borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(14, 165, 233, 0.08)',
+                      background: 'rgba(59, 130, 246, 0.08)',
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
                       Active Connections
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0ea5e9' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#3b82b6' }}>
                       {systemHealth.activeConnections}
                     </Typography>
                   </Box>
@@ -506,13 +506,13 @@ export default function DashboardPage() {
                     sx={{
                       p: 2,
                       borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(168, 85, 247, 0.08)',
+                      background: 'rgba(96, 165, 250, 0.08)',
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
                       Avg Response
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#a855f7' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#60a5fa' }}>
                       {systemHealth.averageResponseTime}ms
                     </Typography>
                   </Box>
@@ -538,10 +538,10 @@ export default function DashboardPage() {
           }}
         >
           {[
-            { label: 'Start Conference', icon: <Video size={20} />, color: '#0ea5e9', path: '/conferences' },
-            { label: 'View Recordings', icon: <HardDrive size={20} />, color: '#a855f7', path: '/recordings' },
-            { label: 'Manage Users', icon: <Users size={20} />, color: '#ec4899', path: '/users' },
-            { label: 'View Reports', icon: <TrendingUp size={20} />, color: '#10b981', path: '/analytics' },
+            { label: 'Start Conference', icon: <Video size={20} />, color: '#3b82b6', path: '/conferences' },
+            { label: 'View Recordings', icon: <HardDrive size={20} />, color: '#2563eb', path: '/recordings' },
+            { label: 'Manage Users', icon: <Users size={20} />, color: '#1d4ed8', path: '/users' },
+            { label: 'View Reports', icon: <TrendingUp size={20} />, color: '#60a5fa', path: '/analytics' },
           ].map((action) => (
             <Button
               key={action.label}
