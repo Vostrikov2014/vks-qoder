@@ -112,7 +112,7 @@ interface StatCardProps {
   icon: React.ReactNode;
   trend?: number;
   color: string;
-  bgGradient: string;
+  bgGradient?: string;
 }
 
 const StatCard = ({ title, value, icon, trend, color, bgGradient }: StatCardProps) => (
@@ -271,7 +271,6 @@ export default function DashboardPage() {
           icon={<Video size={24} />}
           trend={12}
           color="#3b82b6"
-          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Upcoming"
@@ -279,7 +278,6 @@ export default function DashboardPage() {
           icon={<Calendar size={24} />}
           trend={8}
           color="#60a5fa"
-          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Active Participants"
@@ -287,7 +285,6 @@ export default function DashboardPage() {
           icon={<Users size={24} />}
           trend={-3}
           color="#2563eb"
-          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
         <StatCard
           title="Recordings"
@@ -295,7 +292,6 @@ export default function DashboardPage() {
           icon={<HardDrive size={24} />}
           trend={24}
           color="#1d4ed8"
-          bgGradient="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"
         />
       </Box>
 

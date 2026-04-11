@@ -1,5 +1,6 @@
 package com.jmp.application.mapper;
 
+import com.jmp.domain.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -68,7 +69,7 @@ public interface ConferenceMapper {
     void updateEntityFromDto(ConferenceDto.UpdateRequest dto, @MappingTarget Conference conference);
 
     @Named("userToName")
-    default String userToName(com.jmp.domain.entity.User user) {
+    default String userToName(User user) {
         if (user == null) {
             return null;
         }

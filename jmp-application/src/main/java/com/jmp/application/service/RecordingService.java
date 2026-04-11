@@ -3,7 +3,6 @@ package com.jmp.application.service;
 import com.jmp.application.dto.RecordingDto;
 import com.jmp.domain.entity.Conference;
 import com.jmp.domain.entity.Recording;
-import com.jmp.domain.entity.Tenant;
 import com.jmp.domain.repository.ConferenceRepository;
 import com.jmp.domain.repository.RecordingRepository;
 import com.jmp.domain.repository.TenantRepository;

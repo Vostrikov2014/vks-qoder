@@ -475,12 +475,21 @@ export default function LoginPage() {
               >
                 Demo Credentials
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>
-                  <strong>Admin:</strong> admin@jmp.local / admin123
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
+                  <strong>Super Admin:</strong> admin@jmp.local / admin123
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>
-                  <strong>Tenant:</strong> tenant@jmp.local / tenant123
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
+                  <strong>Tenant Admin:</strong> tenant@jmp.local / tenant123
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
+                  <strong>Moderator:</strong> moderator@jmp.local / moderator123
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
+                  <strong>Participant:</strong> participant@jmp.local / participant123
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
+                  <strong>Auditor:</strong> auditor@jmp.local / auditor123
                 </Typography>
               </Box>
             </Box>

@@ -119,10 +119,7 @@ export default function Layout() {
                 color: '#ffffff',
               }}
             >
-              JMP
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', display: 'block' }}>
-              Management Platform
+              VKS TV
             </Typography>
           </motion.div>
         )}
@@ -298,7 +295,7 @@ export default function Layout() {
             color: '#3b82b6',
           }}
         >
-          JMP
+          VKS TV
         </Typography>
       </Box>
 
