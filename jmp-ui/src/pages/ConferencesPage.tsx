@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box,
@@ -38,6 +39,8 @@ import {
   Infinity,
   AlertCircle,
   Share2,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { conferenceApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -73,28 +76,28 @@ const getStatusConfig = (status: string) => {
         color: '#22c55e',
         bgColor: 'rgba(34, 197, 94, 0.12)',
         icon: <Radio size={14} />,
-        label: 'Live',
+        labelKey: 'common.live',
       };
     case 'SCHEDULED':
       return {
         color: '#3b82b6',
         bgColor: 'rgba(59, 130, 182, 0.12)',
         icon: <Calendar size={14} />,
-        label: 'Scheduled',
+        labelKey: 'common.scheduled',
       };
     case 'ENDED':
       return {
         color: '#6b7280',
         bgColor: 'rgba(107, 114, 128, 0.12)',
         icon: <Square size={14} />,
-        label: 'Ended',
+        labelKey: 'common.ended',
       };
     default:
       return {
         color: '#6b7280',
         bgColor: 'rgba(107, 114, 128, 0.08)',
         icon: null,
-        label: status,
+        labelKey: null,
       };
   }
 };
@@ -106,21 +109,21 @@ const getTypeConfig = (type: ConferenceType) => {
         color: '#3b82b6',
         bgColor: 'rgba(59, 130, 182, 0.12)',
         icon: <Calendar size={12} />,
-        label: 'Conference',
+        labelKey: 'common.conference',
       };
     case 'PERMANENT':
       return {
         color: '#2563eb',
         bgColor: 'rgba(37, 99, 235, 0.12)',
         icon: <DoorOpen size={12} />,
-        label: 'Room',
+        labelKey: 'common.room',
       };
     default:
       return {
         color: '#6b7280',
         bgColor: 'rgba(107, 114, 128, 0.08)',
         icon: null,
-        label: type,
+        labelKey: null,
       };
   }
 };
@@ -132,11 +135,11 @@ const formatDateTimeForInput = (dateStr: string | undefined): string => {
   return date.toISOString().slice(0, 16);
 };
 
-// Helper to format datetime for display
-const formatDateTimeDisplay = (dateStr: string | undefined): string => {
+// Helper to format datetime for display (locale passed dynamically)
+const formatDateTimeDisplay = (dateStr: string | undefined, locale: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
-  return date.toLocaleString('en-US', {
+  return date.toLocaleString(locale, {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -145,6 +148,7 @@ const formatDateTimeDisplay = (dateStr: string | undefined): string => {
 };
 
 export default function ConferencesPage() {
+  const { t, i18n } = useTranslation();
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -166,6 +170,7 @@ export default function ConferencesPage() {
     enableLobby: false,
   });
   const [formError, setFormError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
 
   const fetchConferences = async () => {
     try {
@@ -221,7 +226,7 @@ export default function ConferencesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this conference?')) {
+    if (window.confirm(t('conferences.deleteConfirm'))) {
       try {
         await conferenceApi.deleteConference(id);
         fetchConferences();
@@ -246,13 +251,13 @@ export default function ConferencesPage() {
       
       // Validate required fields
       if (!formData.roomName.trim() || !formData.displayName.trim()) {
-        setFormError('Room Name and Display Name are required.');
+        setFormError(t('conferences.requiredFields'));
         return;
       }
 
       // Validate SCHEDULED conference requirements
       if (formData.type === 'SCHEDULED' && !formData.scheduledStartAt) {
-        setFormError('Scheduled conferences must have a start time.');
+        setFormError(t('conferences.scheduledRequired'));
         return;
       }
 
@@ -280,7 +285,7 @@ export default function ConferencesPage() {
       fetchConferences();
     } catch (error: any) {
       console.error('Failed to save conference:', error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Failed to save conference. Please try again.';
+      const errorMessage = error.response?.data?.detail || error.message || t('conferences.saveFailed');
       setFormError(errorMessage);
     }
   };
@@ -328,10 +333,10 @@ export default function ConferencesPage() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
-              Conferences
+              {t('common.conferences')}
             </Typography>
             <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-              Manage your video conferences and meetings
+              {t('conferences.subtitle')}
             </Typography>
           </Box>
           <Button
@@ -353,7 +358,7 @@ export default function ConferencesPage() {
               },
             }}
           >
-            Create Conference
+            {t('conferences.createConference')}
           </Button>
         </Box>
       </motion.div>
@@ -369,7 +374,7 @@ export default function ConferencesPage() {
           }}
         >
           <TextField
-            placeholder="Search conferences..."
+            placeholder={t('conferences.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             InputProps={{
@@ -410,24 +415,87 @@ export default function ConferencesPage() {
               px: 3,
             }}
           >
-            Filter
+            {t('common.filter')}
           </Button>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, newMode) => {
+              if (newMode) {
+                setViewMode(newMode);
+              }
+            }}
+            sx={{
+              gap: 1,
+              '& .MuiToggleButtonGroup-grouped': {
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border)',
+                '&:not(:first-of-type)': {
+                  borderLeft: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                },
+                '&:not(:last-of-type)': {
+                  borderRadius: 'var(--radius-lg)',
+                },
+              },
+            }}
+          >
+            <ToggleButton
+              value="cards"
+              sx={{
+                p: 1,
+                color: 'var(--text-muted)',
+                '&.Mui-selected': {
+                  background: 'rgba(59, 130, 182, 0.12)',
+                  color: '#3b82b6',
+                  borderColor: '#3b82b6',
+                },
+                '&:hover': {
+                  background: 'var(--glass-bg)',
+                },
+              }}
+            >
+              <Tooltip title={t('common.viewCards')}>
+                <LayoutGrid size={18} />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton
+              value="list"
+              sx={{
+                p: 1,
+                color: 'var(--text-muted)',
+                '&.Mui-selected': {
+                  background: 'rgba(59, 130, 182, 0.12)',
+                  color: '#3b82b6',
+                  borderColor: '#3b82b6',
+                },
+                '&:hover': {
+                  background: 'var(--glass-bg)',
+                },
+              }}
+            >
+              <Tooltip title={t('common.viewList')}>
+                <List size={18} />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       </motion.div>
 
       {/* Conference Cards Grid */}
-      <motion.div variants={containerVariants}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
+      {viewMode === 'cards' && (
+        <motion.div variants={containerVariants}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                lg: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
           <AnimatePresence>
             {conferences.map((conference, index) => {
               const statusConfig = getStatusConfig(conference.status);
@@ -505,7 +573,7 @@ export default function ConferencesPage() {
                         <Chip
                           size="small"
                           icon={typeConfig.icon || undefined}
-                          label={typeConfig.label}
+                          label={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}
                           sx={{
                             background: typeConfig.bgColor,
                             color: typeConfig.color,
@@ -520,7 +588,7 @@ export default function ConferencesPage() {
                         <Chip
                           size="small"
                           icon={statusConfig.icon || undefined}
-                          label={statusConfig.label}
+                          label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
                           sx={{
                             background: statusConfig.bgColor,
                             color: statusConfig.color,
@@ -552,7 +620,7 @@ export default function ConferencesPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Clock size={16} color="var(--text-muted)" />
                           <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                            {formatDateTimeDisplay(conference.scheduledStartAt)}
+                            {formatDateTimeDisplay(conference.scheduledStartAt, i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                           </Typography>
                         </Box>
                       )}
@@ -560,7 +628,7 @@ export default function ConferencesPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Infinity size={16} color="#3b82b6" />
                           <Typography variant="body2" sx={{ color: '#3b82b6', fontWeight: 500 }}>
-                            Always Available
+                            {t('conferences.alwaysAvailable')}
                           </Typography>
                         </Box>
                       )}
@@ -569,7 +637,7 @@ export default function ConferencesPage() {
                     {/* Features */}
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       {conference.enableRecording && (
-                        <Tooltip title="Recording enabled">
+                        <Tooltip title={t('conferences.recordingEnabled')}>
                           <Box
                             sx={{
                               p: 0.75,
@@ -583,7 +651,7 @@ export default function ConferencesPage() {
                         </Tooltip>
                       )}
                       {conference.enableLiveStreaming && (
-                        <Tooltip title="Live streaming">
+                        <Tooltip title={t('conferences.liveStreaming')}>
                           <Box
                             sx={{
                               p: 0.75,
@@ -596,7 +664,7 @@ export default function ConferencesPage() {
                           </Box>
                         </Tooltip>
                       )}
-                      <Tooltip title="Screen sharing">
+                      <Tooltip title={t('conferences.screenSharing')}>
                         <Box
                           sx={{
                             p: 0.75,
@@ -630,7 +698,7 @@ export default function ConferencesPage() {
                             },
                           }}
                         >
-                          Start
+                          {t('common.start')}
                         </Button>
                       )}
                       {conference.status === 'ACTIVE' && (
@@ -651,10 +719,10 @@ export default function ConferencesPage() {
                             },
                           }}
                         >
-                          End
+                          {t('common.end')}
                         </Button>
                       )}
-                      <Tooltip title="Share">
+                      <Tooltip title={t('common.share')}>
                         <IconButton
                           onClick={() => handleShare(conference)}
                           sx={{
@@ -670,7 +738,7 @@ export default function ConferencesPage() {
                           <Share2 size={18} />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edit">
+                      <Tooltip title={t('common.edit')}>
                         <IconButton
                           onClick={() => handleEdit(conference)}
                           sx={{
@@ -686,7 +754,7 @@ export default function ConferencesPage() {
                           <Edit2 size={18} />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('common.delete')}>
                         <IconButton
                           onClick={() => handleDelete(conference.id)}
                           sx={{
@@ -708,8 +776,259 @@ export default function ConferencesPage() {
               );
             })}
           </AnimatePresence>
-        </Box>
-      </motion.div>
+          </Box>
+        </motion.div>
+      )}
+
+      {/* Conference List View */}
+      {viewMode === 'list' && (
+        <motion.div variants={containerVariants}>
+          <Box
+            sx={{
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: 'var(--radius-xl)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Table Header */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '40px 1fr 100px 100px',
+                  sm: '40px 1.5fr 1fr 100px 100px 80px 120px',
+                  md: '40px 1.5fr 1fr 100px 100px 80px 100px 140px',
+                },
+                gap: 2,
+                p: 2,
+                borderBottom: '1px solid var(--border)',
+                background: 'rgba(59, 130, 182, 0.04)',
+              }}
+            >
+              <Box />
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('conferences.displayName')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
+                {t('conferences.roomName')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
+                {t('conferences.type')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('common.scheduled')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
+                {t('conferences.participants')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', md: 'block' } }}>
+                Features
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Actions
+              </Typography>
+            </Box>
+
+            {/* Table Rows */}
+            <AnimatePresence>
+              {conferences.map((conference, index) => {
+                const statusConfig = getStatusConfig(conference.status);
+                const typeConfig = getTypeConfig(conference.type);
+                return (
+                  <motion.div
+                    key={conference.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '40px 1fr 100px 100px',
+                          sm: '40px 1.5fr 1fr 100px 100px 80px 120px',
+                          md: '40px 1.5fr 1fr 100px 100px 80px 100px 140px',
+                        },
+                        gap: 2,
+                        p: 2,
+                        alignItems: 'center',
+                        borderBottom: '1px solid var(--border)',
+                        transition: 'background 0.15s ease',
+                        '&:hover': {
+                          background: 'rgba(59, 130, 182, 0.04)',
+                        },
+                        '&:last-child': {
+                          borderBottom: 'none',
+                        },
+                      }}
+                    >
+                      {/* Status Dot */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: statusConfig.color,
+                            boxShadow: `0 0 8px ${statusConfig.color}`,
+                          }}
+                        />
+                      </Box>
+
+                      {/* Display Name */}
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {conference.displayName}
+                        </Typography>
+                      </Box>
+
+                      {/* Room Name */}
+                      <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'block' } }}>
+                        {conference.roomName}
+                      </Typography>
+
+                      {/* Type Badge */}
+                      <Chip
+                        size="small"
+                        icon={typeConfig.icon || undefined}
+                        label={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}
+                        sx={{
+                          background: typeConfig.bgColor,
+                          color: typeConfig.color,
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: 24,
+                          '& .MuiChip-icon': {
+                            color: 'inherit',
+                          },
+                        }}
+                      />
+
+                      {/* Status Badge */}
+                      <Chip
+                        size="small"
+                        icon={statusConfig.icon || undefined}
+                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                        sx={{
+                          background: statusConfig.bgColor,
+                          color: statusConfig.color,
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: 24,
+                          '& .MuiChip-icon': {
+                            color: 'inherit',
+                          },
+                        }}
+                      />
+
+                      {/* Participants */}
+                      <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
+                        <Users size={14} color="var(--text-muted)" />
+                        <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+                          {conference.currentParticipants || 0}/{conference.maxParticipants || '∞'}
+                        </Typography>
+                      </Box>
+
+                      {/* Features */}
+                      <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5 }}>
+                        {conference.enableRecording && (
+                          <Tooltip title={t('conferences.recordingEnabled')}>
+                            <Box sx={{ p: 0.5, borderRadius: 'var(--radius-sm)', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center' }}>
+                              <Mic size={12} />
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {conference.enableLiveStreaming && (
+                          <Tooltip title={t('conferences.liveStreaming')}>
+                            <Box sx={{ p: 0.5, borderRadius: 'var(--radius-sm)', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center' }}>
+                              <Radio size={12} />
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {conference.enableScreenSharing && (
+                          <Tooltip title={t('conferences.screenSharing')}>
+                            <Box sx={{ p: 0.5, borderRadius: 'var(--radius-sm)', background: 'rgba(59, 130, 182, 0.1)', color: '#3b82b6', display: 'flex', alignItems: 'center' }}>
+                              <Monitor size={12} />
+                            </Box>
+                          </Tooltip>
+                        )}
+                      </Box>
+
+                      {/* Actions */}
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        {conference.status === 'SCHEDULED' && (
+                          <Tooltip title={t('common.start')}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleStart(conference.id)}
+                              sx={{
+                                p: 0.75,
+                                borderRadius: 'var(--radius-md)',
+                                background: 'rgba(59, 130, 182, 0.1)',
+                                color: '#3b82b6',
+                                '&:hover': { background: 'rgba(59, 130, 182, 0.2)' },
+                              }}
+                            >
+                              <Play size={14} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {conference.status === 'ACTIVE' && (
+                          <Tooltip title={t('common.end')}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEnd(conference.id)}
+                              sx={{
+                                p: 0.75,
+                                borderRadius: 'var(--radius-md)',
+                                background: 'rgba(107, 114, 128, 0.1)',
+                                color: '#6b7280',
+                                '&:hover': { background: 'rgba(107, 114, 128, 0.2)' },
+                              }}
+                            >
+                              <Square size={14} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t('common.share')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleShare(conference)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#3b82b6' } }}
+                          >
+                            <Share2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(conference)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#3b82b6' } }}
+                          >
+                            <Edit2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(conference.id)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </Box>
+        </motion.div>
+      )}
 
       {/* Empty State */}
       {!loading && conferences.length === 0 && (
@@ -745,10 +1064,10 @@ export default function ConferencesPage() {
               <Video size={40} color="#3b82b6" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
-              No conferences yet
+              {t('conferences.noConferences')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 3 }}>
-              Create your first conference to get started
+              {t('conferences.noConferencesDesc')}
             </Typography>
             <Button
               variant="contained"
@@ -762,7 +1081,7 @@ export default function ConferencesPage() {
                 textTransform: 'none',
               }}
             >
-              Create Conference
+              {t('conferences.createConference')}
             </Button>
           </Box>
         </motion.div>
@@ -789,7 +1108,7 @@ export default function ConferencesPage() {
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
-            {editingConference ? 'Edit Conference' : 'Create Conference'}
+            {editingConference ? t('conferences.editConference') : t('conferences.createConference')}
           </Typography>
         </DialogTitle>
         <DialogContent>
@@ -827,7 +1146,7 @@ export default function ConferencesPage() {
           {/* Type Selector */}
           <Box sx={{ mt: 2, mb: 2 }}>
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1, fontWeight: 500 }}>
-              Type
+              {t('conferences.type')}
             </Typography>
             <ToggleButtonGroup
               value={formData.type}
@@ -861,18 +1180,18 @@ export default function ConferencesPage() {
             >
               <ToggleButton value="SCHEDULED">
                 <Calendar size={18} style={{ marginRight: 8 }} />
-                Conference
+                {t('common.conference')}
               </ToggleButton>
               <ToggleButton value="PERMANENT">
                 <DoorOpen size={18} style={{ marginRight: 8 }} />
-                Room
+                {t('common.room')}
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
 
           <TextField
             fullWidth
-            label="Room Name"
+            label={t('conferences.roomName')}
             value={formData.roomName}
             onChange={(e) => setFormData({ ...formData, roomName: e.target.value })}
             margin="normal"
@@ -880,6 +1199,7 @@ export default function ConferencesPage() {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 'var(--radius-lg)',
+                color: 'var(--text)',
                 '& fieldset': {
                   borderColor: 'var(--border)',
                 },
@@ -890,17 +1210,24 @@ export default function ConferencesPage() {
                   borderColor: '#3b82b6',
                 },
               },
+              '& .MuiInputLabel-root': {
+                color: 'var(--text-muted)',
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#3b82b6',
+              },
             }}
           />
           <TextField
             fullWidth
-            label="Display Name"
+            label={t('conferences.displayName')}
             value={formData.displayName}
             onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
             margin="normal"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 'var(--radius-lg)',
+                color: 'var(--text)',
                 '& fieldset': {
                   borderColor: 'var(--border)',
                 },
@@ -911,11 +1238,17 @@ export default function ConferencesPage() {
                   borderColor: '#3b82b6',
                 },
               },
+              '& .MuiInputLabel-root': {
+                color: 'var(--text-muted)',
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#3b82b6',
+              },
             }}
           />
           <TextField
             fullWidth
-            label="Description"
+            label={t('conferences.description')}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             margin="normal"
@@ -924,6 +1257,7 @@ export default function ConferencesPage() {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 'var(--radius-lg)',
+                color: 'var(--text)',
                 '& fieldset': {
                   borderColor: 'var(--border)',
                 },
@@ -934,6 +1268,12 @@ export default function ConferencesPage() {
                   borderColor: '#3b82b6',
                 },
               },
+              '& .MuiInputLabel-root': {
+                color: 'var(--text-muted)',
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#3b82b6',
+              },
             }}
           />
 
@@ -941,7 +1281,7 @@ export default function ConferencesPage() {
           {formData.type === 'SCHEDULED' && (
             <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <TextField
-                label="Start Time"
+                label={t('conferences.startTime')}
                 type="datetime-local"
                 value={formData.scheduledStartAt}
                 onChange={(e) => setFormData({ ...formData, scheduledStartAt: e.target.value })}
@@ -950,6 +1290,7 @@ export default function ConferencesPage() {
                   minWidth: 200,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-lg)',
+                    color: 'var(--text)',
                     '& fieldset': {
                       borderColor: 'var(--border)',
                     },
@@ -960,11 +1301,17 @@ export default function ConferencesPage() {
                       borderColor: '#3b82b6',
                     },
                   },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--text-muted)',
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#3b82b6',
+                  },
                 }}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
-                label="End Time"
+                label={t('conferences.endTime')}
                 type="datetime-local"
                 value={formData.scheduledEndAt}
                 onChange={(e) => setFormData({ ...formData, scheduledEndAt: e.target.value })}
@@ -973,6 +1320,7 @@ export default function ConferencesPage() {
                   minWidth: 200,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 'var(--radius-lg)',
+                    color: 'var(--text)',
                     '& fieldset': {
                       borderColor: 'var(--border)',
                     },
@@ -982,6 +1330,12 @@ export default function ConferencesPage() {
                     '&.Mui-focused fieldset': {
                       borderColor: '#3b82b6',
                     },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--text-muted)',
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#3b82b6',
                   },
                 }}
                 InputLabelProps={{ shrink: true }}
@@ -996,16 +1350,23 @@ export default function ConferencesPage() {
                   checked={formData.enableRecording}
                   onChange={(e) => setFormData({ ...formData, enableRecording: e.target.checked })}
                   sx={{
+                    '& .MuiSwitch-switchBase': {
+                      color: 'var(--text-muted)',
+                    },
+                    '& .MuiSwitch-track': {
+                      backgroundColor: 'var(--border-strong)',
+                    },
                     '& .MuiSwitch-switchBase.Mui-checked': {
                       color: '#3b82b6',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#3b82b6',
+                      backgroundColor: 'rgba(59, 130, 182, 0.4)',
                     },
                   }}
                 />
               }
-              label="Enable Recording"
+              label={t('conferences.enableRecording')}
+              sx={{ color: 'var(--text)' }}
             />
             <FormControlLabel
               control={
@@ -1013,16 +1374,23 @@ export default function ConferencesPage() {
                   checked={formData.enableLiveStreaming}
                   onChange={(e) => setFormData({ ...formData, enableLiveStreaming: e.target.checked })}
                   sx={{
+                    '& .MuiSwitch-switchBase': {
+                      color: 'var(--text-muted)',
+                    },
+                    '& .MuiSwitch-track': {
+                      backgroundColor: 'var(--border-strong)',
+                    },
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#22c55e',
+                      color: '#3b82b6',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#22c55e',
+                      backgroundColor: 'rgba(59, 130, 182, 0.4)',
                     },
                   }}
                 />
               }
-              label="Enable Live Streaming"
+              label={t('conferences.enableLiveStreaming')}
+              sx={{ color: 'var(--text)' }}
             />
             <FormControlLabel
               control={
@@ -1030,16 +1398,23 @@ export default function ConferencesPage() {
                   checked={formData.enableLobby}
                   onChange={(e) => setFormData({ ...formData, enableLobby: e.target.checked })}
                   sx={{
+                    '& .MuiSwitch-switchBase': {
+                      color: 'var(--text-muted)',
+                    },
+                    '& .MuiSwitch-track': {
+                      backgroundColor: 'var(--border-strong)',
+                    },
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#f97316',
+                      color: '#3b82b6',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: '#f97316',
+                      backgroundColor: 'rgba(59, 130, 182, 0.4)',
                     },
                   }}
                 />
               }
-              label="Enable Lobby"
+              label={t('conferences.enableLobby')}
+              sx={{ color: 'var(--text)' }}
             />
           </Box>
         </DialogContent>
@@ -1056,7 +1431,7 @@ export default function ConferencesPage() {
               fontWeight: 600,
             }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -1070,7 +1445,7 @@ export default function ConferencesPage() {
               px: 3,
             }}
           >
-            {editingConference ? 'Update' : 'Create'}
+            {editingConference ? t('common.update') : t('common.create')}
           </Button>
         </DialogActions>
       </Dialog>

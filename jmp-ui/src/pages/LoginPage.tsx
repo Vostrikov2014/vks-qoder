@@ -11,6 +11,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sparkles, Sun, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { authApi } from '../services/api';
@@ -40,6 +41,7 @@ const itemVariants = {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { setAuth } = useAuthStore();
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [email, setEmail] = useState('');
@@ -69,7 +71,7 @@ export default function LoginPage() {
       setAuth(user, accessToken, refreshToken);
       navigate('/dashboard');
     } catch (err) {
-      setError('Invalid email or password');
+      setError(t('login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ export default function LoginPage() {
       >
         <IconButton
           onClick={() => navigate('/')}
-          aria-label="Back to Home"
+          aria-label={t('common.backToHome')}
           sx={{
             width: 48,
             height: 48,
@@ -135,6 +137,7 @@ export default function LoginPage() {
       >
         <IconButton
           onClick={toggleTheme}
+          aria-label={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
           sx={{
             width: 48,
             height: 48,
@@ -157,7 +160,7 @@ export default function LoginPage() {
             animate={{ rotate: isDarkMode ? 360 : 0 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
-            {isDarkMode ? <Moon size={22} /> : <Sun size={22} />}
+            {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
           </motion.div>
         </IconButton>
       </Box>
@@ -267,10 +270,10 @@ export default function LoginPage() {
                   color: 'var(--text-h)',
                 }}
               >
-                Welcome Back
+                {t('login.welcomeBack')}
               </Typography>
               <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-                Sign in to manage your video conferences
+                {t('login.signInToManage')}
               </Typography>
             </Box>
           </motion.div>
@@ -305,7 +308,7 @@ export default function LoginPage() {
             <motion.div variants={itemVariants}>
               <TextField
                 fullWidth
-                label="Email"
+                label={t('login.email')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -350,7 +353,7 @@ export default function LoginPage() {
             <motion.div variants={itemVariants}>
               <TextField
                 fullWidth
-                label="Password"
+                label={t('login.password')}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -415,7 +418,7 @@ export default function LoginPage() {
                     },
                   }}
                 >
-                  Forgot password?
+                  {t('login.forgotPassword')}
                 </Typography>
               </Box>
             </motion.div>
@@ -446,7 +449,7 @@ export default function LoginPage() {
                   },
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? t('login.signingIn') : t('login.signInButton')}
               </Button>
             </motion.div>
           </Box>
@@ -473,23 +476,23 @@ export default function LoginPage() {
                   letterSpacing: '0.05em',
                 }}
               >
-                Demo Credentials
+                {t('login.demoCredentials')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>Super Admin:</strong> admin@jmp.local / admin123
+                  <strong>{t('roles.SUPER_ADMIN')}:</strong> admin@jmp.local / admin123
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>Tenant Admin:</strong> tenant@jmp.local / tenant123
+                  <strong>{t('roles.TENANT_ADMIN')}:</strong> tenant@jmp.local / tenant123
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>Moderator:</strong> moderator@jmp.local / moderator123
+                  <strong>{t('roles.MODERATOR')}:</strong> moderator@jmp.local / moderator123
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>Participant:</strong> participant@jmp.local / participant123
+                  <strong>{t('roles.PARTICIPANT')}:</strong> participant@jmp.local / participant123
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>Auditor:</strong> auditor@jmp.local / auditor123
+                  <strong>{t('roles.AUDITOR')}:</strong> auditor@jmp.local / auditor123
                 </Typography>
               </Box>
             </Box>

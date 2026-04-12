@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, Link2, User, ArrowRight, Sun, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '../store/themeStore';
 import './HomePage.css';
 
@@ -53,6 +54,7 @@ const cardVariants = {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isDarkMode, toggleTheme } = useThemeStore();
 
   // Apply dark mode class to document
@@ -129,14 +131,14 @@ export default function HomePage() {
       <button
         className="theme-toggle"
         onClick={toggleTheme}
-        aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
       >
         <motion.div
           initial={false}
           animate={{ rotate: isDarkMode ? 360 : 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
-          {isDarkMode ? <Moon size={22} /> : <Sun size={22} />}
+          {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
         </motion.div>
       </button>
 
@@ -159,7 +161,7 @@ export default function HomePage() {
             </div>
             <h1 className="logo-text">VKS TV</h1>
           </div>
-          <p className="tagline">Professional video conferencing made simple</p>
+          <p className="tagline">{t('home.tagline')}</p>
         </motion.header>
 
         {/* Action Cards Grid */}
@@ -171,14 +173,14 @@ export default function HomePage() {
             onClick={generateRoomAndRedirect}
             whileHover={{ y: -4, boxShadow: 'var(--shadow-xl)' }}
             whileTap={{ scale: 0.98 }}
-            aria-label="Create an instant meeting"
+            aria-label={t('home.createHangoutAria')}
           >
             <div className="card-icon create-icon">
               <Video size={28} />
             </div>
-            <h2 className="card-title">Create a Hangout</h2>
+            <h2 className="card-title">{t('home.createHangout')}</h2>
             <p className="card-description">
-              Start an instant conference. No login required.
+              {t('home.createHangoutDesc')}
             </p>
             <div className="card-arrow">
               <ArrowRight size={20} />
@@ -195,14 +197,14 @@ export default function HomePage() {
               className="card-button"
               onClick={() => setIsConnectExpanded(!isConnectExpanded)}
               aria-expanded={isConnectExpanded}
-              aria-label="Connect to a meeting"
+              aria-label={t('home.connectAria')}
             >
               <div className="card-icon connect-icon">
                 <Link2 size={28} />
               </div>
-              <h2 className="card-title">Connect</h2>
+              <h2 className="card-title">{t('home.connect')}</h2>
               <p className="card-description">
-                Enter a meeting code or link to connect.
+                {t('home.connectDesc')}
               </p>
               <div className={`card-arrow ${isConnectExpanded ? 'rotated' : ''}`}>
                 <ArrowRight size={20} />
@@ -224,19 +226,19 @@ export default function HomePage() {
                     <input
                       type="text"
                       className="meeting-input"
-                      placeholder="Enter meeting code or link"
+                      placeholder={t('home.enterMeetingCode')}
                       value={meetingCode}
                       onChange={(e) => setMeetingCode(e.target.value)}
                       autoFocus
-                      aria-label="Meeting code or link"
+                      aria-label={t('home.enterMeetingCode')}
                     />
                     <button
                       type="submit"
                       className="join-button"
                       disabled={!meetingCode.trim()}
-                      aria-label="Join meeting"
+                      aria-label={t('common.join')}
                     >
-                      Join
+                      {t('common.join')}
                     </button>
                   </div>
                 </motion.form>
@@ -251,14 +253,14 @@ export default function HomePage() {
             onClick={redirectToLogin}
             whileHover={{ y: -4, boxShadow: 'var(--shadow-xl)' }}
             whileTap={{ scale: 0.98 }}
-            aria-label="Sign in to your account"
+            aria-label={t('home.signInAria')}
           >
             <div className="card-icon signin-icon">
               <User size={28} />
             </div>
-            <h2 className="card-title">Sign In</h2>
+            <h2 className="card-title">{t('common.signIn')}</h2>
             <p className="card-description">
-              Access your account, schedule meetings, and manage preferences.
+              {t('home.signInDesc')}
             </p>
             <div className="card-arrow">
               <ArrowRight size={20} />
@@ -268,7 +270,7 @@ export default function HomePage() {
 
         {/* Footer */}
         <motion.footer className="home-footer" variants={itemVariants}>
-          <p>Secure, reliable video conferencing for teams of all sizes</p>
+          <p>{t('home.footer')}</p>
         </motion.footer>
       </motion.main>
     </div>

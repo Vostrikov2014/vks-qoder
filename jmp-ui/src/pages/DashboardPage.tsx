@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -113,9 +114,10 @@ interface StatCardProps {
   trend?: number;
   color: string;
   bgGradient?: string;
+  locale?: string;
 }
 
-const StatCard = ({ title, value, icon, trend, color, bgGradient }: StatCardProps) => (
+const StatCard = ({ title, value, icon, trend, color, bgGradient, locale = 'en-US' }: StatCardProps) => (
   <BentoCard gradient={bgGradient}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
       <Box
@@ -149,7 +151,7 @@ const StatCard = ({ title, value, icon, trend, color, bgGradient }: StatCardProp
       )}
     </Box>
     <Typography variant="h3" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
-      {value.toLocaleString()}
+      {value.toLocaleString(locale)}
     </Typography>
     <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
       {title}
@@ -158,6 +160,7 @@ const StatCard = ({ title, value, icon, trend, color, bgGradient }: StatCardProp
 );
 
 export default function DashboardPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.roles?.some(
@@ -251,10 +254,10 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 1 }}>
-            Dashboard Overview
+            {t('dashboard.overview')}
           </Typography>
           <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-            Here's what's happening with your conferences today
+            {t('dashboard.overviewDesc')}
           </Typography>
         </Box>
       </motion.div>
@@ -269,32 +272,36 @@ export default function DashboardPage() {
         }}
       >
         <StatCard
-          title="Active Conferences"
+          title={t('dashboard.activeConferences')}
           value={stats.activeConferences}
           icon={<Video size={24} />}
           trend={12}
           color="#3b82b6"
+          locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
-          title="Upcoming"
+          title={t('dashboard.upcoming')}
           value={stats.upcomingConferences}
           icon={<Calendar size={24} />}
           trend={8}
           color="#60a5fa"
+          locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
-          title="Active Participants"
+          title={t('dashboard.activeParticipants')}
           value={stats.totalParticipants}
           icon={<Users size={24} />}
           trend={-3}
           color="#2563eb"
+          locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
-          title="Recordings"
+          title={t('dashboard.recordings')}
           value={dashboardMetrics?.recordingsThisMonth || 0}
           icon={<HardDrive size={24} />}
           trend={24}
           color="#1d4ed8"
+          locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
       </Box>
 
@@ -312,17 +319,17 @@ export default function DashboardPage() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 0.5 }}>
-                Weekly Usage Trends
+                {t('dashboard.weeklyUsageTrends')}
               </Typography>
               <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                Conference activity over the past 7 days
+                {t('dashboard.weeklyUsageDesc')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Chip
                 size="small"
                 icon={<TrendingUp size={14} />}
-                label="Live"
+                label={t('common.live')}
                 sx={{
                   background: 'rgba(59, 130, 182, 0.15)',
                   color: '#2563eb',
@@ -384,7 +391,7 @@ export default function DashboardPage() {
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorConferences)"
-                    name="Conferences"
+                    name={t('dashboard.conferencesSeries')}
                   />
                   <Area
                     type="monotone"
@@ -393,14 +400,14 @@ export default function DashboardPage() {
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorParticipants)"
-                    name="Participants"
+                    name={t('dashboard.participantsSeries')}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                  No data available
+                  {t('dashboard.noDataAvailable')}
                 </Typography>
               </Box>
             )}
@@ -412,7 +419,7 @@ export default function DashboardPage() {
           <BentoCard>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
-                System Health
+                {t('dashboard.systemHealth')}
               </Typography>
               <IconButton sx={{ color: 'var(--text-muted)' }}>
                 <MoreHorizontal size={20} />
@@ -435,7 +442,7 @@ export default function DashboardPage() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Cpu size={18} color="#3b82b6" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
-                        CPU Usage
+                        {t('dashboard.cpuUsage')}
                       </Typography>
                     </Box>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
@@ -463,7 +470,7 @@ export default function DashboardPage() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <MemoryStick size={18} color="#60a5fa" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
-                        Memory Usage
+                        {t('dashboard.memoryUsage')}
                       </Typography>
                     </Box>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
@@ -495,7 +502,7 @@ export default function DashboardPage() {
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
-                      Active Connections
+                      {t('dashboard.activeConnections')}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#3b82b6' }}>
                       {systemHealth.activeConnections}
@@ -509,7 +516,7 @@ export default function DashboardPage() {
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
-                      Avg Response
+                      {t('dashboard.avgResponse')}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#60a5fa' }}>
                       {systemHealth.averageResponseTime}ms
@@ -526,7 +533,7 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 2 }}>
-            Quick Actions
+            {t('dashboard.quickActions')}
           </Typography>
         </Box>
         <Box
@@ -537,10 +544,10 @@ export default function DashboardPage() {
           }}
         >
           {[
-            { label: 'Start Conference', icon: <Video size={20} />, color: '#3b82b6', path: '/conferences', requiresConferenceAccess: true },
-            { label: 'View Recordings', icon: <HardDrive size={20} />, color: '#2563eb', path: '/recordings' },
-            { label: 'Manage Users', icon: <Users size={20} />, color: '#1d4ed8', path: '/users', requiresAdmin: true },
-            { label: 'View Reports', icon: <TrendingUp size={20} />, color: '#60a5fa', path: '/analytics' },
+            { label: t('dashboard.startConference'), icon: <Video size={20} />, color: '#3b82b6', path: '/conferences', requiresConferenceAccess: true },
+            { label: t('dashboard.viewRecordings'), icon: <HardDrive size={20} />, color: '#2563eb', path: '/recordings' },
+            { label: t('dashboard.manageUsers'), icon: <Users size={20} />, color: '#1d4ed8', path: '/users', requiresAdmin: true },
+            { label: t('dashboard.viewReports'), icon: <TrendingUp size={20} />, color: '#60a5fa', path: '/analytics' },
           ]
             .filter((action) => {
               if (action.requiresAdmin) return isAdmin;

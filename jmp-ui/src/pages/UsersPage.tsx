@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box,
@@ -14,6 +15,13 @@ import {
   InputAdornment,
   Tooltip,
   Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import {
   Plus,
@@ -28,6 +36,8 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { userApi } from '../services/api';
 
@@ -70,28 +80,28 @@ const getStatusConfig = (status: string) => {
         color: '#22c55e',
         bgColor: 'rgba(34, 197, 94, 0.12)',
         icon: <CheckCircle2 size={14} />,
-        label: 'Active',
+        labelKey: 'common.active',
       };
     case 'PENDING_VERIFICATION':
       return {
         color: '#f59e0b',
         bgColor: 'rgba(245, 158, 11, 0.12)',
         icon: <Clock size={14} />,
-        label: 'Pending',
+        labelKey: 'common.pending',
       };
     case 'SUSPENDED':
       return {
         color: '#ef4444',
         bgColor: 'rgba(239, 68, 68, 0.12)',
         icon: <AlertCircle size={14} />,
-        label: 'Suspended',
+        labelKey: 'common.suspended',
       };
     default:
       return {
         color: '#6b7280',
         bgColor: 'rgba(107, 114, 128, 0.08)',
         icon: null,
-        label: status,
+        labelKey: null,
       };
   }
 };
@@ -116,6 +126,7 @@ const getRoleColor = (role: string) => {
 };
 
 export default function UsersPage() {
+  const { t, i18n } = useTranslation();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -128,6 +139,7 @@ export default function UsersPage() {
     password: '',
     roleNames: [] as string[],
   });
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
 
   const fetchUsers = async () => {
     try {
@@ -169,7 +181,7 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm(t('users.deleteConfirm'))) {
       try {
         await userApi.deleteUser(id);
         fetchUsers();
@@ -217,10 +229,10 @@ export default function UsersPage() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
-              Users
+              {t('common.users')}
             </Typography>
             <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-              Manage users and their permissions
+              {t('users.subtitle')}
             </Typography>
           </Box>
           <Button
@@ -242,7 +254,7 @@ export default function UsersPage() {
               },
             }}
           >
-            Add User
+            {t('users.addUser')}
           </Button>
         </Box>
       </motion.div>
@@ -258,7 +270,7 @@ export default function UsersPage() {
           }}
         >
           <TextField
-            placeholder="Search users..."
+            placeholder={t('users.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             InputProps={{
@@ -299,24 +311,87 @@ export default function UsersPage() {
               px: 3,
             }}
           >
-            Filter
+            {t('common.filter')}
           </Button>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, newMode) => {
+              if (newMode) {
+                setViewMode(newMode);
+              }
+            }}
+            sx={{
+              gap: 1,
+              '& .MuiToggleButtonGroup-grouped': {
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border)',
+                '&:not(:first-of-type)': {
+                  borderLeft: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                },
+                '&:not(:last-of-type)': {
+                  borderRadius: 'var(--radius-lg)',
+                },
+              },
+            }}
+          >
+            <ToggleButton
+              value="cards"
+              sx={{
+                p: 1,
+                color: 'var(--text-muted)',
+                '&.Mui-selected': {
+                  background: 'rgba(59, 130, 182, 0.12)',
+                  color: '#3b82b6',
+                  borderColor: '#3b82b6',
+                },
+                '&:hover': {
+                  background: 'var(--glass-bg)',
+                },
+              }}
+            >
+              <Tooltip title={t('common.viewCards')}>
+                <LayoutGrid size={18} />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton
+              value="list"
+              sx={{
+                p: 1,
+                color: 'var(--text-muted)',
+                '&.Mui-selected': {
+                  background: 'rgba(59, 130, 182, 0.12)',
+                  color: '#3b82b6',
+                  borderColor: '#3b82b6',
+                },
+                '&:hover': {
+                  background: 'var(--glass-bg)',
+                },
+              }}
+            >
+              <Tooltip title={t('common.viewList')}>
+                <List size={18} />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       </motion.div>
 
       {/* Users Cards Grid */}
-      <motion.div variants={containerVariants}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
+      {viewMode === 'cards' && (
+        <motion.div variants={containerVariants}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                lg: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
           <AnimatePresence>
             {users.map((user, index) => {
               const statusConfig = getStatusConfig(user.status);
@@ -385,7 +460,7 @@ export default function UsersPage() {
                       <Chip
                         size="small"
                         icon={statusConfig.icon || undefined}
-                        label={statusConfig.label}
+                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
                         sx={{
                           background: statusConfig.bgColor,
                           color: statusConfig.color,
@@ -410,7 +485,7 @@ export default function UsersPage() {
                           mb: 1,
                         }}
                       >
-                        Roles
+                        {t('users.roles')}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {(user.roles || []).map((role) => (
@@ -418,7 +493,7 @@ export default function UsersPage() {
                             key={role}
                             size="small"
                             icon={<Shield size={12} />}
-                            label={role.replace('ROLE_', '')}
+                            label={t(`roles.${role.replace('ROLE_', '')}`)}
                             sx={{
                               background: `${getRoleColor(role)}15`,
                               color: getRoleColor(role),
@@ -445,7 +520,7 @@ export default function UsersPage() {
                     >
                       <User size={16} color="var(--text-muted)" />
                       <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                        Joined {new Date(user.createdAt).toLocaleDateString()}
+                        {t('users.joined')} {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                       </Typography>
                     </Box>
 
@@ -469,9 +544,9 @@ export default function UsersPage() {
                           },
                         }}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('common.delete')}>
                         <IconButton
                           onClick={() => handleDelete(user.id)}
                           sx={{
@@ -495,8 +570,192 @@ export default function UsersPage() {
               );
             })}
           </AnimatePresence>
-        </Box>
-      </motion.div>
+          </Box>
+        </motion.div>
+      )}
+
+      {/* Users List View */}
+      {viewMode === 'list' && (
+        <motion.div variants={containerVariants}>
+          <Box
+            sx={{
+              background: 'var(--glass-bg)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: 'var(--radius-xl)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Table Header */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr 100px',
+                  sm: '50px 1.5fr 1fr 120px 100px 100px',
+                  md: '50px 1.5fr 1.5fr 150px 100px 100px 100px',
+                },
+                gap: 2,
+                p: 2,
+                borderBottom: '1px solid var(--border)',
+                background: 'rgba(59, 130, 182, 0.04)',
+              }}
+            >
+              <Box />
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('users.firstName')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
+                {t('users.email')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', md: 'block' } }}>
+                {t('users.roles')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('common.active')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
+                {t('users.joined')}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Actions
+              </Typography>
+            </Box>
+
+            {/* Table Rows */}
+            <AnimatePresence>
+              {users.map((user, index) => {
+                const statusConfig = getStatusConfig(user.status);
+                return (
+                  <motion.div
+                    key={user.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr 100px',
+                          sm: '50px 1.5fr 1fr 120px 100px 100px',
+                          md: '50px 1.5fr 1.5fr 150px 100px 100px 100px',
+                        },
+                        gap: 2,
+                        p: 2,
+                        alignItems: 'center',
+                        borderBottom: '1px solid var(--border)',
+                        transition: 'background 0.15s ease',
+                        '&:hover': {
+                          background: 'rgba(59, 130, 182, 0.04)',
+                        },
+                        '&:last-child': {
+                          borderBottom: 'none',
+                        },
+                      }}
+                    >
+                      {/* Avatar */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            background: getAvatarGradient(user.id),
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          {getInitials(user.firstName, user.lastName)}
+                        </Avatar>
+                      </Box>
+
+                      {/* Full Name */}
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {user.firstName} {user.lastName}
+                        </Typography>
+                      </Box>
+
+                      {/* Email */}
+                      <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'block' } }}>
+                        {user.email}
+                      </Typography>
+
+                      {/* Roles */}
+                      <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, flexWrap: 'wrap' }}>
+                        {(user.roles || []).slice(0, 2).map((role) => (
+                          <Chip
+                            key={role}
+                            size="small"
+                            label={t(`roles.${role.replace('ROLE_', '')}`)}
+                            sx={{
+                              background: `${getRoleColor(role)}15`,
+                              color: getRoleColor(role),
+                              fontWeight: 600,
+                              fontSize: '0.7rem',
+                              height: 22,
+                            }}
+                          />
+                        ))}
+                        {(user.roles || []).length > 2 && (
+                          <Typography variant="caption" sx={{ color: 'var(--text-muted)', alignSelf: 'center' }}>
+                            +{(user.roles || []).length - 2}
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {/* Status */}
+                      <Chip
+                        size="small"
+                        icon={statusConfig.icon || undefined}
+                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                        sx={{
+                          background: statusConfig.bgColor,
+                          color: statusConfig.color,
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: 24,
+                          '& .MuiChip-icon': {
+                            color: 'inherit',
+                          },
+                        }}
+                      />
+
+                      {/* Joined Date */}
+                      <Typography variant="body2" sx={{ color: 'var(--text-muted)', display: { xs: 'none', sm: 'block' } }}>
+                        {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
+                      </Typography>
+
+                      {/* Actions */}
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(user)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#3b82b6' } }}
+                          >
+                            <Edit2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(user.id)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </Box>
+        </motion.div>
+      )}
 
       {/* Empty State */}
       {!loading && users.length === 0 && (
@@ -532,10 +791,10 @@ export default function UsersPage() {
               <Users size={40} color="#3b82b6" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
-              No users yet
+              {t('users.noUsers')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 3 }}>
-              Add your first user to get started
+              {t('users.noUsersDesc')}
             </Typography>
             <Button
               variant="contained"
@@ -549,7 +808,7 @@ export default function UsersPage() {
                 textTransform: 'none',
               }}
             >
-              Add User
+              {t('users.addUser')}
             </Button>
           </Box>
         </motion.div>
@@ -573,13 +832,13 @@ export default function UsersPage() {
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
-            {editingUser ? 'Edit User' : 'Add User'}
+            {editingUser ? t('users.editUser') : t('users.addUser')}
           </Typography>
         </DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
-            label="Email"
+            label={t('users.email')}
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -610,7 +869,7 @@ export default function UsersPage() {
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <TextField
               fullWidth
-              label="First Name"
+              label={t('users.firstName')}
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
               margin="normal"
@@ -631,7 +890,7 @@ export default function UsersPage() {
             />
             <TextField
               fullWidth
-              label="Last Name"
+              label={t('users.lastName')}
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               margin="normal"
@@ -654,7 +913,7 @@ export default function UsersPage() {
           {!editingUser && (
             <TextField
               fullWidth
-              label="Password"
+              label={t('users.password')}
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -675,6 +934,49 @@ export default function UsersPage() {
               }}
             />
           )}
+          <FormControl fullWidth margin="normal">
+            <InputLabel sx={{ color: 'var(--text-muted)' }}>{t('users.roles')}</InputLabel>
+            <Select
+              multiple
+              value={formData.roleNames}
+              onChange={(e) => setFormData({ ...formData, roleNames: e.target.value as string[] })}
+              input={<OutlinedInput label={t('users.roles')} />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  {(selected as string[]).map((role) => (
+                    <Chip
+                      key={role}
+                      size="small"
+                      label={t(`roles.${role.replace('ROLE_', '')}`)}
+                      sx={{
+                        background: `${getRoleColor(role)}15`,
+                        color: getRoleColor(role),
+                        fontWeight: 600,
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+              sx={{
+                borderRadius: 'var(--radius-lg)',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--border)',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'var(--border-strong)',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#3b82b6',
+                },
+              }}
+            >
+              <MenuItem value="ROLE_SUPER_ADMIN">{t('roles.SUPER_ADMIN')}</MenuItem>
+              <MenuItem value="ROLE_TENANT_ADMIN">{t('roles.TENANT_ADMIN')}</MenuItem>
+              <MenuItem value="ROLE_MODERATOR">{t('roles.MODERATOR')}</MenuItem>
+              <MenuItem value="ROLE_PARTICIPANT">{t('roles.PARTICIPANT')}</MenuItem>
+              <MenuItem value="ROLE_AUDITOR">{t('roles.AUDITOR')}</MenuItem>
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button
@@ -686,7 +988,7 @@ export default function UsersPage() {
               fontWeight: 600,
             }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -700,7 +1002,7 @@ export default function UsersPage() {
               px: 3,
             }}
           >
-            {editingUser ? 'Update' : 'Create'}
+            {editingUser ? t('common.update') : t('common.create')}
           </Button>
         </DialogActions>
       </Dialog>

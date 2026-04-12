@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Drawer,
@@ -35,9 +36,9 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { text: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false },
-  { text: 'Conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false },
-  { text: 'Users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true },
+  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false },
+  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false },
+  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true },
 ];
 
 const itemVariants = {
@@ -48,6 +49,7 @@ const itemVariants = {
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, i18n } = useTranslation();
   const { user, clearAuth } = useAuthStore();
   const canManageUsers = user?.roles?.some(
     (role) => role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_SUPER_ADMIN'
@@ -126,7 +128,7 @@ export default function Layout() {
                 color: '#ffffff',
               }}
             >
-              VKS TV
+              {t('common.appName')}
             </Typography>
           </motion.div>
         )}
@@ -147,7 +149,7 @@ export default function Layout() {
             display: collapsed ? 'none' : 'block',
           }}
         >
-          Main Menu
+          {t('common.mainMenu')}
         </Typography>
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {filteredMenuItems.map((item, index) => {
@@ -155,14 +157,14 @@ export default function Layout() {
             const Icon = item.icon;
             return (
               <motion.div
-                key={item.text}
+                key={item.textKey}
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
                 transition={{ delay: index * 0.1 }}
               >
                 <ListItem disablePadding>
-                  <Tooltip title={collapsed ? item.text : ''} placement="right">
+                  <Tooltip title={collapsed ? t(item.textKey) : ''} placement="right">
                     <ListItemButton
                       selected={isActive}
                       onClick={() => navigate(item.path)}
@@ -211,7 +213,7 @@ export default function Layout() {
                       </ListItemIcon>
                       {!collapsed && (
                         <ListItemText
-                          primary={item.text}
+                          primary={t(item.textKey)}
                           primaryTypographyProps={{
                             fontWeight: isActive ? 600 : 500,
                             color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
@@ -233,7 +235,7 @@ export default function Layout() {
 
       {/* Bottom Section */}
       <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.15)' }}>
-        <Tooltip title={collapsed ? 'Settings' : ''} placement="right">
+        <Tooltip title={collapsed ? t('common.settings') : ''} placement="right">
           <ListItemButton
             sx={{
               borderRadius: 'var(--radius-lg)',
@@ -256,7 +258,7 @@ export default function Layout() {
             </ListItemIcon>
             {!collapsed && (
               <ListItemText
-                primary="Settings"
+                primary={t('common.settings')}
                 primaryTypographyProps={{
                   fontWeight: 500,
                   color: 'rgba(255, 255, 255, 0.9)',
@@ -302,7 +304,7 @@ export default function Layout() {
             color: '#3b82b6',
           }}
         >
-          VKS TV
+          {t('common.appName')}
         </Typography>
       </Box>
 
@@ -380,16 +382,31 @@ export default function Layout() {
         >
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
-              {menuItems.find((item) => item.path === location.pathname)?.text || 'Dashboard'}
+              {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-              Welcome back, {user?.firstName || 'User'}
+              {t('layout.welcomeBack', { firstName: user?.firstName || 'User' })}
             </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Language Toggle */}
+            <Tooltip title={t('common.language')}>
+              <IconButton
+                onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ru' : 'en')}
+                sx={{
+                  color: 'var(--text-muted)',
+                  '&:hover': { color: 'var(--text-h)' },
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.75rem' }}>
+                  {i18n.language === 'en' ? 'RU' : 'EN'}
+                </Typography>
+              </IconButton>
+            </Tooltip>
+
             {/* Theme Toggle */}
-            <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+            <Tooltip title={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}>
               <IconButton
                 onClick={toggleTheme}
                 sx={{
@@ -404,12 +421,12 @@ export default function Layout() {
                   animate={{ rotate: isDarkMode ? 360 : 0 }}
                   transition={{ duration: 0.5, ease: 'easeInOut' }}
                 >
-                  {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                 </motion.div>
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Notifications">
+            <Tooltip title={t('common.notifications')}>
               <IconButton
                 sx={{
                   color: 'var(--text-muted)',
@@ -488,7 +505,7 @@ export default function Layout() {
                 }}
               >
                 <LogOut size={18} style={{ marginRight: 12 }} />
-                Logout
+                {t('common.logout')}
               </MenuItem>
             </MuiMenu>
           </Box>

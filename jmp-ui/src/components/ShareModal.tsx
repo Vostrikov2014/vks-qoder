@@ -14,6 +14,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Copy, X, Link, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { conferenceApi } from '../services/api';
 import type { Conference } from '../types';
 
@@ -24,6 +25,7 @@ interface ShareModalProps {
 }
 
 export default function ShareModal({ conference, open, onClose }: ShareModalProps) {
+  const { t } = useTranslation();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -109,7 +111,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Link size={24} color="var(--text-h)" />
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
-            Share Conference
+            {t('share.title')}
           </Typography>
         </Box>
         <IconButton
@@ -147,8 +149,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         {!shareUrl ? (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <Typography variant="body2" sx={{ color: 'var(--text)', mb: 2 }}>
-              Generate a shareable link that anyone can use to join this conference.
-              The link will be valid for 4 hours.
+              {t('share.generateDesc')}
             </Typography>
             <Button
               variant="contained"
@@ -170,19 +171,19 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                 },
               }}
             >
-              Generate Share Link
+              {t('share.generateButton')}
             </Button>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Alert severity="success" sx={{ mb: 1, background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-              Share link generated successfully!
+              {t('share.successMessage')}
             </Alert>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <Clock size={14} color="var(--text-muted)" />
               <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                Expires: {formatExpiration(expiresAt)}
+                {t('share.expires')} {formatExpiration(expiresAt)}
               </Typography>
             </Box>
 
@@ -230,7 +231,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
 
             {copied && (
               <Chip
-                label="Link copied to clipboard!"
+                label={t('share.copiedMessage')}
                 size="small"
                 sx={{
                   background: 'rgba(34, 197, 94, 0.15)',
@@ -243,8 +244,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
 
             <Alert severity="info" sx={{ mt: 1, background: 'rgba(59, 130, 182, 0.08)', color: '#3b82b6', border: '1px solid rgba(59, 130, 182, 0.2)' }}>
               <Typography variant="caption">
-                <strong>How to use:</strong> Send this link to your friend. They can open it directly
-                in their browser to join the conference without needing an account.
+                <strong>{t('share.howToUse')}</strong> {t('share.howToUseDesc')}
               </Typography>
             </Alert>
           </Box>
@@ -260,7 +260,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
             textTransform: 'none',
           }}
         >
-          Close
+          {t('common.close')}
         </Button>
       </DialogActions>
     </Dialog>
