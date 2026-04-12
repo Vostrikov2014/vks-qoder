@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, Link2, User, ArrowRight, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/config';
 import { useThemeStore } from '../store/themeStore';
 import './HomePage.css';
 
@@ -56,6 +57,11 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isDarkMode, toggleTheme } = useThemeStore();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'ru' ? 'en' : 'ru';
+    i18n.changeLanguage(newLang);
+  };
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -140,6 +146,15 @@ export default function HomePage() {
         >
           {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
         </motion.div>
+      </button>
+
+      {/* Language Toggle */}
+      <button
+        className="language-toggle"
+        onClick={toggleLanguage}
+        aria-label={t('common.language')}
+      >
+        {i18n.language === 'ru' ? 'EN' : 'RU'}
       </button>
 
       {/* Decorative Elements */}

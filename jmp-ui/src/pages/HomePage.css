@@ -72,6 +72,49 @@
 }
 
 /* ==========================================================================
+   Language Toggle
+   ========================================================================== */
+
+.language-toggle {
+  position: absolute;
+  top: var(--space-6);
+  right: calc(var(--space-6) + 56px);
+  height: 48px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+  z-index: 10;
+}
+
+.language-toggle:hover {
+  color: var(--text-h);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
+}
+
+.language-toggle:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.language-code {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
    Decorative Elements
    ========================================================================== */
 
@@ -534,6 +577,13 @@
     right: var(--space-4);
     width: 44px;
     height: 44px;
+  }
+
+  .language-toggle {
+    top: var(--space-4);
+    right: calc(var(--space-4) + 52px);
+    height: 44px;
+    padding: 0 var(--space-2);
   }
 
   .logo-container {

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sparkles, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/config';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { authApi } from '../services/api';
@@ -58,6 +59,11 @@ export default function LoginPage() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'ru' ? 'en' : 'ru';
+    i18n.changeLanguage(newLang);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,6 +168,41 @@ export default function LoginPage() {
           >
             {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
           </motion.div>
+        </IconButton>
+      </Box>
+
+      {/* Language Toggle */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 24,
+          right: 80,
+          zIndex: 10,
+        }}
+      >
+        <IconButton
+          onClick={toggleLanguage}
+          aria-label={t('common.language')}
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 'var(--radius-xl)',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-muted)',
+            boxShadow: 'var(--shadow-lg)',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            '&:hover': {
+              background: 'var(--glass-bg)',
+              color: 'var(--text-h)',
+              transform: 'scale(1.05)',
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {i18n.language === 'ru' ? 'EN' : 'RU'}
         </IconButton>
       </Box>
 
