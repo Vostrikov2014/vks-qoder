@@ -11,7 +11,17 @@
 - [UserRepository.java](file://jmp-domain/src/main/java/com/jmp/domain/repository/UserRepository.java)
 - [GlobalExceptionHandler.java](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java)
 - [application.yml](file://jmp-web/src/main/resources/application.yml)
+- [V8__add_test_users.sql](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql)
+- [LoginPage.tsx](file://jmp-ui/src/pages/LoginPage.tsx)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Enhanced login functionality documentation with expanded demo credentials
+- Added comprehensive coverage of multiple user roles for testing and demonstration
+- Updated authentication endpoints section with detailed role-based credential information
+- Expanded demo credentials section with practical testing scenarios
+- Updated UI integration examples for role-based authentication workflows
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -26,14 +36,14 @@
 10. [Appendices](#appendices)
 
 ## Introduction
-This document provides comprehensive API documentation for the Authentication Controller, focusing on login, token refresh, and related authentication flows. It explains HTTP endpoints, request/response schemas, JWT token generation and validation, security headers, CORS configuration, session management, error handling, and security considerations. Practical examples and client implementation guidelines are included to help integrate the authentication system effectively.
+This document provides comprehensive API documentation for the Authentication Controller, focusing on login, token refresh, and related authentication flows. The system now includes enhanced login functionality with expanded demo credentials supporting multiple user roles for testing and demonstration purposes. It explains HTTP endpoints, request/response schemas, JWT token generation and validation, security headers, CORS configuration, session management, error handling, and security considerations. Practical examples and client implementation guidelines are included to help integrate the authentication system effectively across different user roles.
 
 ## Project Structure
 The authentication system spans multiple layers:
 - API Layer: Exposes REST endpoints for authentication
 - Application Layer: Implements business logic for JWT generation and user operations
 - Infrastructure Layer: Configures Spring Security, filters, and user details loading
-- Domain Layer: Provides repositories and entities for user data
+- Domain Layer: Provides repositories and entities for user data with role-based access control
 - Global Exception Handling: Standardizes error responses
 
 ```mermaid
@@ -52,10 +62,12 @@ UDS["UserDetailsServiceImpl<br/>user details loader"]
 end
 subgraph "Domain Layer"
 UR["UserRepository<br/>user persistence"]
+RL["RoleRepository<br/>role management"]
 end
 AC --> US
 AC --> JS
 US --> UR
+US --> RL
 SC --> JAF
 JAF --> JS
 JAF --> UDS
@@ -79,7 +91,8 @@ JAF --> UDS
 - Security Configuration: Defines stateless sessions, CORS, and public endpoints.
 - JWT Authentication Filter: Validates access tokens and populates Spring Security context.
 - User Details Service: Loads user authorities for authenticated requests.
-- User Service and Repository: Retrieve user data and record login events.
+- User Service and Repository: Retrieve user data and record login events with role-based access control.
+- Role Management: Supports multiple predefined roles for comprehensive testing scenarios.
 
 **Section sources**
 - [AuthController.java:37-124](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L37-L124)
@@ -91,7 +104,7 @@ JAF --> UDS
 - [UserRepository.java:24-37](file://jmp-domain/src/main/java/com/jmp/domain/repository/UserRepository.java#L24-L37)
 
 ## Architecture Overview
-The authentication flow integrates REST endpoints, JWT validation, and Spring Security:
+The authentication flow integrates REST endpoints, JWT validation, and Spring Security with comprehensive role-based access control:
 
 ```mermaid
 sequenceDiagram
@@ -100,6 +113,7 @@ participant API as "AuthController"
 participant AM as "AuthenticationManager"
 participant US as "UserService"
 participant UR as "UserRepository"
+participant RL as "RoleRepository"
 participant JS as "JwtService"
 participant SEC as "SecurityFilterChain"
 Client->>API : POST /api/v1/auth/login
@@ -108,15 +122,17 @@ US-->>API : UserDto.Response
 API->>AM : authenticate(usernamePasswordToken)
 AM-->>API : Authentication
 API->>UR : findWithRolesById(userId)
+UR->>RL : load user roles
+RL-->>UR : Role collection
 UR-->>API : User with roles
 API->>JS : generateAccessToken(user)
 API->>JS : generateRefreshToken(user)
 API->>US : recordLogin(userId)
-API-->>Client : 200 OK AuthResponse
+API-->>Client : 200 OK AuthResponse with role-based access
 Client->>SEC : Subsequent requests with Authorization : Bearer <access_token>
 SEC->>JS : validateAccessToken(access_token)
-JS-->>SEC : Claims
-SEC-->>Client : Authorized response
+JS-->>SEC : Claims with role information
+SEC-->>Client : Authorized response based on user role
 ```
 
 **Diagram sources**
@@ -132,7 +148,7 @@ SEC-->>Client : Authorized response
 ### Authentication Endpoints
 
 #### POST /api/v1/auth/login
-- Purpose: Authenticate a user and return access and refresh tokens.
+- Purpose: Authenticate a user and return access and refresh tokens with role-based access information.
 - Authentication: None (public endpoint).
 - Request Schema:
   - email: string, required
@@ -148,22 +164,27 @@ SEC-->>Client : Authorized response
   - 401 Unauthorized: Invalid credentials
   - 500 Internal Server Error: Unexpected errors
 
+**Enhanced** The login endpoint now supports comprehensive role-based authentication with expanded demo credentials for testing multiple user scenarios.
+
 ```mermaid
 sequenceDiagram
 participant C as "Client"
 participant A as "AuthController"
 participant U as "UserService"
 participant R as "UserRepository"
+participant RL as "RoleRepository"
 participant J as "JwtService"
 C->>A : POST /api/v1/auth/login {email,password}
 A->>U : getUserByEmail(email)
 U-->>A : UserDto.Response
 A->>R : findWithRolesById(userId)
+R->>RL : load user roles
+RL-->>R : Role collection
 R-->>A : User with roles
 A->>J : generateAccessToken(user)
 A->>J : generateRefreshToken(user)
 A->>U : recordLogin(userId)
-A-->>C : 200 OK {accessToken, refreshToken, expiresAt, user}
+A-->>C : 200 OK {accessToken, refreshToken, expiresAt, user with roles}
 ```
 
 **Diagram sources**
@@ -214,6 +235,45 @@ A-->>C : 200 OK {accessToken, expiresAt}
 - [AuthController.java:83-100](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L83-L100)
 - [AuthController.java:115-122](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L115-L122)
 
+### Enhanced Demo Credentials and Role-Based Testing
+
+#### Available Test Credentials
+The system now provides comprehensive demo credentials for testing all supported user roles:
+
+- **Super Admin**: `admin@jmp.local` / `admin123`
+  - Full administrative privileges across all tenants
+  - Access to all system features and user management
+
+- **Tenant Admin**: `tenant@jmp.local` / `tenant123`
+  - Administrative privileges within their assigned tenant
+  - Can manage users and settings within their organization
+
+- **Moderator**: `moderator@jmp.local` / `moderator123`
+  - Conference creation and management capabilities
+  - Can moderate conference participants
+
+- **Participant**: `participant@jmp.local` / `participant123`
+  - Standard conference participation rights
+  - Can join and participate in conferences
+
+- **Auditor**: `auditor@jmp.local` / `auditor123`
+  - Read-only access to logs and reporting features
+  - Can view audit trails and system reports
+
+#### Role-Based Access Control Integration
+Each demo user is automatically assigned their corresponding system role with predefined permissions:
+
+- **SUPER_ADMIN**: Full system access with all permissions enabled
+- **TENANT_ADMIN**: Tenant-specific administrative capabilities
+- **MODERATOR**: Conference management and moderation permissions
+- **PARTICIPANT**: Basic conference participation permissions
+- **AUDITOR**: Read-only logging and reporting permissions
+
+**Section sources**
+- [V8__add_test_users.sql:1-54](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql#L1-L54)
+- [LoginPage.tsx:478-495](file://jmp-ui/src/pages/LoginPage.tsx#L478-L495)
+- [Role.java:114-130](file://jmp-domain/src/main/java/com/jmp/domain/entity/Role.java#L114-L130)
+
 ### JWT Token Generation and Validation
 
 #### Access Token
@@ -223,9 +283,9 @@ A-->>C : 200 OK {accessToken, expiresAt}
   - sub: user UUID
   - email: user email
   - tenant_id: tenant UUID
-  - roles: list of role names
+  - roles: list of role names (role-based authorization)
 - Signature: HMAC using configured secret
-- Usage: Bearer token in Authorization header
+- Usage: Bearer token in Authorization header with role-based access control
 
 #### Refresh Token
 - Issuer: Platform
@@ -243,10 +303,11 @@ Parse --> Verify{"Signature valid?"}
 Verify --> |No| Expired["Mark as invalid/expired"]
 Verify --> |Yes| TypeCheck{"Has claim 'type'='refresh'?"}
 TypeCheck --> |Yes| ValidRefresh["Valid refresh token"]
-TypeCheck --> |No| ValidAccess["Valid access token"]
+TypeCheck --> |No| ValidAccess["Valid access token with role claims"]
 Expired --> End(["Done"])
 ValidRefresh --> End
-ValidAccess --> End
+ValidAccess --> RoleCheck["Extract role claims"]
+RoleCheck --> End
 ```
 
 **Diagram sources**
@@ -273,7 +334,7 @@ ValidAccess --> End
 
 ### Session Management
 - Session Policy: STATELESS
-- Authentication Context: Populated by JWT filter for each request
+- Authentication Context: Populated by JWT filter for each request with role-based authorization
 - Public Endpoints: /api/v1/auth/**, /api/v1/webhooks/**, health and OpenAPI endpoints
 
 **Section sources**
@@ -295,13 +356,14 @@ ValidAccess --> End
 - [GlobalExceptionHandler.java:102-114](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java#L102-L114)
 
 ## Dependency Analysis
-The authentication controller depends on services and repositories for user data and JWT operations. Security configuration integrates the JWT filter into the filter chain.
+The authentication controller depends on services and repositories for user data and JWT operations. Security configuration integrates the JWT filter into the filter chain with comprehensive role-based access control.
 
 ```mermaid
 graph LR
 AC["AuthController"] --> US["UserService"]
 AC --> JS["JwtService"]
 US --> UR["UserRepository"]
+US --> RL["RoleRepository"]
 SC["SecurityConfig"] --> JAF["JwtAuthenticationFilter"]
 JAF --> JS
 JAF --> UDS["UserDetailsServiceImpl"]
@@ -324,22 +386,26 @@ JAF --> UDS["UserDetailsServiceImpl"]
 - JWT parsing occurs per request; keep token size minimal by limiting claims.
 - Use EntityGraphs to eagerly load roles and permissions to reduce N+1 queries during authentication.
 - Configure appropriate CORS origins to avoid preflight overhead.
-
-[No sources needed since this section provides general guidance]
+- Role-based authorization adds minimal overhead as roles are loaded once during authentication.
 
 ## Troubleshooting Guide
 Common issues and resolutions:
 - 401 Unauthorized on login:
-  - Verify credentials and ensure user is active.
-  - Check JWT secrets and expiration settings.
+  - Verify credentials match the expected format for the target role
+  - Ensure user account is active and not suspended
+  - Check JWT secrets and expiration settings
 - 401 Unauthorized on protected endpoints:
-  - Ensure Authorization header includes Bearer <access_token>.
-  - Confirm token is not expired.
+  - Ensure Authorization header includes Bearer <access_token>
+  - Confirm token is not expired
+  - Verify user role has sufficient permissions for the requested resource
 - CORS errors:
-  - Verify client origin is in allowed origins.
-  - Confirm credentials are allowed for cross-origin requests.
+  - Verify client origin is in allowed origins
+  - Confirm credentials are allowed for cross-origin requests
 - Validation errors:
-  - Review request body against documented schemas.
+  - Review request body against documented schemas
+- Role-based access issues:
+  - Verify user has the correct role assigned
+  - Check role permissions matrix for the requested operation
 
 **Section sources**
 - [GlobalExceptionHandler.java:54-66](file://jmp-api/src/main/java/com/jmp/api/advice/GlobalExceptionHandler.java#L54-L66)
@@ -347,9 +413,7 @@ Common issues and resolutions:
 - [SecurityConfig.java:77-88](file://jmp-infrastructure/src/main/java/com/jmp/infrastructure/security/SecurityConfig.java#L77-L88)
 
 ## Conclusion
-The Authentication Controller provides a robust, stateless authentication mechanism using JWT. It supports login and token refresh with clear request/response schemas, standardized error handling, and secure CORS configuration. Clients should implement token storage securely and refresh tokens responsibly to maintain session continuity while minimizing risk.
-
-[No sources needed since this section summarizes without analyzing specific files]
+The Authentication Controller provides a robust, stateless authentication mechanism using JWT with comprehensive role-based access control. It supports login and token refresh with clear request/response schemas, standardized error handling, secure CORS configuration, and extensive demo credentials for testing multiple user roles. The enhanced system enables thorough testing of different user scenarios including super admins, tenant admins, moderators, participants, and auditors. Clients should implement token storage securely and refresh tokens responsibly to maintain session continuity while leveraging role-based authorization for appropriate access control.
 
 ## Appendices
 
@@ -358,7 +422,7 @@ The Authentication Controller provides a robust, stateless authentication mechan
 - POST /api/v1/auth/login
   - Request: { email, password }
   - Response: { accessToken, refreshToken, expiresAt, user }
-  - Notes: Returns short-lived access token and long-lived refresh token
+  - Notes: Returns short-lived access token and long-lived refresh token with role-based access information
 
 - POST /api/v1/auth/refresh
   - Request: { refreshToken }
@@ -384,8 +448,47 @@ The Authentication Controller provides a robust, stateless authentication mechan
   - accessToken: string
   - expiresAt: datetime (UTC)
 
+### Enhanced Demo Credentials
+
+#### Super Admin Credentials
+- Email: `admin@jmp.local`
+- Password: `admin123`
+- Role: `ROLE_SUPER_ADMIN`
+- Permissions: Full system access across all tenants
+- Use Case: System administration and user management
+
+#### Tenant Admin Credentials
+- Email: `tenant@jmp.local`
+- Password: `tenant123`
+- Role: `ROLE_TENANT_ADMIN`
+- Permissions: Tenant-specific administrative capabilities
+- Use Case: Organization-level user management and settings
+
+#### Moderator Credentials
+- Email: `moderator@jmp.local`
+- Password: `moderator123`
+- Role: `ROLE_MODERATOR`
+- Permissions: Conference creation and moderation
+- Use Case: Meeting facilitation and participant management
+
+#### Participant Credentials
+- Email: `participant@jmp.local`
+- Password: `participant123`
+- Role: `ROLE_PARTICIPANT`
+- Permissions: Standard conference participation
+- Use Case: Regular meeting attendance and participation
+
+#### Auditor Credentials
+- Email: `auditor@jmp.local`
+- Password: `auditor123`
+- Role: `ROLE_AUDITOR`
+- Permissions: Read-only logging and reporting
+- Use Case: Compliance monitoring and audit trails
+
 **Section sources**
 - [AuthController.java:103-122](file://jmp-api/src/main/java/com/jmp/api/controller/AuthController.java#L103-L122)
+- [V8__add_test_users.sql:1-54](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql#L1-L54)
+- [LoginPage.tsx:478-495](file://jmp-ui/src/pages/LoginPage.tsx#L478-L495)
 
 ### Client Implementation Guidelines
 - Store access tokens in memory only (e.g., in-memory store or secure browser storage).
@@ -393,8 +496,8 @@ The Authentication Controller provides a robust, stateless authentication mechan
 - On token expiration, call the refresh endpoint with a valid refresh token.
 - Always send Authorization: Bearer <access_token> for protected endpoints.
 - Implement retry logic for transient failures and handle 401 Unauthorized by prompting re-authentication.
-
-[No sources needed since this section provides general guidance]
+- Leverage role-based access control for dynamic UI and feature availability.
+- Handle role-specific permissions for granular access control in client applications.
 
 ### Security Recommendations
 - Rotate JWT secrets periodically and manage them via environment variables.
@@ -402,5 +505,5 @@ The Authentication Controller provides a robust, stateless authentication mechan
 - Consider adding rate limiting and brute force protection (not present in current code).
 - Limit token claims to essential data to minimize payload size.
 - Use short access token TTLs and long refresh token TTLs as configured.
-
-[No sources needed since this section provides general guidance]
+- Implement role-based authorization checks on both client and server sides.
+- Regularly review and update demo credentials in non-production environments.

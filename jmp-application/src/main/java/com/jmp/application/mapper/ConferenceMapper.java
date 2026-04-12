@@ -26,6 +26,8 @@ public interface ConferenceMapper {
     @Mapping(target = "currentParticipants", expression = "java(conference.getCurrentParticipantCount())")
     ConferenceDto.Response toResponse(Conference conference);
 
+    @Mapping(target = "createdById", source = "createdBy.id")
+    @Mapping(target = "createdByName", source = "createdBy", qualifiedByName = "userToName")
     @Mapping(target = "currentParticipants", expression = "java(conference.getCurrentParticipantCount())")
     ConferenceDto.Summary toSummary(Conference conference);
 

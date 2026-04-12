@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -72,8 +73,12 @@ public class ConferenceController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Get conference by ID")
-    public ResponseEntity<ConferenceDto.Response> getConference(@PathVariable UUID id) {
-        return ResponseEntity.ok(conferenceService.getConference(id));
+    public ResponseEntity<ConferenceDto.Response> getConference(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        boolean participantOnly = isParticipantOnly(authentication);
+        return ResponseEntity.ok(conferenceService.getConference(id, userId, participantOnly));
     }
 
     @GetMapping
@@ -85,12 +90,14 @@ public class ConferenceController {
             Authentication authentication) {
         
         UUID tenantId = extractTenantId(authentication);
+        UUID userId = extractUserId(authentication);
+        boolean participantOnly = isParticipantOnly(authentication);
         
         Page<ConferenceDto.Summary> conferences;
         if (search != null && !search.isBlank()) {
-            conferences = conferenceService.searchConferences(tenantId, search, pageable);
+            conferences = conferenceService.searchConferences(tenantId, userId, participantOnly, search, pageable);
         } else {
-            conferences = conferenceService.listConferences(tenantId, pageable);
+            conferences = conferenceService.listConferences(tenantId, userId, participantOnly, pageable);
         }
         
         return ResponseEntity.ok(conferences);
@@ -101,7 +108,9 @@ public class ConferenceController {
     @Operation(summary = "Get active conferences")
     public ResponseEntity<List<ConferenceDto.Summary>> getActiveConferences(Authentication authentication) {
         UUID tenantId = extractTenantId(authentication);
-        return ResponseEntity.ok(conferenceService.getActiveConferences(tenantId));
+        UUID userId = extractUserId(authentication);
+        boolean participantOnly = isParticipantOnly(authentication);
+        return ResponseEntity.ok(conferenceService.getActiveConferences(tenantId, userId, participantOnly));
     }
 
     @GetMapping("/upcoming")
@@ -109,7 +118,9 @@ public class ConferenceController {
     @Operation(summary = "Get upcoming conferences")
     public ResponseEntity<List<ConferenceDto.Summary>> getUpcomingConferences(Authentication authentication) {
         UUID tenantId = extractTenantId(authentication);
-        return ResponseEntity.ok(conferenceService.getUpcomingConferences(tenantId));
+        UUID userId = extractUserId(authentication);
+        boolean participantOnly = isParticipantOnly(authentication);
+        return ResponseEntity.ok(conferenceService.getUpcomingConferences(tenantId, userId, participantOnly));
     }
 
     @PutMapping("/{id}")
@@ -117,30 +128,40 @@ public class ConferenceController {
     @Operation(summary = "Update conference")
     public ResponseEntity<ConferenceDto.Response> updateConference(
             @PathVariable UUID id,
-            @Valid @RequestBody ConferenceDto.UpdateRequest request) {
-        
-        return ResponseEntity.ok(conferenceService.updateConference(id, request));
+            @Valid @RequestBody ConferenceDto.UpdateRequest request,
+            Authentication authentication) {
+
+        UUID userId = extractUserId(authentication);
+        boolean isAdmin = isAdmin(authentication);
+
+        return ResponseEntity.ok(conferenceService.updateConference(id, request, userId, isAdmin));
     }
 
     @PostMapping("/{id}/start")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Start a conference")
-    public ResponseEntity<ConferenceDto.Response> startConference(@PathVariable UUID id) {
-        return ResponseEntity.ok(conferenceService.startConference(id));
+    public ResponseEntity<ConferenceDto.Response> startConference(@PathVariable UUID id, Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        boolean isAdmin = isAdmin(authentication);
+        return ResponseEntity.ok(conferenceService.startConference(id, userId, isAdmin));
     }
 
     @PostMapping("/{id}/end")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "End a conference")
-    public ResponseEntity<ConferenceDto.Response> endConference(@PathVariable UUID id) {
-        return ResponseEntity.ok(conferenceService.endConference(id));
+    public ResponseEntity<ConferenceDto.Response> endConference(@PathVariable UUID id, Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        boolean isAdmin = isAdmin(authentication);
+        return ResponseEntity.ok(conferenceService.endConference(id, userId, isAdmin));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Delete conference")
-    public ResponseEntity<Void> deleteConference(@PathVariable UUID id) {
-        conferenceService.deleteConference(id);
+    public ResponseEntity<Void> deleteConference(@PathVariable UUID id, Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        boolean isAdmin = isAdmin(authentication);
+        conferenceService.deleteConference(id, userId, isAdmin);
         return ResponseEntity.noContent().build();
     }
 
@@ -228,5 +249,19 @@ public class ConferenceController {
             return details.getUserId();
         }
         throw new IllegalStateException("Cannot extract user ID from authentication");
+    }
+
+    private boolean isParticipantOnly(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .noneMatch(role -> role.equals("ROLE_MODERATOR")
+                || role.equals("ROLE_TENANT_ADMIN")
+                || role.equals("ROLE_SUPER_ADMIN"));
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(role -> role.equals("ROLE_MODERATOR") || role.equals("ROLE_TENANT_ADMIN") || role.equals("ROLE_SUPER_ADMIN"));
     }
 }

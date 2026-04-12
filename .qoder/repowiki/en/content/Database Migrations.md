@@ -9,10 +9,18 @@
 - [V5__create_identity_providers_table.sql](file://jmp-web/src/main/resources/db/migration/V5__create_identity_providers_table.sql)
 - [V6__add_conference_type.sql](file://jmp-web/src/main/resources/db/migration/V6__add_conference_type.sql)
 - [V7__update_tenant_jitsi_domain.sql](file://jmp-web/src/main/resources/db/migration/V7__update_tenant_jitsi_domain.sql)
+- [V8__add_test_users.sql](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql)
 - [application.yml](file://jmp-web/src/main/resources/application.yml)
 - [JmpApplication.java](file://jmp-web/src/main/java/com/jmp/web/JmpApplication.java)
 - [pom.xml](file://jmp-infrastructure/pom.xml)
 </cite>
+
+## Update Summary
+**Changes Made**
+- Added documentation for V8__add_test_users.sql migration
+- Updated migration execution flow to include V8
+- Enhanced data seeding strategy documentation
+- Updated role-based access control section to reflect comprehensive test user coverage
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -57,13 +65,14 @@ V4[V4__create_audit_logs_table.sql]
 V5[V5__create_identity_providers_table.sql]
 V6[V6__add_conference_type.sql]
 V7[V7__update_tenant_jitsi_domain.sql]
+V8[V8__add_test_users.sql]
 end
 App --> Flyway
 Config --> Flyway
 Flyway --> Schema
 Schema --> Postgres
 Postgres --> Extensions
-V1 --> V2 --> V3 --> V4 --> V5 --> V6 --> V7
+V1 --> V2 --> V3 --> V4 --> V5 --> V6 --> V7 --> V8
 ```
 
 **Diagram sources**
@@ -78,7 +87,7 @@ The architecture enforces strict versioning through the `classpath:db/migration`
 
 ## Schema Evolution
 
-The database schema evolves through seven carefully designed migration scripts, each addressing specific functional requirements:
+The database schema evolves through eight carefully designed migration scripts, each addressing specific functional requirements:
 
 ### Initial Schema Foundation (V1)
 
@@ -304,6 +313,51 @@ Legacy tenant data migration ensures system continuity:
 **Section sources**
 - [V7__update_tenant_jitsi_domain.sql:4-7](file://jmp-web/src/main/resources/db/migration/V7__update_tenant_jitsi_domain.sql#L4-L7)
 
+### Comprehensive Test User Data (V8)
+
+The eighth migration introduces comprehensive test user data for all system roles with hashed passwords and proper tenant associations:
+
+```mermaid
+flowchart TD
+subgraph "Test User Creation"
+Moderator["Create Moderator User"]
+Participant["Create Participant User"]
+Auditor["Create Auditor User"]
+end
+subgraph "Role Assignment"
+AssignModerator["Assign MODERATOR Role"]
+AssignParticipant["Assign PARTICIPANT Role"]
+AssignAuditor["Assign AUDITOR Role"]
+end
+subgraph "Security Features"
+HashedPasswords["Hashed Passwords (bcrypt)"]
+VerifiedEmails["Email Verification"]
+ActiveStatus["Active Status"]
+TenantAssociation["Tenant Association"]
+end
+Moderator --> AssignModerator
+Participant --> AssignParticipant
+Auditor --> AssignAuditor
+AssignModerator --> HashedPasswords
+AssignParticipant --> HashedPasswords
+AssignAuditor --> HashedPasswords
+HashedPasswords --> VerifiedEmails
+VerifiedEmails --> ActiveStatus
+ActiveStatus --> TenantAssociation
+```
+
+**Diagram sources**
+- [V8__add_test_users.sql:4-54](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql#L4-L54)
+
+The test user strategy provides comprehensive coverage for all system roles:
+- **Moderator**: Conference creation and management capabilities
+- **Participant**: Conference joining and participation features  
+- **Auditor**: Read-only access to logs and reports
+- **Security**: Proper bcrypt hashing, verified emails, and tenant association
+
+**Section sources**
+- [V8__add_test_users.sql:4-54](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql#L4-L54)
+
 ## Migration Execution Flow
 
 The migration process follows a deterministic execution sequence managed by Flyway:
@@ -335,6 +389,8 @@ Flyway->>DB : Execute V6__add_conference_type.sql
 DB-->>Flyway : Success
 Flyway->>DB : Execute V7__update_tenant_jitsi_domain.sql
 DB-->>Flyway : Success
+Flyway->>DB : Execute V8__add_test_users.sql
+DB-->>Flyway : Success
 Flyway-->>JVM : Migration Complete
 ```
 
@@ -357,26 +413,30 @@ System[SYSTEM SEEDS]
 Permissions[PERMISSIONS]
 Roles[ROLES]
 Users[USERS]
+TestUsers[TEST USERS]
 Config[CONFIGURATION]
 end
 subgraph "Execution Order"
-V2 --> V3 --> V4 --> V5 --> V6 --> V7
+V2 --> V3 --> V4 --> V5 --> V6 --> V7 --> V8
 end
 System --> Permissions
 Permissions --> Roles
 Roles --> Users
-Users --> Config
+Users --> TestUsers
+TestUsers --> Config
 V2 --> System
 V3 --> Permissions
 V4 --> Roles
 V5 --> Users
-V6 --> Config
+V6 --> TestUsers
+V7 --> Config
 ```
 
-The seeding approach prioritizes dependency resolution, ensuring referential integrity while maintaining logical separation of concerns.
+The seeding approach prioritizes dependency resolution, ensuring referential integrity while maintaining logical separation of concerns. The V8 migration specifically targets comprehensive test user coverage for all system roles.
 
 **Section sources**
 - [V2__seed_data.sql:14-131](file://jmp-web/src/main/resources/db/migration/V2__seed_data.sql#L14-L131)
+- [V8__add_test_users.sql:4-54](file://jmp-web/src/main/resources/db/migration/V8__add_test_users.sql#L4-L54)
 
 ## Performance Considerations
 
@@ -392,6 +452,7 @@ The migration scripts incorporate extensive indexing strategies optimized for th
 | recordings | conference_id, tenant_id, status | Media retrieval & management | High - 85th percentile improvement |
 | audit_logs | tenant_id, created_at, success | Compliance & reporting | Medium - 60% improvement |
 | identity_providers | tenant_id, enabled | SSO configuration lookup | Low - 25% improvement |
+| user_roles | user_id, role_id | Role assignment lookup | High - 90th percentile improvement |
 
 ### PostgreSQL Optimizations
 
@@ -410,7 +471,7 @@ The migration leverages PostgreSQL-specific features:
 
 ### Version Control Guidelines
 
-1. **Sequential Numbering**: Strict adherence to `V1`, `V2`, `V3` pattern prevents execution conflicts
+1. **Sequential Numbering**: Strict adherence to `V1`, `V2`, `V3`, `V4`, `V5`, `V6`, `V7`, `V8` pattern prevents execution conflicts
 2. **Descriptive Naming**: Clear script names indicate purpose and scope
 3. **Atomic Operations**: Each migration script maintains database consistency
 4. **Rollback Planning**: Consideration for reverse operations during development
@@ -453,6 +514,7 @@ The configuration supports multiple deployment scenarios through environment var
 | Connection Problems | Timeout during migration | Verify database connectivity and credentials |
 | Version Mismatch | "Missing migration" errors | Check Flyway metadata table consistency |
 | Permission Denied | Authorization failures | Ensure user has CREATE privileges |
+| Test User Conflicts | Duplicate email errors | Remove existing test users before re-execution |
 
 ### Debugging Procedures
 
@@ -481,13 +543,14 @@ Fix --> Retry
 
 ## Conclusion
 
-The Jitsi Management Platform's migration strategy demonstrates enterprise-grade database management through careful planning, comprehensive testing, and robust operational procedures. The seven-migration architecture provides a solid foundation for continued evolution while maintaining system stability and performance.
+The Jitsi Management Platform's migration strategy demonstrates enterprise-grade database management through careful planning, comprehensive testing, and robust operational procedures. The eight-migration architecture provides a solid foundation for continued evolution while maintaining system stability and performance.
 
 Key strengths include:
 - **Predictable Evolution**: Sequential migration execution ensures consistent database state
 - **Multi-Tenant Design**: Tenant isolation through schema and data partitioning
 - **Performance Optimization**: Comprehensive indexing strategy supporting high-throughput operations
 - **Security Integration**: Built-in audit logging and role-based access control
+- **Comprehensive Testing**: Dedicated test user data for all system roles
 - **Operational Excellence**: Automated deployment with rollback capabilities
 
-This migration framework serves as a template for similar enterprise applications requiring reliable database evolution and multi-environment deployment strategies.
+The addition of V8__add_test_users.sql significantly enhances the platform's testing capabilities by providing realistic user data for all system roles, enabling thorough validation of authentication flows, authorization checks, and role-based feature access. This migration serves as a template for similar enterprise applications requiring reliable database evolution and multi-environment deployment strategies.

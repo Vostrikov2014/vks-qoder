@@ -21,16 +21,15 @@
 - [eslint.config.js](file://jmp-ui/eslint.config.js)
 - [Dockerfile](file://jmp-ui/Dockerfile)
 - [nginx.conf](file://jmp-ui/nginx.conf)
+- [index.html](file://jmp-ui/index.html)
 </cite>
 
 ## Update Summary
 **Changes Made**
-- Added new HomePage component with glassmorphism design system and animations
-- Implemented comprehensive design system with corporate blue-gray color palette
-- Enhanced LoginPage with Material-UI integration, form validation, and accessibility features
-- Updated routing structure to prioritize HomePage as main landing page
-- Added theme store for persistent theme management
-- Integrated Framer Motion for smooth animations and transitions
+- Updated branding from Jitsi Management Platform (JMP) to VKS TV across all UI components
+- Enhanced LoginPage with expanded demo credentials for 5 user roles (Super Admin, Tenant Admin, Moderator, Participant, Auditor)
+- Updated logo, title, and navigation elements to reflect VKS TV identity
+- Maintained existing design system and functionality while applying new branding
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -46,7 +45,7 @@
 11. [Appendices](#appendices)
 
 ## Introduction
-This document describes the React-based frontend application for the Jitsi Management Platform (JMP). It covers the component hierarchy, routing configuration, state management with Zustand stores, Material-UI integration, responsive design patterns, and user interface components. The application features a modern glassmorphism design system with corporate blue-gray aesthetics, smooth animations powered by Framer Motion, and comprehensive theme management. It documents the application pages (homepage, dashboard, conference management, user administration, and login), authentication state management, API integration patterns, and the deployment pipeline. Guidance is included for component development, styling approaches, accessibility compliance, performance optimization, and browser compatibility.
+This document describes the React-based frontend application for VKS TV, the video conferencing platform formerly known as the Jitsi Management Platform (JMP). It covers the component hierarchy, routing configuration, state management with Zustand stores, Material-UI integration, responsive design patterns, and user interface components. The application features a modern glassmorphism design system with VKS TV's corporate blue-gray aesthetics, smooth animations powered by Framer Motion, and comprehensive theme management. It documents the application pages (homepage, dashboard, conference management, user administration, and login), authentication state management, API integration patterns, and the deployment pipeline. Guidance is included for component development, styling approaches, accessibility compliance, performance optimization, and browser compatibility.
 
 ## Project Structure
 The frontend is a Vite-powered React application written in TypeScript. It uses Material-UI for UI components, Axios for HTTP requests, React Router for navigation, and Zustand for state management. The application features a comprehensive design system with CSS custom properties, glassmorphism effects, and smooth animations. The application is containerized with a multi-stage Docker build and served via nginx.
@@ -90,7 +89,7 @@ Main --> CSS
 - [Layout.tsx:1-167](file://jmp-ui/src/components/Layout.tsx#L1-L167)
 - [HomePage.tsx:1-277](file://jmp-ui/src/pages/HomePage.tsx#L1-L277)
 - [HomePage.css:1-635](file://jmp-ui/src/pages/HomePage.css#L1-L635)
-- [LoginPage.tsx:1-493](file://jmp-ui/src/pages/LoginPage.tsx#L1-L493)
+- [LoginPage.tsx:1-502](file://jmp-ui/src/pages/LoginPage.tsx#L1-L502)
 - [DashboardPage.tsx:1-142](file://jmp-ui/src/pages/DashboardPage.tsx#L1-L142)
 - [ConferencesPage.tsx:1-299](file://jmp-ui/src/pages/ConferencesPage.tsx#L1-L299)
 - [UsersPage.tsx:1-249](file://jmp-ui/src/pages/UsersPage.tsx#L1-L249)
@@ -199,7 +198,7 @@ Design --> Login
 - [DashboardPage.tsx:1-142](file://jmp-ui/src/pages/DashboardPage.tsx#L1-L142)
 - [ConferencesPage.tsx:1-299](file://jmp-ui/src/pages/ConferencesPage.tsx#L1-L299)
 - [UsersPage.tsx:1-249](file://jmp-ui/src/pages/UsersPage.tsx#L1-L249)
-- [LoginPage.tsx:1-493](file://jmp-ui/src/pages/LoginPage.tsx#L1-L493)
+- [LoginPage.tsx:1-502](file://jmp-ui/src/pages/LoginPage.tsx#L1-L502)
 - [authStore.ts:1-47](file://jmp-ui/src/store/authStore.ts#L1-L47)
 - [themeStore.ts:1-22](file://jmp-ui/src/store/themeStore.ts#L1-L22)
 - [api.ts:1-93](file://jmp-ui/src/services/api.ts#L1-L93)
@@ -250,10 +249,11 @@ end
 - [Layout.tsx:36-166](file://jmp-ui/src/components/Layout.tsx#L36-L166)
 
 ### Authentication Flow (Login)
-- **Enhanced** LoginPage now features Material-UI integration with form validation.
+- **Enhanced** LoginPage now features Material-UI integration with form validation and expanded demo credentials.
 - Login form posts credentials to the backend with improved error handling.
 - On success, sets user, access, and refresh tokens in the store.
 - Redirects to the dashboard with smooth transitions.
+- **Updated** Demo credentials now include 5 user roles: Super Admin, Tenant Admin, Moderator, Participant, and Auditor.
 
 ```mermaid
 sequenceDiagram
@@ -275,7 +275,7 @@ LP->>R : navigate("/dashboard")
 - [authStore.ts:23-35](file://jmp-ui/src/store/authStore.ts#L23-L35)
 
 **Section sources**
-- [LoginPage.tsx:1-493](file://jmp-ui/src/pages/LoginPage.tsx#L1-L493)
+- [LoginPage.tsx:1-502](file://jmp-ui/src/pages/LoginPage.tsx#L1-L502)
 - [api.ts:61-66](file://jmp-ui/src/services/api.ts#L61-L66)
 - [authStore.ts:1-47](file://jmp-ui/src/store/authStore.ts#L1-L47)
 
@@ -286,6 +286,7 @@ LP->>R : navigate("/dashboard")
 - Built-in theme toggle with smooth transitions.
 - Responsive design with mobile-first approach.
 - Framer Motion animations for enhanced user experience.
+- **Updated** Branding reflects VKS TV with new logo and typography.
 
 ```mermaid
 flowchart TD
@@ -400,7 +401,7 @@ API-->>P : Updated list
 - [api.ts:68-76](file://jmp-ui/src/services/api.ts#L68-L76)
 
 ### Material-UI and Responsive Design
-- **Enhanced** LoginPage now uses Material-UI components with form validation.
+- **Enhanced** LoginPage now uses Material-UI components with form validation and expanded demo credentials.
 - Theme provider with light palette and CssBaseline.
 - Drawer and AppBar with responsive breakpoints.
 - Mobile-friendly temporary drawer and permanent desktop drawer.
@@ -487,8 +488,23 @@ class ThemeState {
 - [authStore.ts:1-47](file://jmp-ui/src/store/authStore.ts#L1-L47)
 - [themeStore.ts:1-22](file://jmp-ui/src/store/themeStore.ts#L1-L22)
 
+### VKS TV Branding Transformation
+- **Updated** Complete branding transformation from Jitsi Management Platform (JMP) to VKS TV
+- **Updated** Logo elements now feature VKS TV brand identity with gradient accents
+- **Updated** Navigation elements display "VKS TV" throughout the application
+- **Updated** Demo credentials in LoginPage reflect VKS TV user roles
+- **Updated** Title tag in index.html reflects VKS TV branding
+- **Updated** HomePage displays VKS TV logo and branding elements
+
+**Section sources**
+- [Layout.tsx:115-125](file://jmp-ui/src/components/Layout.tsx#L115-L125)
+- [Layout.tsx:290-300](file://jmp-ui/src/components/Layout.tsx#L290-L300)
+- [HomePage.tsx:155-163](file://jmp-ui/src/pages/HomePage.tsx#L155-L163)
+- [LoginPage.tsx:227-276](file://jmp-ui/src/pages/LoginPage.tsx#L227-276)
+- [index.html:7](file://jmp-ui/index.html#L7)
+
 ## Design System
-The application features a comprehensive corporate design system with the following characteristics:
+The application features a comprehensive corporate design system with VKS TV branding characteristics:
 
 ### Color Palette
 - **Primary Blue-Gray**: Corporate blue (#3b82f6) with gradient variations
@@ -582,6 +598,7 @@ Pkg --> ESL
   - Check Material-UI TextField components and input adornments.
   - Verify form submission handlers and error state management.
   - Ensure proper focus management and accessibility attributes.
+  - **Updated** Verify demo credentials are properly formatted and accessible.
 - 401 errors after token expiration
   - Ensure refresh endpoint is reachable and returns a new access token.
   - Check that the retry mechanism is not stuck in a loop due to missing refresh token.
@@ -593,6 +610,10 @@ Pkg --> ESL
   - Check global CSS media queries and ensure responsive breakpoints align with Material-UI.
   - Validate that Material-UI theme variables match CSS custom properties.
   - Verify theme store state synchronization with CSS classes.
+- **Updated** Branding issues
+  - Verify VKS TV logo elements are properly rendered in all components.
+  - Check that navigation elements consistently display "VKS TV" branding.
+  - Ensure demo credentials in LoginPage are visible and properly formatted.
 
 **Section sources**
 - [api.ts:4-11](file://jmp-ui/src/services/api.ts#L4-L11)
@@ -600,10 +621,10 @@ Pkg --> ESL
 - [main.tsx:21-29](file://jmp-ui/src/main.tsx#L21-L29)
 - [index.css:1-402](file://jmp-ui/src/index.css#L1-L402)
 - [HomePage.css:1-635](file://jmp-ui/src/pages/HomePage.css#L1-L635)
-- [LoginPage.tsx:1-493](file://jmp-ui/src/pages/LoginPage.tsx#L1-L493)
+- [LoginPage.tsx:1-502](file://jmp-ui/src/pages/LoginPage.tsx#L1-L502)
 
 ## Conclusion
-The frontend application is a modern, responsive React application using Material-UI and TypeScript, with robust routing, centralized state management via Zustand stores, and a comprehensive design system featuring glassmorphism aesthetics and smooth animations. The application now features a sophisticated HomePage component with enhanced user experience, improved LoginPage with Material-UI integration, and persistent theme management. The build and deployment pipeline leverages Vite and nginx for efficient delivery. The documented pages and components provide a clear foundation for extending functionality while maintaining consistency in design and behavior.
+The frontend application is a modern, responsive React application using Material-UI and TypeScript, with robust routing, centralized state management via Zustand stores, and a comprehensive design system featuring VKS TV's glassmorphism aesthetics and smooth animations. The application now features a sophisticated HomePage component with enhanced user experience, improved LoginPage with Material-UI integration and expanded demo credentials for 5 user roles, and persistent theme management. The build and deployment pipeline leverages Vite and nginx for efficient delivery. The documented pages and components provide a clear foundation for extending functionality while maintaining consistency in design and behavior.
 
 ## Appendices
 
@@ -634,6 +655,7 @@ The frontend application is a modern, responsive React application using Materia
 - Follow ESLint rules for hooks and React refresh.
 - Keep TypeScript strictness enabled via tsconfig references.
 - **New** Utilize CSS custom properties for consistent theming across components.
+- **Updated** Maintain VKS TV branding consistency across all UI elements.
 
 **Section sources**
 - [vite.config.ts:1-8](file://jmp-ui/vite.config.ts#L1-L8)
@@ -643,6 +665,7 @@ The frontend application is a modern, responsive React application using Materia
 ### Accessibility Compliance Guidelines
 - **Enhanced** HomePage with proper ARIA labels and keyboard navigation.
 - **Enhanced** LoginPage with form validation and error announcements.
+- **Updated** Demo credentials section with proper semantic markup and accessibility.
 - Prefer semantic HTML and Material-UI components for built-in ARIA attributes.
 - Ensure sufficient color contrast for text and interactive elements.
 - Provide focus management for modals and dialogs.
@@ -660,7 +683,9 @@ The frontend application is a modern, responsive React application using Materia
 - CSS custom properties are supported in modern browsers; consider fallbacks if legacy IE support is required.
 - **New** Framer Motion requires modern browser animation support.
 - **New** Glassmorphism effects may require vendor prefixes in older browsers.
+- **Updated** VKS TV branding elements should render consistently across modern browsers.
 
 **Section sources**
 - [index.css:1-402](file://jmp-ui/src/index.css#L1-L402)
 - [HomePage.css:1-635](file://jmp-ui/src/pages/HomePage.css#L1-L635)
+- [Layout.tsx:1-510](file://jmp-ui/src/components/Layout.tsx#L1-L510)

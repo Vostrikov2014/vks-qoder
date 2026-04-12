@@ -106,4 +106,48 @@ public interface ConferenceRepository extends JpaRepository<Conference, UUID> {
            "AND c.scheduledEndAt <= :now " +
            "AND c.deletedAt IS NULL")
     List<Conference> findConferencesToEnd(@Param("now") Instant now);
+
+    /**
+     * Find all conferences by tenant ID where user is a participant or creator.
+     */
+    @EntityGraph(attributePaths = {"createdBy"})
+    @Query("SELECT DISTINCT c FROM Conference c LEFT JOIN c.participants p " +
+           "WHERE c.tenant.id = :tenantId AND c.deletedAt IS NULL " +
+           "AND (p.user.id = :userId OR c.createdBy.id = :userId)")
+    Page<Conference> findByTenantIdAndParticipantUserId(@Param("tenantId") UUID tenantId,
+                                                        @Param("userId") UUID userId,
+                                                        Pageable pageable);
+
+    /**
+     * Find active conferences for a tenant where user is a participant or creator.
+     */
+    @Query("SELECT DISTINCT c FROM Conference c LEFT JOIN c.participants p " +
+           "WHERE c.tenant.id = :tenantId AND c.status = 'ACTIVE' AND c.deletedAt IS NULL " +
+           "AND (p.user.id = :userId OR c.createdBy.id = :userId)")
+    List<Conference> findActiveByTenantIdAndParticipantUserId(@Param("tenantId") UUID tenantId,
+                                                              @Param("userId") UUID userId);
+
+    /**
+     * Find upcoming conferences (scheduled to start in the future) where user is a participant or creator.
+     */
+    @Query("SELECT DISTINCT c FROM Conference c LEFT JOIN c.participants p " +
+           "WHERE c.tenant.id = :tenantId AND c.scheduledStartAt > :now AND c.status = 'SCHEDULED' AND c.deletedAt IS NULL " +
+           "AND (p.user.id = :userId OR c.createdBy.id = :userId)")
+    List<Conference> findUpcomingByTenantIdAndParticipantUserId(@Param("tenantId") UUID tenantId,
+                                                                @Param("userId") UUID userId,
+                                                                @Param("now") Instant now);
+
+    /**
+     * Search conferences by name or room name where user is a participant or creator.
+     */
+    @Query("SELECT DISTINCT c FROM Conference c LEFT JOIN c.participants p " +
+           "WHERE c.tenant.id = :tenantId AND c.deletedAt IS NULL " +
+           "AND (p.user.id = :userId OR c.createdBy.id = :userId) " +
+           "AND (LOWER(c.displayName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(c.roomName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Conference> searchByTenantIdAndParticipantUserId(@Param("tenantId") UUID tenantId,
+                                                          @Param("userId") UUID userId,
+                                                          @Param("search") String search,
+                                                          Pageable pageable);
 }

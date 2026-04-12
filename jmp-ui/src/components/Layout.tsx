@@ -35,9 +35,9 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { text: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6' },
-  { text: 'Conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6' },
-  { text: 'Users', icon: Users, path: '/dashboard/users', color: '#3b82b6' },
+  { text: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false },
+  { text: 'Conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false },
+  { text: 'Users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true },
 ];
 
 const itemVariants = {
@@ -49,6 +49,13 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, clearAuth } = useAuthStore();
+  const canManageUsers = user?.roles?.some(
+    (role) => role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_SUPER_ADMIN'
+  ) ?? false;
+
+  const filteredMenuItems = menuItems.filter(
+    (item) => !item.requiresAdmin || canManageUsers
+  );
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -143,7 +150,7 @@ export default function Layout() {
           Main Menu
         </Typography>
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {menuItems.map((item, index) => {
+          {filteredMenuItems.map((item, index) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
             return (

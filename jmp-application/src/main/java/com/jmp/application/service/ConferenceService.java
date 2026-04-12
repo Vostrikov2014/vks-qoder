@@ -3,6 +3,7 @@ package com.jmp.application.service;
 import com.jmp.application.dto.ConferenceDto;
 import com.jmp.application.mapper.ConferenceMapper;
 import com.jmp.domain.entity.Conference;
+import com.jmp.domain.entity.ConferenceParticipant;
 import com.jmp.domain.entity.Tenant;
 import com.jmp.domain.entity.User;
 import com.jmp.domain.repository.ConferenceRepository;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,9 +89,34 @@ public class ConferenceService {
     }
 
     /**
+     * Get conference by ID with participant-only access check.
+     */
+    public ConferenceDto.Response getConference(UUID id, UUID userId, boolean isParticipantOnly) {
+        Conference conference = conferenceRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        if (isParticipantOnly) {
+            boolean isCreator = conference.getCreatedBy().getId().equals(userId);
+            boolean isParticipant = conference.getParticipants().stream()
+                .map(ConferenceParticipant::getUser)
+                .anyMatch(user -> user != null && user.getId().equals(userId));
+
+            if (!isCreator && !isParticipant) {
+                throw new AccessDeniedException("You do not have access to this conference");
+            }
+        }
+
+        return conferenceMapper.toResponse(conference);
+    }
+
+    /**
      * List conferences by tenant with pagination.
      */
-    public Page<ConferenceDto.Summary> listConferences(UUID tenantId, Pageable pageable) {
+    public Page<ConferenceDto.Summary> listConferences(UUID tenantId, UUID userId, boolean isParticipantOnly, Pageable pageable) {
+        if (isParticipantOnly) {
+            return conferenceRepository.findByTenantIdAndParticipantUserId(tenantId, userId, pageable)
+                .map(conferenceMapper::toSummary);
+        }
         return conferenceRepository.findByTenantIdAndDeletedAtIsNull(tenantId, pageable)
             .map(conferenceMapper::toSummary);
     }
@@ -97,7 +124,11 @@ public class ConferenceService {
     /**
      * Search conferences within a tenant.
      */
-    public Page<ConferenceDto.Summary> searchConferences(UUID tenantId, String search, Pageable pageable) {
+    public Page<ConferenceDto.Summary> searchConferences(UUID tenantId, UUID userId, boolean isParticipantOnly, String search, Pageable pageable) {
+        if (isParticipantOnly) {
+            return conferenceRepository.searchByTenantIdAndParticipantUserId(tenantId, userId, search, pageable)
+                .map(conferenceMapper::toSummary);
+        }
         return conferenceRepository.searchByTenantId(tenantId, search, pageable)
             .map(conferenceMapper::toSummary);
     }
@@ -105,7 +136,12 @@ public class ConferenceService {
     /**
      * Get active conferences for a tenant.
      */
-    public List<ConferenceDto.Summary> getActiveConferences(UUID tenantId) {
+    public List<ConferenceDto.Summary> getActiveConferences(UUID tenantId, UUID userId, boolean isParticipantOnly) {
+        if (isParticipantOnly) {
+            return conferenceRepository.findActiveByTenantIdAndParticipantUserId(tenantId, userId).stream()
+                .map(conferenceMapper::toSummary)
+                .toList();
+        }
         return conferenceRepository.findActiveByTenantId(tenantId).stream()
             .map(conferenceMapper::toSummary)
             .toList();
@@ -114,7 +150,12 @@ public class ConferenceService {
     /**
      * Get upcoming conferences for a tenant.
      */
-    public List<ConferenceDto.Summary> getUpcomingConferences(UUID tenantId) {
+    public List<ConferenceDto.Summary> getUpcomingConferences(UUID tenantId, UUID userId, boolean isParticipantOnly) {
+        if (isParticipantOnly) {
+            return conferenceRepository.findUpcomingByTenantIdAndParticipantUserId(tenantId, userId, Instant.now()).stream()
+                .map(conferenceMapper::toSummary)
+                .toList();
+        }
         return conferenceRepository.findUpcomingByTenantId(tenantId, Instant.now()).stream()
             .map(conferenceMapper::toSummary)
             .toList();
@@ -124,11 +165,16 @@ public class ConferenceService {
      * Update conference.
      */
     @Transactional
-    public ConferenceDto.Response updateConference(UUID id, ConferenceDto.UpdateRequest request) {
+    public ConferenceDto.Response updateConference(UUID id, ConferenceDto.UpdateRequest request, UUID userId, boolean isAdmin) {
         log.info("Updating conference: {}", id);
 
         Conference conference = conferenceRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        // Check ownership for non-admin users
+        if (!isAdmin && !conference.getCreatedBy().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the conference creator or administrators can perform this action");
+        }
 
         // Only allow updates for scheduled conferences
         if (conference.getStatus() == Conference.ConferenceStatus.ENDED ||
@@ -164,11 +210,16 @@ public class ConferenceService {
      * Start a conference.
      */
     @Transactional
-    public ConferenceDto.Response startConference(UUID id) {
+    public ConferenceDto.Response startConference(UUID id, UUID userId, boolean isAdmin) {
         log.info("Starting conference: {}", id);
 
         Conference conference = conferenceRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        // Check ownership for non-admin users
+        if (!isAdmin && !conference.getCreatedBy().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the conference creator or administrators can perform this action");
+        }
 
         if (conference.getStatus() != Conference.ConferenceStatus.SCHEDULED) {
             throw new IllegalStateException("Conference is not in scheduled state");
@@ -185,11 +236,16 @@ public class ConferenceService {
      * End a conference.
      */
     @Transactional
-    public ConferenceDto.Response endConference(UUID id) {
+    public ConferenceDto.Response endConference(UUID id, UUID userId, boolean isAdmin) {
         log.info("Ending conference: {}", id);
 
         Conference conference = conferenceRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        // Check ownership for non-admin users
+        if (!isAdmin && !conference.getCreatedBy().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the conference creator or administrators can perform this action");
+        }
 
         if (conference.getStatus() != Conference.ConferenceStatus.ACTIVE) {
             throw new IllegalStateException("Conference is not active");
@@ -206,11 +262,16 @@ public class ConferenceService {
      * Soft delete conference.
      */
     @Transactional
-    public void deleteConference(UUID id) {
+    public void deleteConference(UUID id, UUID userId, boolean isAdmin) {
         log.info("Deleting conference: {}", id);
 
         Conference conference = conferenceRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
+
+        // Check ownership for non-admin users
+        if (!isAdmin && !conference.getCreatedBy().getId().equals(userId)) {
+            throw new AccessDeniedException("Only the conference creator or administrators can perform this action");
+        }
 
         conference.softDelete();
         conferenceRepository.save(conference);

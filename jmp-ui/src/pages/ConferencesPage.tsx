@@ -839,6 +839,7 @@ export default function ConferencesPage() {
               }}
               sx={{
                 width: '100%',
+                gap: 1,
                 '& .MuiToggleButton-root': {
                   flex: 1,
                   borderRadius: 'var(--radius-lg)',
@@ -849,8 +850,8 @@ export default function ConferencesPage() {
                   py: 1.5,
                   '&.Mui-selected': {
                     background: 'rgba(59, 130, 182, 0.12)',
-                    color: '#3b82b6',
-                    borderColor: '#3b82b6',
+                    color: '#3b82f6',
+                    borderColor: '#3b82f6',
                   },
                   '&:hover': {
                     background: 'var(--glass-bg)',

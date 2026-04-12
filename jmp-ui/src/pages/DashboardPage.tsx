@@ -161,7 +161,10 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.roles?.some(
-    (role) => role === 'SUPER_ADMIN' || role === 'TENANT_ADMIN'
+    (role) => role === 'ROLE_SUPER_ADMIN' || role === 'ROLE_TENANT_ADMIN'
+  ) ?? false;
+  const canManageConferences = user?.roles?.some(
+    (role) => role === 'ROLE_MODERATOR' || role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_SUPER_ADMIN'
   ) ?? false;
 
   const [stats, setStats] = useState<DashboardStats>({
@@ -534,11 +537,17 @@ export default function DashboardPage() {
           }}
         >
           {[
-            { label: 'Start Conference', icon: <Video size={20} />, color: '#3b82b6', path: '/conferences' },
+            { label: 'Start Conference', icon: <Video size={20} />, color: '#3b82b6', path: '/conferences', requiresConferenceAccess: true },
             { label: 'View Recordings', icon: <HardDrive size={20} />, color: '#2563eb', path: '/recordings' },
-            { label: 'Manage Users', icon: <Users size={20} />, color: '#1d4ed8', path: '/users' },
+            { label: 'Manage Users', icon: <Users size={20} />, color: '#1d4ed8', path: '/users', requiresAdmin: true },
             { label: 'View Reports', icon: <TrendingUp size={20} />, color: '#60a5fa', path: '/analytics' },
-          ].map((action) => (
+          ]
+            .filter((action) => {
+              if (action.requiresAdmin) return isAdmin;
+              if (action.requiresConferenceAccess) return canManageConferences;
+              return true;
+            })
+            .map((action) => (
             <Button
               key={action.label}
               variant="outlined"

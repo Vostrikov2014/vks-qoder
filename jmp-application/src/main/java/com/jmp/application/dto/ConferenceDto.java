@@ -138,6 +138,8 @@ public sealed interface ConferenceDto {
         String displayName,
         String status,
         String type,
+        UUID createdById,
+        String createdByName,
         Instant scheduledStartAt,
         Instant scheduledEndAt,
         Integer currentParticipants,
