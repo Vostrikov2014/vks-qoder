@@ -155,50 +155,50 @@ services:
     networks:
       - jmp-network
 
-  # Jitsi Web (Web UI)
-  jitsi-web:
-    image: jitsi/web:stable
-    container_name: jmp-jitsi-web
-    restart: unless-stopped
-    environment:
-      # General
-      TZ: UTC
-      PUBLIC_URL: http://localhost:8000
-      ENABLE_AUTH: 1
-      ENABLE_GUESTS: 0
-      AUTH_TYPE: jwt
-      # JWT configuration
-      JWT_APP_ID: jmp-platform
-      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JWT_ACCEPTED_ISSUERS: jmp-platform
-      JWT_ACCEPTED_AUDIENCES: jitsi
-      JWT_ALLOW_EMPTY: 0
-      # XMPP configuration
-      XMPP_DOMAIN: meet.jitsi
-      XMPP_AUTH_DOMAIN: auth.meet.jitsi
-      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
-      XMPP_MUC_DOMAIN: muc.meet.jitsi
-      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
-      XMPP_GUEST_DOMAIN: guest.meet.jitsi
-      XMPP_MODULES: ''
-      XMPP_MUC_MODULES: ''
-      XMPP_INTERNAL_MUC_MODULES: ''
-      # Web-specific settings
-      ENABLE_LOBBY: 1
-      ENABLE_PREJOIN_PAGE: 1
-      ENABLE_WELCOME_PAGE: 0
-      ENABLE_RECORDING: 1
-    volumes:
-      - jitsi_web_config:/config
-      - jitsi_web_certs:/etc/letsencrypt
-      - jitsi_transcripts:/usr/share/jitsi-meet/transcripts
-    ports:
-      #- "8443:443"
-      - "8000:80"
-    depends_on:
-      - jitsi-prosody
-    networks:
-      - jmp-network
+  ## Jitsi Web (Web UI)
+    #jitsi-web:
+    #image: jitsi/web:stable
+    #container_name: jmp-jitsi-web
+    #restart: unless-stopped
+      #environment:
+      ##General
+      #TZ: UTC
+      #PUBLIC_URL: http://localhost:8000
+      #ENABLE_AUTH: 1
+      #ENABLE_GUESTS: 0
+      #AUTH_TYPE: jwt
+      ##JWT configuration
+      #JWT_APP_ID: jmp-platform
+      #JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      #JWT_ACCEPTED_ISSUERS: jmp-platform
+      #JWT_ACCEPTED_AUDIENCES: jitsi
+      #JWT_ALLOW_EMPTY: 0
+      ##XMPP configuration
+      #XMPP_DOMAIN: meet.jitsi
+      #XMPP_AUTH_DOMAIN: auth.meet.jitsi
+      #XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
+      #XMPP_MUC_DOMAIN: muc.meet.jitsi
+      #XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+      #XMPP_GUEST_DOMAIN: guest.meet.jitsi
+      #XMPP_MODULES: ''
+      #XMPP_MUC_MODULES: ''
+      #XMPP_INTERNAL_MUC_MODULES: ''
+      ##Web-specific settings
+      #ENABLE_LOBBY: 1
+      #ENABLE_PREJOIN_PAGE: 1
+      #ENABLE_WELCOME_PAGE: 0
+      #ENABLE_RECORDING: 1
+    #volumes:
+      #- jitsi_web_config:/config
+      #- jitsi_web_certs:/etc/letsencrypt
+      #- jitsi_transcripts:/usr/share/jitsi-meet/transcripts
+      #ports:
+      #  #- "8443:443"
+      #- "8000:80"
+    #depends_on:
+    #  - jitsi-prosody
+      #networks:
+      #- jmp-network
 
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
