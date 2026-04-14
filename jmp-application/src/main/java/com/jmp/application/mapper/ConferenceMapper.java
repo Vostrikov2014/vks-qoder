@@ -8,6 +8,7 @@ import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.jmp.application.dto.ConferenceDto;
+import com.jmp.domain.entity.AccessPolicy;
 import com.jmp.domain.entity.Conference;
 
 /**
@@ -24,11 +25,15 @@ public interface ConferenceMapper {
     @Mapping(target = "createdById", source = "createdBy.id")
     @Mapping(target = "createdByName", source = "createdBy", qualifiedByName = "userToName")
     @Mapping(target = "currentParticipants", expression = "java(conference.getCurrentParticipantCount())")
+    @Mapping(target = "accessPolicy", source = "accessPolicy", qualifiedByName = "accessPolicyToString")
+    @Mapping(target = "assignedCount", expression = "java(conference.getAssignments() != null && org.hibernate.Hibernate.isInitialized(conference.getAssignments()) ? conference.getAssignments().size() : 0)")
     ConferenceDto.Response toResponse(Conference conference);
 
     @Mapping(target = "createdById", source = "createdBy.id")
     @Mapping(target = "createdByName", source = "createdBy", qualifiedByName = "userToName")
     @Mapping(target = "currentParticipants", expression = "java(conference.getCurrentParticipantCount())")
+    @Mapping(target = "accessPolicy", source = "accessPolicy", qualifiedByName = "accessPolicyToString")
+    @Mapping(target = "assignedCount", expression = "java(conference.getAssignments() != null && org.hibernate.Hibernate.isInitialized(conference.getAssignments()) ? conference.getAssignments().size() : 0)")
     ConferenceDto.Summary toSummary(Conference conference);
 
     @Mapping(target = "id", ignore = true)
@@ -42,11 +47,13 @@ public interface ConferenceMapper {
     @Mapping(target = "muteUponEntry", ignore = true)
     @Mapping(target = "metadata", ignore = true)
     @Mapping(target = "participants", ignore = true)
+    @Mapping(target = "assignments", ignore = true)
     @Mapping(target = "tenant", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "accessPolicy", source = "accessPolicy", qualifiedByName = "stringToAccessPolicy")
     Conference toEntity(ConferenceDto.CreateRequest dto);
 
     @Mapping(target = "id", ignore = true)
@@ -63,11 +70,13 @@ public interface ConferenceMapper {
     @Mapping(target = "muteUponEntry", ignore = true)
     @Mapping(target = "metadata", ignore = true)
     @Mapping(target = "participants", ignore = true)
+    @Mapping(target = "assignments", ignore = true)
     @Mapping(target = "tenant", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "accessPolicy", source = "accessPolicy", qualifiedByName = "stringToAccessPolicy")
     void updateEntityFromDto(ConferenceDto.UpdateRequest dto, @MappingTarget Conference conference);
 
     @Named("userToName")
@@ -84,5 +93,17 @@ public interface ConferenceMapper {
             return Conference.ConferenceType.SCHEDULED;
         }
         return Conference.ConferenceType.valueOf(type);
+    }
+
+    @Named("accessPolicyToString")
+    default String accessPolicyToString(AccessPolicy policy) {
+        if (policy == null) return null;
+        return policy.name();
+    }
+
+    @Named("stringToAccessPolicy")
+    default AccessPolicy stringToAccessPolicy(String policy) {
+        if (policy == null) return AccessPolicy.PUBLIC;
+        return AccessPolicy.valueOf(policy.toUpperCase());
     }
 }

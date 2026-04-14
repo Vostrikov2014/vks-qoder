@@ -1,12 +1,16 @@
 package com.jmp.application.service;
 
 import com.jmp.application.dto.ConferenceDto;
+import com.jmp.application.dto.ParticipantAssignmentDto;
 import com.jmp.application.mapper.ConferenceMapper;
+import com.jmp.application.mapper.ParticipantAssignmentMapper;
 import com.jmp.domain.entity.Conference;
 import com.jmp.domain.entity.ConferenceParticipant;
+import com.jmp.domain.entity.ParticipantAssignment;
 import com.jmp.domain.entity.Tenant;
 import com.jmp.domain.entity.User;
 import com.jmp.domain.repository.ConferenceRepository;
+import com.jmp.domain.repository.ParticipantAssignmentRepository;
 import com.jmp.domain.repository.TenantRepository;
 import com.jmp.domain.repository.UserRepository;
 import java.time.Instant;
@@ -34,6 +38,8 @@ public class ConferenceService {
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final ConferenceMapper conferenceMapper;
+    private final ParticipantAssignmentRepository assignmentRepository;
+    private final ParticipantAssignmentMapper assignmentMapper;
 
     /**
      * Create a new conference.
@@ -75,6 +81,27 @@ public class ConferenceService {
 
         Conference saved = conferenceRepository.save(conference);
         log.info("Conference created with ID: {}", saved.getId());
+
+        // Create participant assignments if provided
+        if (request.participants() != null && !request.participants().isEmpty()) {
+            for (ParticipantAssignmentDto.CreateRequest participantRequest : request.participants()) {
+                try {
+                    if (assignmentRepository.existsByConferenceIdAndEmail(saved.getId(), participantRequest.email())) {
+                        log.warn("Skipping duplicate participant assignment: {}", participantRequest.email());
+                        continue;
+                    }
+                    ParticipantAssignment assignment = assignmentMapper.toEntity(participantRequest);
+                    saved.addAssignment(assignment);
+                    assignment.setInvitedAt(Instant.now());
+                    if (participantRequest.userId() != null) {
+                        userRepository.findById(participantRequest.userId()).ifPresent(assignment::setUser);
+                    }
+                    assignmentRepository.save(assignment);
+                } catch (Exception e) {
+                    log.error("Failed to create assignment for participant {}: {}", participantRequest.email(), e.getMessage());
+                }
+            }
+        }
 
         return conferenceMapper.toResponse(saved);
     }

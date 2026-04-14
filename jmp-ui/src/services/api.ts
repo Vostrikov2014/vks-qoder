@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
-import type { Conference, ConferenceType } from '../types';
+import type { Conference, ConferenceType, ParticipantAssignment, ParticipantAssignmentCreateRequest, ParticipantAssignmentUpdateRequest, BulkAssignRequest, AccessCheckRequest, AccessCheckResult, AssignmentAuditEntry } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
@@ -144,6 +144,10 @@ export interface ConferenceCreateRequest {
   enableLiveStreaming: boolean;
   enableChat: boolean;
   enableScreenSharing: boolean;
+  accessPolicy?: string;
+  allowedDomain?: string;
+  waitingRoomEnabled?: boolean;
+  requireAuthForAssigned?: boolean;
 }
 
 export interface ConferenceUpdateRequest {
@@ -158,6 +162,10 @@ export interface ConferenceUpdateRequest {
   enableLiveStreaming?: boolean;
   enableChat?: boolean;
   enableScreenSharing?: boolean;
+  accessPolicy?: string;
+  allowedDomain?: string;
+  waitingRoomEnabled?: boolean;
+  requireAuthForAssigned?: boolean;
 }
 
 export const conferenceApi = {
@@ -175,6 +183,39 @@ export const conferenceApi = {
     api.post(`/conferences/${id}/token`, data),
   generateShareLink: (id: string, data: { displayName: string }) =>
     api.post<{ shareUrl: string; expiresAt: string }>(`/conferences/${id}/share`, data),
+};
+
+// Participant Assignment API
+export const participantAssignmentApi = {
+  getAssignments: (conferenceId: string) =>
+    api.get<ParticipantAssignment[]>(`/conferences/${conferenceId}/participants`),
+
+  assignParticipant: (conferenceId: string, data: ParticipantAssignmentCreateRequest) =>
+    api.post<ParticipantAssignment>(`/conferences/${conferenceId}/participants`, data),
+
+  bulkAssign: (conferenceId: string, data: BulkAssignRequest) =>
+    api.post<ParticipantAssignment[]>(`/conferences/${conferenceId}/participants/bulk`, data),
+
+  getAssignment: (conferenceId: string, assignmentId: string) =>
+    api.get<ParticipantAssignment>(`/conferences/${conferenceId}/participants/${assignmentId}`),
+
+  updateAssignment: (conferenceId: string, assignmentId: string, data: ParticipantAssignmentUpdateRequest) =>
+    api.patch<ParticipantAssignment>(`/conferences/${conferenceId}/participants/${assignmentId}`, data),
+
+  removeAssignment: (conferenceId: string, assignmentId: string) =>
+    api.delete(`/conferences/${conferenceId}/participants/${assignmentId}`),
+
+  acceptInvitation: (conferenceId: string, assignmentId: string) =>
+    api.post(`/conferences/${conferenceId}/participants/${assignmentId}/accept`),
+
+  declineInvitation: (conferenceId: string, assignmentId: string) =>
+    api.post(`/conferences/${conferenceId}/participants/${assignmentId}/decline`),
+
+  checkAccess: (conferenceId: string, data: AccessCheckRequest) =>
+    api.post<AccessCheckResult>(`/conferences/${conferenceId}/participants/access-check`, data),
+
+  getAuditLog: (conferenceId: string) =>
+    api.get<AssignmentAuditEntry[]>(`/conferences/${conferenceId}/participants/audit-log`),
 };
 
 // Analytics API
