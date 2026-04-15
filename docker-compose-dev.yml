@@ -155,11 +155,11 @@ services:
     networks:
       - jmp-network
 
-  ## Jitsi Web (Web UI) - Using Official Image
-    #jitsi-web:
-    #image: jitsi/web:stable
-    #container_name: jmp-jitsi-web
-    #restart: unless-stopped
+      ## Jitsi Web (Web UI) - Using Official Image
+      #jitsi-web:
+      #image: jitsi/web:stable
+      #container_name: jmp-jitsi-web
+      #restart: unless-stopped
       #environment:
       ##General
       #TZ: UTC
@@ -188,15 +188,15 @@ services:
       #ENABLE_PREJOIN_PAGE: 1
       #ENABLE_WELCOME_PAGE: 0
       #ENABLE_RECORDING: 1
-    #volumes:
+      #volumes:
       #- jitsi_web_config:/config
       #- jitsi_web_certs:/etc/letsencrypt
       #- jitsi_transcripts:/usr/share/jitsi-meet/transcripts
       #ports:
       #  #- "8443:443"
       #- "8000:80"
-    #depends_on:
-    #  - jitsi-prosody
+      #depends_on:
+      #  - jitsi-prosody
       #networks:
       #- jmp-network
 

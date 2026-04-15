@@ -1,6 +1,6 @@
 -- Add access policy columns to conferences
-ALTER TABLE jmp.conferences ADD COLUMN access_policy VARCHAR(50) NOT NULL DEFAULT 'public'
-    CHECK (access_policy IN ('public', 'assigned_only', 'domain_restricted'));
+ALTER TABLE jmp.conferences ADD COLUMN access_policy VARCHAR(50) NOT NULL DEFAULT 'PUBLIC'
+    CHECK (access_policy IN ('PUBLIC', 'ASSIGNED_ONLY', 'DOMAIN_RESTRICTED'));
 ALTER TABLE jmp.conferences ADD COLUMN allowed_domain VARCHAR(255);
 ALTER TABLE jmp.conferences ADD COLUMN waiting_room_enabled BOOLEAN DEFAULT false;
 ALTER TABLE jmp.conferences ADD COLUMN require_auth_for_assigned BOOLEAN DEFAULT true;
@@ -11,8 +11,8 @@ CREATE TABLE jmp.participant_assignments (
     conference_id UUID NOT NULL REFERENCES jmp.conferences(id) ON DELETE CASCADE,
     user_id UUID REFERENCES jmp.users(id) ON DELETE SET NULL,
     email VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'participant' CHECK (role IN ('participant', 'moderator', 'presenter')),
-    status VARCHAR(50) NOT NULL DEFAULT 'invited' CHECK (status IN ('invited', 'accepted', 'declined', 'joined', 'removed')),
+    role VARCHAR(50) NOT NULL DEFAULT 'PARTICIPANT' CHECK (role IN ('PARTICIPANT', 'MODERATOR', 'PRESENTER')),
+    status VARCHAR(50) NOT NULL DEFAULT 'INVITED' CHECK (status IN ('INVITED', 'ACCEPTED', 'DECLINED', 'JOINED', 'REMOVED')),
     require_auth BOOLEAN DEFAULT true,
     invited_at TIMESTAMPTZ,
     responded_at TIMESTAMPTZ,

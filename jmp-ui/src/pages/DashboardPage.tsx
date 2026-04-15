@@ -166,6 +166,9 @@ export default function DashboardPage() {
   const isAdmin = user?.roles?.some(
     (role) => role === 'ROLE_SUPER_ADMIN' || role === 'ROLE_TENANT_ADMIN'
   ) ?? false;
+  const canViewAnalytics = user?.roles?.some(
+    (role) => role === 'ROLE_SUPER_ADMIN' || role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_AUDITOR'
+  ) ?? false;
   const canManageConferences = user?.roles?.some(
     (role) => role === 'ROLE_MODERATOR' || role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_SUPER_ADMIN'
   ) ?? false;
@@ -215,6 +218,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      if (!canViewAnalytics) {
+        setAnalyticsLoading(false);
+        return;
+      }
       setAnalyticsLoading(true);
       try {
         const metricsRes = await analyticsApi.getDashboardMetrics();
@@ -232,7 +239,7 @@ export default function DashboardPage() {
     };
 
     fetchAnalytics();
-  }, [isAdmin]);
+  }, [isAdmin, canViewAnalytics]);
 
   const getProgressColor = (value: number): string => {
     if (value < 60) return '#22c55e';
