@@ -258,7 +258,7 @@ export default function DashboardPage() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       {/* Welcome Section */}
-      <motion.div variants={itemVariants}>
+        {/* <motion.div variants={itemVariants}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 1 }}>
             {t('dashboard.overview')}
@@ -267,7 +267,7 @@ export default function DashboardPage() {
             {t('dashboard.overviewDesc')}
           </Typography>
         </Box>
-      </motion.div>
+      </motion.div> */}
 
       {/* Bento Grid Stats */}
       <Box

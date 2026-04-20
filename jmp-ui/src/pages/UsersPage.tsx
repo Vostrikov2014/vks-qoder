@@ -225,7 +225,7 @@ export default function UsersPage() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       {/* Header */}
-      <motion.div variants={itemVariants}>
+      {/*<motion.div variants={itemVariants}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
@@ -257,7 +257,7 @@ export default function UsersPage() {
             {t('users.addUser')}
           </Button>
         </Box>
-      </motion.div>
+      </motion.div>*/}
 
       {/* Search & Filter Bar */}
       <motion.div variants={itemVariants}>
@@ -269,6 +269,27 @@ export default function UsersPage() {
             flexWrap: 'wrap',
           }}
         >
+          <Button
+              variant="contained"
+              startIcon={<Plus size={20} />}
+              onClick={handleCreate}
+              sx={{
+                py: 1.5,
+                px: 3,
+                borderRadius: 'var(--radius-lg)',
+                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                color: 'white',
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                },
+              }}
+          >
+            {t('users.addUser')}
+          </Button>
           <TextField
             placeholder={t('users.searchPlaceholder')}
             value={search}
