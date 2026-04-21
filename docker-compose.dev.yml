@@ -201,19 +201,19 @@ services:
       #- jmp-network
 
   # Jitsi Web (Web UI) - Local Build from jitsi-meet project
-  jitsi-web:
-    build:
-      context: ./jitsi-meet
-      dockerfile: Dockerfile
-    container_name: jmp-jitsi-web-local
-    restart: unless-stopped
-    environment:
-      TZ: UTC
-      PUBLIC_URL: http://localhost:8000
-    ports:
-      - "8000:80"
-    networks:
-      - jmp-network
+  #jitsi-web:
+  #  build:
+  #    context: ./jitsi-meet
+  #    dockerfile: Dockerfile
+  #  container_name: jmp-jitsi-web-local
+  #  restart: unless-stopped
+  #  environment:
+  #    TZ: UTC
+  #    PUBLIC_URL: http://localhost:8000
+  #  ports:
+  #    - "8000:80"
+  #  networks:
+  #    - jmp-network
 
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
