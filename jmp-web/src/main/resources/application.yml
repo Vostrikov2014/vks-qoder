@@ -85,9 +85,6 @@ logging:
     org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{trace_id}] %-5level %logger{36} - %msg%n"
-  structured:
-    format:
-      console: json
 
 # Actuator Configuration
 management:
