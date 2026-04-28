@@ -8,11 +8,18 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache make python3
 
+# Configure npm: raise idle/fetch timeouts and retry counts to survive slow registry connections
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm config set maxsockets 3
+
 # Copy package files first (cache layer)
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (--legacy-peer-deps required: jitsi-meet mixes web+RN deps with intentional peer conflicts)
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .

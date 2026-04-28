@@ -47,6 +47,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: vostrlog/jmp-api:latest
     container_name: jmp-api
     restart: "no"
     environment:
@@ -64,7 +65,8 @@ services:
       JMP_STORAGE_S3_ENDPOINT: http://minio:9000
       JITSI_JWT_APP_ID: jmp-platform
       JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JITSI_DOMAIN: localhost:8000
+      JITSI_DOMAIN: a.slamx.ru
+      CORS_ALLOWED_ORIGINS: https://a.slamx.ru,http://localhost:5173,http://localhost:3000
     ports:
       - "8081:8080"
     depends_on:
@@ -88,10 +90,11 @@ services:
     build:
       context: ./jmp-ui
       dockerfile: Dockerfile
+    image: vostrlog/jmp-ui:latest
     container_name: jmp-ui
     restart: "no"
     environment:
-      VITE_API_URL: http://localhost:8081/api/v1
+      VITE_API_URL: /api/v1
     ports:
       - "5174:80"
     depends_on:
@@ -156,16 +159,20 @@ services:
       - jmp-network
 
   # Jitsi Web (Web UI) - Local Build from jitsi-meet project
+  # Build locally: docker compose build jitsi-web
+  # Push to registry: docker compose push jitsi-web
+  # On remote: docker compose pull jitsi-web && docker compose up -d jitsi-web
   jitsi-web:
     build:
       context: ./jitsi-meet
       dockerfile: Dockerfile
+    image: vostrlog/jmp-jitsi-web:latest
     container_name: jmp-jitsi-web
     restart: unless-stopped
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: http://localhost:8000
+      PUBLIC_URL: https://a.slamx.ru/jitsi
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -205,7 +212,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: http://localhost:8000
+      PUBLIC_URL: https://a.slamx.ru/jitsi
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -248,7 +255,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: http://localhost:8000
+      PUBLIC_URL: https://a.slamx.ru/jitsi
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -290,7 +297,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: http://localhost:8000
+      PUBLIC_URL: https://a.slamx.ru/jitsi
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -327,6 +334,24 @@ services:
       - "10000:10000/udp"
     depends_on:
       - jitsi-prosody
+    networks:
+      - jmp-network
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: jmp-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ./certbot-webroot:/var/www/certbot:ro
+    depends_on:
+      - jmp-ui
+      - jmp-api
+      - jitsi-web
     networks:
       - jmp-network
 

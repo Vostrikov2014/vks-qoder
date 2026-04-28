@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import type { Conference, ConferenceType, ParticipantAssignment, ParticipantAssignmentCreateRequest, ParticipantAssignmentUpdateRequest, BulkAssignRequest, AccessCheckRequest, AccessCheckResult, AssignmentAuditEntry } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 // Analytics Types
 export interface DailyUsage {
