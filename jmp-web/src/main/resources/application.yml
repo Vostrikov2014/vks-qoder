@@ -1,5 +1,12 @@
 # Jitsi Management Platform Configuration
 # Per specification §18.1, §21.2
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
 
 spring:
   application:
@@ -61,14 +68,6 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
-server:
-  port: ${SERVER_PORT:8080}
-  servlet:
-    context-path: /
-  compression:
-    enabled: true
-    mime-types: application/json,application/xml,text/html,text/plain
-
 # JMP Security Configuration
 jmp:
   security:
@@ -86,9 +85,6 @@ logging:
     org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{trace_id}] %-5level %logger{36} - %msg%n"
-  structured:
-    format:
-      console: json
 
 # Actuator Configuration
 management:

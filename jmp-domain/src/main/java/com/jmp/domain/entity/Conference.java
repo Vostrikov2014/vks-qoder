@@ -140,8 +140,25 @@ public class Conference {
     @Column(name = "metadata", columnDefinition = "jsonb")
     private Map<String, Object> metadata = new HashMap<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "access_policy", length = 50)
+    private AccessPolicy accessPolicy = AccessPolicy.PUBLIC;
+
+    @Size(max = 255)
+    @Column(name = "allowed_domain", length = 255)
+    private String allowedDomain;
+
+    @Column(name = "waiting_room_enabled")
+    private Boolean waitingRoomEnabled = false;
+
+    @Column(name = "require_auth_for_assigned")
+    private Boolean requireAuthForAssigned = true;
+
     @OneToMany(mappedBy = "conference", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ConferenceParticipant> participants = new HashSet<>();
+
+    @OneToMany(mappedBy = "conference", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ParticipantAssignment> assignments = new HashSet<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -192,6 +209,22 @@ public class Conference {
         return status == ConferenceStatus.ENDED || 
                status == ConferenceStatus.CANCELLED ||
                (scheduledEndAt != null && Instant.now().isAfter(scheduledEndAt));
+    }
+
+    /**
+     * Add a participant assignment to this conference.
+     */
+    public void addAssignment(ParticipantAssignment assignment) {
+        assignments.add(assignment);
+        assignment.setConference(this);
+    }
+
+    /**
+     * Remove a participant assignment from this conference.
+     */
+    public void removeAssignment(ParticipantAssignment assignment) {
+        assignments.remove(assignment);
+        assignment.setConference(null);
     }
 
     /**

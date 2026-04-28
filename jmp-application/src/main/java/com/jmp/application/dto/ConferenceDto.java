@@ -1,6 +1,7 @@
 package com.jmp.application.dto;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,6 +39,10 @@ public sealed interface ConferenceDto {
     Boolean enableScreenSharing();
     Map<String, Object> jitsiOptions();
     Instant createdAt();
+    String accessPolicy();
+    String allowedDomain();
+    Boolean waitingRoomEnabled();
+    Boolean requireAuthForAssigned();
 
     /**
      * Request DTO for creating a conference.
@@ -57,7 +62,12 @@ public sealed interface ConferenceDto {
         Boolean enableLiveStreaming,
         Boolean enableChat,
         Boolean enableScreenSharing,
-        Map<String, Object> jitsiOptions
+        Map<String, Object> jitsiOptions,
+        String accessPolicy,
+        String allowedDomain,
+        Boolean waitingRoomEnabled,
+        Boolean requireAuthForAssigned,
+        List<ParticipantAssignmentDto.CreateRequest> participants
     ) implements ConferenceDto {
         @Override public UUID id() { return null; }
         @Override public String status() { return null; }
@@ -84,7 +94,11 @@ public sealed interface ConferenceDto {
         Boolean enableLiveStreaming,
         Boolean enableChat,
         Boolean enableScreenSharing,
-        Map<String, Object> jitsiOptions
+        Map<String, Object> jitsiOptions,
+        String accessPolicy,
+        String allowedDomain,
+        Boolean waitingRoomEnabled,
+        Boolean requireAuthForAssigned
     ) implements ConferenceDto {
         @Override public UUID id() { return null; }
         @Override public String roomName() { return null; }
@@ -126,7 +140,12 @@ public sealed interface ConferenceDto {
         Boolean enableScreenSharing,
         Map<String, Object> jitsiOptions,
         Integer currentParticipants,
-        Instant createdAt
+        Instant createdAt,
+        String accessPolicy,
+        String allowedDomain,
+        Boolean waitingRoomEnabled,
+        Boolean requireAuthForAssigned,
+        Integer assignedCount
     ) implements ConferenceDto {}
 
     /**
@@ -143,7 +162,9 @@ public sealed interface ConferenceDto {
         Instant scheduledStartAt,
         Instant scheduledEndAt,
         Integer currentParticipants,
-        Integer maxParticipants
+        Integer maxParticipants,
+        String accessPolicy,
+        Integer assignedCount
     ) implements ConferenceDto {
         @Override public String description() { return null; }
         @Override public UUID tenantId() { return null; }
@@ -160,6 +181,9 @@ public sealed interface ConferenceDto {
         @Override public Boolean enableScreenSharing() { return null; }
         @Override public Map<String, Object> jitsiOptions() { return null; }
         @Override public Instant createdAt() { return null; }
+        @Override public String allowedDomain() { return null; }
+        @Override public Boolean waitingRoomEnabled() { return null; }
+        @Override public Boolean requireAuthForAssigned() { return null; }
     }
 
     /**

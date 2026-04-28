@@ -19,6 +19,11 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Divider,
 } from '@mui/material';
 import {
   Plus,
@@ -42,10 +47,11 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { conferenceApi } from '../services/api';
+import { conferenceApi, participantAssignmentApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import ShareModal from '../components/ShareModal';
-import type { Conference, ConferenceType } from '../types';
+import ParticipantManagementPanel from '../components/ParticipantManagementPanel';
+import type { Conference, ConferenceType, AccessPolicy, ParticipantAssignment } from '../types';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -168,7 +174,12 @@ export default function ConferencesPage() {
     enableChat: true,
     enableScreenSharing: true,
     enableLobby: false,
+    accessPolicy: 'PUBLIC' as AccessPolicy,
+    allowedDomain: '',
+    waitingRoomEnabled: false,
+    requireAuthForAssigned: true,
   });
+  const [participants, setParticipants] = useState<ParticipantAssignment[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
 
@@ -190,6 +201,7 @@ export default function ConferencesPage() {
   const handleCreate = () => {
     setEditingConference(null);
     setFormError(null);
+    setParticipants([]);
     setFormData({
       roomName: '',
       displayName: '',
@@ -202,6 +214,10 @@ export default function ConferencesPage() {
       enableChat: true,
       enableScreenSharing: true,
       enableLobby: false,
+      accessPolicy: 'PUBLIC',
+      allowedDomain: '',
+      waitingRoomEnabled: false,
+      requireAuthForAssigned: true,
     });
     setOpenDialog(true);
   };
@@ -209,6 +225,7 @@ export default function ConferencesPage() {
   const handleEdit = (conference: Conference) => {
     setEditingConference(conference);
     setFormError(null);
+    setParticipants([]);
     setFormData({
       roomName: conference.roomName,
       displayName: conference.displayName,
@@ -221,7 +238,17 @@ export default function ConferencesPage() {
       enableChat: conference.enableChat ?? true,
       enableScreenSharing: conference.enableScreenSharing ?? true,
       enableLobby: conference.enableLobby ?? false,
+      accessPolicy: conference.accessPolicy ?? 'PUBLIC',
+      allowedDomain: conference.allowedDomain ?? '',
+      waitingRoomEnabled: conference.waitingRoomEnabled ?? false,
+      requireAuthForAssigned: conference.requireAuthForAssigned ?? true,
     });
+    // Fetch existing participant assignments
+    if (conference.id) {
+      participantAssignmentApi.getAssignments(conference.id)
+        .then((res) => setParticipants(res.data))
+        .catch((err) => console.error('Failed to fetch participants:', err));
+    }
     setOpenDialog(true);
   };
 
@@ -274,12 +301,26 @@ export default function ConferencesPage() {
           scheduledStartAt: toInstantString(formData.scheduledStartAt),
           scheduledEndAt: toInstantString(formData.scheduledEndAt),
         }),
+        // Clear allowedDomain if not domain restricted
+        ...(formData.accessPolicy !== 'DOMAIN_RESTRICTED' && {
+          allowedDomain: undefined,
+        }),
       };
 
       if (editingConference) {
         await conferenceApi.updateConference(editingConference.id, payload);
       } else {
-        await conferenceApi.createConference(payload);
+        const created = await conferenceApi.createConference(payload);
+        // Bulk assign local participants for new conference
+        if (participants.length > 0 && created.data?.id) {
+          try {
+            await participantAssignmentApi.bulkAssign(created.data.id, {
+              participants: participants.map((p) => ({ email: p.email, role: p.role })),
+            });
+          } catch (err) {
+            console.error('Failed to bulk assign participants after create:', err);
+          }
+        }
       }
       setOpenDialog(false);
       fetchConferences();
@@ -329,7 +370,7 @@ export default function ConferencesPage() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       {/* Header */}
-      <motion.div variants={itemVariants}>
+      {/*<motion.div variants={itemVariants}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
@@ -361,7 +402,7 @@ export default function ConferencesPage() {
             {t('conferences.createConference')}
           </Button>
         </Box>
-      </motion.div>
+      </motion.div>*/}
 
       {/* Search & Filter Bar */}
       <motion.div variants={itemVariants}>
@@ -373,6 +414,27 @@ export default function ConferencesPage() {
             flexWrap: 'wrap',
           }}
         >
+          <Button
+              variant="contained"
+              startIcon={<Plus size={20} />}
+              onClick={handleCreate}
+              sx={{
+                py: 1.5,
+                px: 3,
+                borderRadius: 'var(--radius-lg)',
+                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                color: 'white',
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                },
+              }}
+          >
+            {t('conferences.createConference')}
+          </Button>
           <TextField
             placeholder={t('conferences.searchPlaceholder')}
             value={search}
@@ -1094,7 +1156,7 @@ export default function ConferencesPage() {
           setOpenDialog(false);
           setFormError(null);
         }}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
         PaperProps={{
           sx: {
@@ -1416,6 +1478,128 @@ export default function ConferencesPage() {
               label={t('conferences.enableLobby')}
               sx={{ color: 'var(--text)' }}
             />
+          </Box>
+
+          {/* Access Control Section */}
+          <Box sx={{ mt: 3 }}>
+            <Divider sx={{ borderColor: 'var(--glass-border)', mb: 2 }} />
+            <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
+              {t('conferences.accessControl')}
+            </Typography>
+
+            {/* Access Policy Selector */}
+            <FormControl
+              fullWidth
+              size="small"
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 'var(--radius-lg)',
+                  color: 'var(--text)',
+                  '& fieldset': { borderColor: 'var(--border)' },
+                  '&:hover fieldset': { borderColor: 'var(--border-strong)' },
+                  '&.Mui-focused fieldset': { borderColor: '#3b82b6' },
+                },
+                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#3b82b6' },
+                '& .MuiSelect-icon': { color: 'var(--text-muted)' },
+              }}
+            >
+              <InputLabel>{t('conferences.accessPolicy')}</InputLabel>
+              <Select
+                value={formData.accessPolicy}
+                label={t('conferences.accessPolicy')}
+                onChange={(e) => setFormData({ ...formData, accessPolicy: e.target.value as AccessPolicy })}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      background: 'var(--glass-bg)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      '& .MuiMenuItem-root': {
+                        color: 'var(--text)',
+                        '&:hover': { background: 'rgba(59, 130, 182, 0.08)' },
+                        '&.Mui-selected': { background: 'rgba(59, 130, 182, 0.12)', color: '#3b82b6' },
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="PUBLIC">{t('conferences.accessPolicyPublic')}</MenuItem>
+                <MenuItem value="ASSIGNED_ONLY">{t('conferences.accessPolicyAssignedOnly')}</MenuItem>
+                <MenuItem value="DOMAIN_RESTRICTED">{t('conferences.accessPolicyDomainRestricted')}</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Allowed Domain Input */}
+            {formData.accessPolicy === 'DOMAIN_RESTRICTED' && (
+              <TextField
+                fullWidth
+                size="small"
+                label={t('conferences.allowedDomain')}
+                placeholder="company.com"
+                value={formData.allowedDomain}
+                onChange={(e) => setFormData({ ...formData, allowedDomain: e.target.value })}
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 'var(--radius-lg)',
+                    color: 'var(--text)',
+                    '& fieldset': { borderColor: 'var(--border)' },
+                    '&:hover fieldset': { borderColor: 'var(--border-strong)' },
+                    '&.Mui-focused fieldset': { borderColor: '#3b82b6' },
+                  },
+                  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#3b82b6' },
+                }}
+              />
+            )}
+
+            {/* Waiting Room Toggle */}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.waitingRoomEnabled}
+                  onChange={(e) => setFormData({ ...formData, waitingRoomEnabled: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase': { color: 'var(--text-muted)' },
+                    '& .MuiSwitch-track': { backgroundColor: 'var(--border-strong)' },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#3b82b6' },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(59, 130, 182, 0.4)' },
+                  }}
+                />
+              }
+              label={t('conferences.waitingRoom')}
+              sx={{ color: 'var(--text)', display: 'flex' }}
+            />
+
+            {/* Require Auth Toggle */}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.requireAuthForAssigned}
+                  onChange={(e) => setFormData({ ...formData, requireAuthForAssigned: e.target.checked })}
+                  sx={{
+                    '& .MuiSwitch-switchBase': { color: 'var(--text-muted)' },
+                    '& .MuiSwitch-track': { backgroundColor: 'var(--border-strong)' },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#3b82b6' },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(59, 130, 182, 0.4)' },
+                  }}
+                />
+              }
+              label={t('conferences.requireAuth')}
+              sx={{ color: 'var(--text)', display: 'flex' }}
+            />
+
+            {/* Participant Management Panel */}
+            {(formData.accessPolicy === 'ASSIGNED_ONLY' || formData.accessPolicy === 'DOMAIN_RESTRICTED') && (
+              <ParticipantManagementPanel
+                conferenceId={editingConference?.id}
+                participants={participants}
+                onParticipantsChange={setParticipants}
+              />
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>

@@ -1,5 +1,72 @@
 export type ConferenceType = 'SCHEDULED' | 'PERMANENT';
 
+// === Participant Assignment Types ===
+
+export type AccessPolicy = 'PUBLIC' | 'ASSIGNED_ONLY' | 'DOMAIN_RESTRICTED';
+export type AssignmentRole = 'PARTICIPANT' | 'MODERATOR' | 'PRESENTER';
+export type AssignmentStatus = 'INVITED' | 'ACCEPTED' | 'DECLINED' | 'JOINED' | 'REMOVED';
+
+export interface ParticipantAssignment {
+  id: string;
+  conferenceId: string;
+  userId?: string;
+  email: string;
+  role: AssignmentRole;
+  status: AssignmentStatus;
+  requireAuth: boolean;
+  invitedAt?: string;
+  respondedAt?: string;
+  joinedAt?: string;
+  leftAt?: string;
+  createdAt?: string;
+}
+
+export interface ParticipantAssignmentCreateRequest {
+  email: string;
+  userId?: string;
+  role?: AssignmentRole;
+  requireAuth?: boolean;
+  sendInvite?: boolean;
+}
+
+export interface ParticipantAssignmentUpdateRequest {
+  role?: string;
+  status?: string;
+  requireAuth?: boolean;
+}
+
+export interface BulkAssignRequest {
+  participants: ParticipantAssignmentCreateRequest[];
+}
+
+export interface AccessCheckRequest {
+  userId?: string;
+  email?: string;
+  invitationToken?: string;
+  authStatus?: 'authenticated' | 'guest';
+}
+
+export interface AccessCheckResult {
+  allowed: boolean;
+  reason: string;
+  action?: 'allow' | 'redirect_to_login' | 'redirect_to_waiting_room' | 'deny';
+  participantInfo?: {
+    role: string;
+    displayName: string;
+  };
+}
+
+export interface AssignmentAuditEntry {
+  id: string;
+  conferenceId: string;
+  actorId: string;
+  action: string;
+  targetUserId?: string;
+  targetEmail?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface Conference {
   id: string;
   roomName: string;
@@ -24,6 +91,11 @@ export interface Conference {
   createdByName?: string;
   createdAt?: string;
   tenantId?: string;
+  accessPolicy?: AccessPolicy;
+  allowedDomain?: string;
+  waitingRoomEnabled?: boolean;
+  requireAuthForAssigned?: boolean;
+  assignedCount?: number;
 }
 
 export interface ConferenceFormData {
@@ -39,4 +111,8 @@ export interface ConferenceFormData {
   enableScreenSharing: boolean;
   enableLobby: boolean;
   maxParticipants?: number;
+  accessPolicy: AccessPolicy;
+  allowedDomain: string;
+  waitingRoomEnabled: boolean;
+  requireAuthForAssigned: boolean;
 }

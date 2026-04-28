@@ -2,7 +2,7 @@
 # Per specification §13.3
 
 # Stage 1: Build the application
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ COPY jmp-web/src jmp-web/src
 RUN ./mvnw clean package -DskipTests -B
 
 # Stage 2: Create the runtime image
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Create non-root user
 RUN addgroup -S jmp && adduser -S jmp -G jmp
