@@ -218,6 +218,71 @@ export const participantAssignmentApi = {
     api.get<AssignmentAuditEntry[]>(`/conferences/${conferenceId}/participants/audit-log`),
 };
 
+// Tenant API
+export interface TenantQuotas {
+  maxConcurrentConferences?: number;
+  maxParticipantsPerConference?: number;
+  maxRecordingStorageMb?: number;
+  maxConferenceDurationMinutes?: number;
+  allowedFeatures?: string;
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  domain?: string;
+  jitsiDomain?: string;
+  quotas?: TenantQuotas;
+  settings?: Record<string, unknown>;
+  jitsiConfig?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+  suspendedAt?: string;
+  suspensionReason?: string;
+}
+
+export interface TenantSummary {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  domain?: string;
+  jitsiDomain?: string;
+  createdAt?: string;
+}
+
+export interface TenantCreateRequest {
+  name: string;
+  slug: string;
+  description?: string;
+  domain?: string;
+  jitsiDomain?: string;
+  quotas?: TenantQuotas;
+}
+
+export interface TenantUpdateRequest {
+  name?: string;
+  description?: string;
+  domain?: string;
+  jitsiDomain?: string;
+  quotas?: TenantQuotas;
+}
+
+export const tenantApi = {
+  getTenants: (params?: { page?: number; size?: number; search?: string }) =>
+    api.get<{ content: TenantSummary[] }>('/tenants', { params }),
+  getTenant: (id: string) => api.get<Tenant>(`/tenants/${id}`),
+  createTenant: (data: TenantCreateRequest) => api.post<Tenant>('/tenants', data),
+  updateTenant: (id: string, data: TenantUpdateRequest) => api.put<Tenant>(`/tenants/${id}`, data),
+  suspendTenant: (id: string, reason?: string) =>
+    api.post<Tenant>(`/tenants/${id}/suspend`, reason ? { reason } : {}),
+  activateTenant: (id: string) => api.post<Tenant>(`/tenants/${id}/activate`),
+  deleteTenant: (id: string) => api.delete(`/tenants/${id}`),
+};
+
 // Analytics API
 export const analyticsApi = {
   getDashboardMetrics: () => api.get<DashboardMetrics>('/analytics/dashboard'),

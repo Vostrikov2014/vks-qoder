@@ -35,7 +35,9 @@
     "language": "Language",
     "appName": "VKS TV",
     "viewCards": "Cards",
-    "viewList": "List"
+    "viewList": "List",
+    "tenants": "Tenants",
+    "deleted": "Deleted"
   },
   "login": {
     "welcomeBack": "Welcome Back",
@@ -169,5 +171,32 @@
     "MODERATOR": "Moderator",
     "PARTICIPANT": "Participant",
     "AUDITOR": "Auditor"
+  },
+  "tenants": {
+    "subtitle": "Manage organizations and their configurations",
+    "addTenant": "Add Tenant",
+    "searchPlaceholder": "Search tenants...",
+    "name": "Name",
+    "slug": "Slug (URL identifier)",
+    "slugHelp": "Unique URL-friendly identifier, cannot be changed later",
+    "description": "Description",
+    "domain": "Domain",
+    "jitsiDomain": "Jitsi Domain",
+    "quotas": "Quotas & Limits",
+    "maxConferences": "Max concurrent conferences",
+    "maxParticipants": "Max participants per conference",
+    "maxStorage": "Max recording storage",
+    "maxDuration": "Max conference duration",
+    "minutes": "minutes",
+    "allowedFeatures": "Allowed features",
+    "allowedFeaturesHelp": "Comma-separated: chat,screen_share,recording,live_streaming",
+    "noTenants": "No tenants yet",
+    "noTenantsDesc": "Create the first tenant organization to get started",
+    "editTenant": "Edit Tenant",
+    "suspendTenant": "Suspend Tenant",
+    "activateTenant": "Activate Tenant",
+    "suspendReason": "Suspension reason (optional)",
+    "suspendConfirm": "Are you sure you want to suspend \"{{name}}\"?",
+    "deleteConfirm": "Are you sure you want to delete this tenant? This action cannot be undone."
   }
 }

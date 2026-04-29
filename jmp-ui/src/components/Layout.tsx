@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Video,
   Users,
+  Building2,
   LogOut,
   Menu as MenuIcon,
   Settings,
@@ -36,9 +37,10 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false },
-  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false },
-  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true },
+  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: true },
 ];
 
 const itemVariants = {
@@ -54,9 +56,10 @@ export default function Layout() {
   const canManageUsers = user?.roles?.some(
     (role) => role === 'ROLE_TENANT_ADMIN' || role === 'ROLE_SUPER_ADMIN'
   ) ?? false;
+  const isSuperAdmin = user?.roles?.some((role) => role === 'ROLE_SUPER_ADMIN') ?? false;
 
   const filteredMenuItems = menuItems.filter(
-    (item) => !item.requiresAdmin || canManageUsers
+    (item) => (!item.requiresAdmin || canManageUsers) && (!item.requiresSuperAdmin || isSuperAdmin)
   );
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [mobileOpen, setMobileOpen] = useState(false);

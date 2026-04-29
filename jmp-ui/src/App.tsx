@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ConferencesPage from './pages/ConferencesPage';
 import UsersPage from './pages/UsersPage';
+import TenantsPage from './pages/TenantsPage';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -31,6 +32,7 @@ function App() {
           <Route index element={<DashboardPage />} />
           <Route path="conferences" element={<ConferencesPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="tenants" element={<TenantsPage />} />
         </Route>
       </Routes>
     </Box>

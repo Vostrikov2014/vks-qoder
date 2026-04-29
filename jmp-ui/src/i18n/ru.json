@@ -35,7 +35,9 @@
     "language": "Язык",
     "appName": "VKS TV",
     "viewCards": "Карточки",
-    "viewList": "Список"
+    "viewList": "Список",
+    "tenants": "Тенанты",
+    "deleted": "Удалён"
   },
   "login": {
     "welcomeBack": "С возвращением",
@@ -169,5 +171,32 @@
     "MODERATOR": "Модератор",
     "PARTICIPANT": "Участник",
     "AUDITOR": "Аудитор"
+  },
+  "tenants": {
+    "subtitle": "Управление организациями и их конфигурацией",
+    "addTenant": "Добавить тенант",
+    "searchPlaceholder": "Поиск тенантов...",
+    "name": "Название",
+    "slug": "Slug (идентификатор URL)",
+    "slugHelp": "Уникальный URL-идентификатор, изменить после создания невозможно",
+    "description": "Описание",
+    "domain": "Домен",
+    "jitsiDomain": "Домен Jitsi",
+    "quotas": "Квоты и лимиты",
+    "maxConferences": "Макс. одновременных конференций",
+    "maxParticipants": "Макс. участников в конференции",
+    "maxStorage": "Макс. хранилище записей",
+    "maxDuration": "Макс. длительность конференции",
+    "minutes": "минут",
+    "allowedFeatures": "Разрешённые функции",
+    "allowedFeaturesHelp": "Через запятую: chat,screen_share,recording,live_streaming",
+    "noTenants": "Тенантов пока нет",
+    "noTenantsDesc": "Создайте первую организацию-тенант, чтобы начать",
+    "editTenant": "Редактировать тенант",
+    "suspendTenant": "Заблокировать тенант",
+    "activateTenant": "Активировать тенант",
+    "suspendReason": "Причина блокировки (необязательно)",
+    "suspendConfirm": "Вы уверены, что хотите заблокировать \"{{name}}\"?",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот тенант? Это действие нельзя отменить."
   }
 }
