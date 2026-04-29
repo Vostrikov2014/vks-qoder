@@ -37,9 +37,10 @@ spring:
         format_sql: true
         jdbc:
           batch_size: 50
+          lob:
+            non_contextual_creation: true
         order_inserts: true
         order_updates: true
-        jdbc.lob.non_contextual_creation: true
     show-sql: false
     open-in-view: false
 
@@ -110,8 +111,9 @@ management:
 # Jitsi Configuration
 jitsi:
   domain: ${JITSI_DOMAIN:meet.jit.si}
-  app-id: ${JITSI_APP_ID:jmp-app}
-  secret: ${JITSI_SECRET:your-jitsi-secret}
+  jwt:
+    app-id: ${JITSI_JWT_APP_ID:jmp-platform}
+    app-secret: ${JITSI_JWT_APP_SECRET:your-jitsi-secret}
 
 # OpenAPI Configuration
 springdoc:
