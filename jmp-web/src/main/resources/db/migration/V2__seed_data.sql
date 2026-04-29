@@ -102,7 +102,7 @@ VALUES (
     'admin@jmp.local',
     'System',
     'Administrator',
-    '$2b$12$VPNQzjvAzi8z.Wp5HlQwGuKzNE.NV5hjUPoKHfob6HcjM0crAKwGu',
+    '$2a$12$Lp5M6c94msp4fQ.hxDeQsuAvXkVWqsMlZJtixIimil36IQyN1B0F.',
     'ACTIVE',
     true,
     '11111111-1111-1111-1111-111111111111'
@@ -119,7 +119,7 @@ VALUES (
     'tenant@jmp.local',
     'Tenant',
     'Administrator',
-    '$2b$12$4WTo7yr/0d29SuNm0y.P/euMWed9W5Ld29A5RjeQZdD18iCf6p6ZW',
+    '$2a$12$s71QM6rcknR8qV0KtzcfY.EIftFAGhKIGXmQxaj2Yq/fIl3tmF6Bi',
     'ACTIVE',
     true,
     '11111111-1111-1111-1111-111111111111'

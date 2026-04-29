@@ -8,7 +8,7 @@ VALUES (
     'moderator@jmp.local',
     'Conference',
     'Moderator',
-    '$2b$12$CVhjbYi4OFz/EnRwmtHPIOpVzEnQTqJFwG9leyF7G4Gp.2xKB11QO',
+    '$2a$12$w.Z7RqtptzG/Ji9PojejuOW43W5ryp9pHdrG/bIM8OEPZPIWNxEoe',
     'ACTIVE',
     true,
     '11111111-1111-1111-1111-111111111111'
@@ -25,7 +25,7 @@ VALUES (
     'participant@jmp.local',
     'Conference',
     'Participant',
-    '$2b$12$HnNbH.FRZgJQHydvBTz6QeoHkNJJvQH3W.ymEYCUgmIYfcCpu8Zpm',
+    '$2a$12$vyfJlOffZapnExTHgC0Hwumz9TW2Xfd3aHbMugiHAidHUfoM06Bre',
     'ACTIVE',
     true,
     '11111111-1111-1111-1111-111111111111'
@@ -42,7 +42,7 @@ VALUES (
     'auditor@jmp.local',
     'System',
     'Auditor',
-    '$2b$12$Quqp5d5OoWcQtirQop1yMeNKlo.cXy3ntKcByKLAV6LAqreB9mG1W',
+    '$2a$12$ao5eZS0FVhpGU74a3Gaw2OGhSFcpRJuwFQ5cybCF8VmhJhZlFOUgG',
     'ACTIVE',
     true,
     '11111111-1111-1111-1111-111111111111'
