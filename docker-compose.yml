@@ -1,8 +1,6 @@
 # Jitsi Management Platform - Docker Compose
 # Per specification §13.5, §4.15
 
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
