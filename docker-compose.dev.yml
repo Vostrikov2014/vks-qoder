@@ -6,7 +6,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: jmp-postgres
-    restart: unless-stopped
+    restart: "no"
     environment:
       POSTGRES_DB: jmp
       POSTGRES_USER: jmp
@@ -27,7 +27,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: jmp-redis
-    restart: unless-stopped
+    restart: "no"
     ports:
       - "6379:6379"
     volumes:
@@ -45,8 +45,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: vostrlog/jmp-api:latest
-    container_name: jmp-api
+    image: jmp-api-dev:latest
+    container_name: jmp-api-dev
     restart: "no"
     environment:
       SPRING_PROFILES_ACTIVE: docker,dev
@@ -88,8 +88,8 @@ services:
     build:
       context: ./jmp-ui
       dockerfile: Dockerfile
-    #image: vostrlog/jmp-ui:latest
-    container_name: jmp-ui
+    image: jmp-ui-dev:latest
+    container_name: jmp-ui-dev
     restart: "no"
     environment:
       VITE_API_URL: /api/v1
@@ -104,7 +104,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: jmp-prometheus
-    restart: unless-stopped
+    restart: "no"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -120,7 +120,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: jmp-grafana
-    restart: unless-stopped
+    restart: "no"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
@@ -138,7 +138,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: jmp-minio
-    restart: unless-stopped
+    restart: "no"
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -164,8 +164,8 @@ services:
     build:
       context: ./jitsi-meet
       dockerfile: Dockerfile
-    #image: vostrlog/jmp-jitsi-web:latest
-    container_name: jmp-jitsi-web
+    image: jmp-jitsi-web-dev:latest
+    container_name: jmp-jitsi-web-dev
     restart: "no"
     environment:
       # General
@@ -206,7 +206,7 @@ services:
   jitsi-prosody:
     image: jitsi/prosody:stable
     container_name: jmp-jitsi-prosody
-    restart: unless-stopped
+    restart: "no"
     environment:
       # General
       TZ: UTC
@@ -249,7 +249,7 @@ services:
   jitsi-jicofo:
     image: jitsi/jicofo:stable
     container_name: jmp-jitsi-jicofo
-    restart: unless-stopped
+    restart: "no"
     environment:
       # General
       TZ: UTC
@@ -291,7 +291,7 @@ services:
   jitsi-jvb:
     image: jitsi/jvb:stable
     container_name: jmp-jitsi-jvb
-    restart: unless-stopped
+    restart: "no"
     environment:
       # General
       TZ: UTC
