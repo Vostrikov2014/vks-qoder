@@ -53,17 +53,12 @@
         
         <!-- Dependency Versions -->
         <spring-boot.version>3.5.12</spring-boot.version>
-        <spring-security.version>6.5.6</spring-security.version>
-        <hibernate.version>6.4.4.Final</hibernate.version>
-        <flyway.version>10.11.0</flyway.version>
-        <postgresql.version>42.7.3</postgresql.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.40</lombok.version>
         <jjwt.version>0.12.5</jjwt.version>
         <bucket4j.version>8.10.1</bucket4j.version>
         <testcontainers.version>1.19.7</testcontainers.version>
         <springdoc.version>2.5.0</springdoc.version>
-        <micrometer.version>1.12.5</micrometer.version>
         <resilience4j.version>2.1.0</resilience4j.version>
         
         <!-- Plugin Versions -->

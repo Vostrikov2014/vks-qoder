@@ -1,8 +1,8 @@
 # Jitsi Management Platform Configuration
-# Per specification §18.1, §21.2
+# Per specification §18.1, §21.2  DEV environment
 
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /
   compression:
@@ -14,13 +14,10 @@ spring:
     name: jmp-web
     version: 1.0.0
 
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
-
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/jmp}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    username: ${DB_USER:jmp}
+    password: ${DB_PASS:jmp}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -54,9 +51,9 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_URL}
+      host: ${REDIS_URL:localhost}
       port: 6379
-      password: ${REDIS_PASS}
+      password: ${REDIS_PASS:}
       timeout: 2000ms
       lettuce:
         pool:
@@ -74,8 +71,8 @@ spring:
 jmp:
   security:
     jwt:
-      access-token-secret: ${JWT_ACCESS_SECRET}
-      refresh-token-secret: ${JWT_REFRESH_SECRET}
+      access-token-secret: ${JWT_ACCESS_SECRET:YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==}
+      refresh-token-secret: ${JWT_REFRESH_SECRET:cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=}
       access-token-expiration-minutes: 15
       refresh-token-expiration-days: 7
 
@@ -111,9 +108,9 @@ management:
 
 # Jitsi Configuration
 jitsi:
-  domain: ${JITSI_DOMAIN}
+  domain: ${JITSI_DOMAIN:meet.jit.si}
   jwt:
-    app-id: ${JITSI_JWT_APP_ID}
+    app-id: ${JITSI_JWT_APP_ID:jmp-platform}
     app-secret: ${JITSI_JWT_APP_SECRET:your-jitsi-secret}
 
 # OpenAPI Configuration

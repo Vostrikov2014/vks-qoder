@@ -7,10 +7,12 @@ services:
     image: postgres:16-alpine
     container_name: jmp-postgres
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: jmp
-      POSTGRES_USER: jmp
-      POSTGRES_PASSWORD: jmp
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -94,7 +96,7 @@ services:
     environment:
       VITE_API_URL: /api/v1
     ports:
-      - "5174:80"
+      - "5173:80"
     depends_on:
       - jmp-api
     networks:
