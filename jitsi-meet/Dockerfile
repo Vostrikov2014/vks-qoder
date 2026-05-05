@@ -24,14 +24,28 @@ RUN npm ci --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build the application (webpack build)
-RUN NODE_OPTIONS=--max-old-space-size=8192 npm run build 2>/dev/null || make all
+# Build the application (make all = compile + deploy)
+RUN make all
 
 # Stage 2: Create the runtime image with nginx
 FROM nginx:alpine AS runtime
 
-# Copy the built application from build directory
-COPY --from=builder /app/build /usr/share/nginx/html
+# Copy the complete Jitsi Meet web application
+# After `make all`, the runtime files are in the project root:
+#   *.html, *.js — app entry points and config
+#   libs/        — deployed JS bundles (webpack output + dependencies)
+#   css/         — compiled styles (all.css)
+#   fonts/, images/, sounds/, lang/, static/ — static assets
+COPY --from=builder /app/*.html /usr/share/nginx/html/
+COPY --from=builder /app/*.js /usr/share/nginx/html/
+COPY --from=builder /app/libs /usr/share/nginx/html/libs
+COPY --from=builder /app/css /usr/share/nginx/html/css
+COPY --from=builder /app/fonts /usr/share/nginx/html/fonts
+COPY --from=builder /app/images /usr/share/nginx/html/images
+COPY --from=builder /app/sounds /usr/share/nginx/html/sounds
+COPY --from=builder /app/lang /usr/share/nginx/html/lang
+COPY --from=builder /app/static /usr/share/nginx/html/static
+COPY --from=builder /app/resources /usr/share/nginx/html/resources
 
 # Copy nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf

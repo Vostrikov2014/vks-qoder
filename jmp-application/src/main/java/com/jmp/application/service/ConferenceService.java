@@ -248,8 +248,9 @@ public class ConferenceService {
             throw new AccessDeniedException("Only the conference creator or administrators can perform this action");
         }
 
-        if (conference.getStatus() != Conference.ConferenceStatus.SCHEDULED) {
-            throw new IllegalStateException("Conference is not in scheduled state");
+        if (conference.getStatus() != Conference.ConferenceStatus.SCHEDULED
+                && conference.getStatus() != Conference.ConferenceStatus.ENDED) {
+            throw new IllegalStateException("Conference can only be started from scheduled or ended state");
         }
 
         conference.start();

@@ -172,11 +172,12 @@ public class Conference {
     private Instant deletedAt;
 
     /**
-     * Start the conference.
+     * Start the conference (also used for restarting an ended conference).
      */
     public void start() {
         this.status = ConferenceStatus.ACTIVE;
         this.actualStartedAt = Instant.now();
+        this.actualEndedAt = null;
     }
 
     /**

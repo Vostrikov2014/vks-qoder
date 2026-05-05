@@ -108,10 +108,12 @@ management:
 
 # Jitsi Configuration
 jitsi:
-  domain: ${JITSI_DOMAIN:meet.jit.si}
+  domain: ${JITSI_DOMAIN:localhost:8000}
+  xmpp-domain: ${JITSI_XMPP_DOMAIN:meet.jitsi}
   jwt:
     app-id: ${JITSI_JWT_APP_ID:jmp-platform}
-    app-secret: ${JITSI_JWT_APP_SECRET:your-jitsi-secret}
+    app-secret: ${JITSI_JWT_APP_SECRET:YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==}
+    audience: ${JITSI_JWT_AUDIENCE:jitsi}
 
 # OpenAPI Configuration
 springdoc:

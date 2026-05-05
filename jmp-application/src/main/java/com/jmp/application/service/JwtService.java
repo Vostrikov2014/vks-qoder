@@ -1,7 +1,6 @@
 package com.jmp.application.service;
 
 import com.jmp.domain.entity.Conference;
-import com.jmp.domain.entity.Tenant;
 import com.jmp.domain.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -31,15 +30,30 @@ public class JwtService {
     private final long accessTokenExpirationMinutes;
     private final long refreshTokenExpirationDays;
 
+    private final SecretKey jitsiAppKey;
+    private final String jitsiAppId;
+    private final String jitsiAudience;
+    private final String jitsiXmppDomain;
+
     public JwtService(
             @Value("${jmp.security.jwt.access-token-secret}") String accessTokenSecret,
             @Value("${jmp.security.jwt.refresh-token-secret}") String refreshTokenSecret,
             @Value("${jmp.security.jwt.access-token-expiration-minutes:15}") long accessTokenExpirationMinutes,
-            @Value("${jmp.security.jwt.refresh-token-expiration-days:7}") long refreshTokenExpirationDays) {
+            @Value("${jmp.security.jwt.refresh-token-expiration-days:7}") long refreshTokenExpirationDays,
+            @Value("${jitsi.jwt.app-id:}") String jitsiAppId,
+            @Value("${jitsi.jwt.app-secret:}") String jitsiAppSecret,
+            @Value("${jitsi.jwt.audience:jitsi}") String jitsiAudience,
+            @Value("${jitsi.xmpp-domain:meet.jitsi}") String jitsiXmppDomain) {
         this.accessTokenKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessTokenSecret));
         this.refreshTokenKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshTokenSecret));
         this.accessTokenExpirationMinutes = accessTokenExpirationMinutes;
         this.refreshTokenExpirationDays = refreshTokenExpirationDays;
+        this.jitsiAppKey = jitsiAppSecret.isBlank()
+            ? this.accessTokenKey
+            : Keys.hmacShaKeyFor(Decoders.BASE64.decode(jitsiAppSecret));
+        this.jitsiAppId = jitsiAppId;
+        this.jitsiAudience = jitsiAudience;
+        this.jitsiXmppDomain = jitsiXmppDomain;
     }
 
     /**
@@ -87,28 +101,31 @@ public class JwtService {
     }
 
     /**
-     * Generate Jitsi conference token.
+     * Generate Jitsi conference token compatible with Prosody JWT auth.
+     * Required claims: iss, aud, sub (XMPP domain), room, context
      * Per specification §5.4, §7.2
-     * Claims: room, sub, exp, roles, mod, tenant_id
      */
     public String generateJitsiToken(Conference conference, User user, boolean isModerator) {
-        log.debug("Generating Jitsi token for conference: {}, user: {}", 
+        log.debug("Generating Jitsi token for conference: {}, user: {}",
             conference.getId(), user.getId());
 
-        Tenant tenant = conference.getTenant();
-        Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS); // Conference duration
+        Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS);
+
+        Map<String, Object> contextUser = new HashMap<>();
+        contextUser.put("id", user.getId().toString());
+        contextUser.put("name", user.getFirstName() + " " + user.getLastName());
+        contextUser.put("email", user.getEmail());
+        if (isModerator) {
+            contextUser.put("moderator", "true");
+        }
 
         Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", jitsiAppId);
+        claims.put("aud", jitsiAudience);
+        claims.put("sub", jitsiXmppDomain);
         claims.put("room", conference.getRoomName());
-        claims.put("sub", user.getEmail());
-        claims.put("tenant_id", tenant.getSlug());
-        claims.put("mod", isModerator);
         claims.put("context", Map.of(
-            "user", Map.of(
-                "id", user.getId().toString(),
-                "name", user.getFirstName() + " " + user.getLastName(),
-                "email", user.getEmail()
-            ),
+            "user", contextUser,
             "features", Map.of(
                 "livestreaming", conference.getEnableLiveStreaming(),
                 "recording", conference.getEnableRecording(),
@@ -118,10 +135,10 @@ public class JwtService {
 
         return Jwts.builder()
             .claims(claims)
-            .subject(user.getEmail())
+            .subject(jitsiXmppDomain)
             .issuedAt(Date.from(Instant.now()))
             .expiration(Date.from(expiration))
-            .signWith(accessTokenKey)
+            .signWith(jitsiAppKey)
             .compact();
     }
 
@@ -133,25 +150,27 @@ public class JwtService {
     }
 
     /**
-     * Generate guest token for external participants.
+     * Generate guest token for external participants compatible with Prosody JWT auth.
+     * Required claims: iss, aud, sub (XMPP domain), room, context
      */
     public String generateGuestToken(Conference conference, String displayName, boolean isModerator) {
         log.debug("Generating guest token for conference: {}", conference.getId());
 
-        Tenant tenant = conference.getTenant();
         Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS);
 
-        String guestId = "guest-" + UUID.randomUUID();
-        
+        Map<String, Object> contextUser = new HashMap<>();
+        contextUser.put("name", displayName);
+        if (isModerator) {
+            contextUser.put("moderator", "true");
+        }
+
         Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", jitsiAppId);
+        claims.put("aud", jitsiAudience);
+        claims.put("sub", jitsiXmppDomain);
         claims.put("room", conference.getRoomName());
-        claims.put("sub", guestId);
-        claims.put("tenant_id", tenant.getSlug());
-        claims.put("mod", isModerator);
         claims.put("context", Map.of(
-            "user", Map.of(
-                "name", displayName
-            ),
+            "user", contextUser,
             "features", Map.of(
                 "livestreaming", false,
                 "recording", false,
@@ -161,10 +180,10 @@ public class JwtService {
 
         return Jwts.builder()
             .claims(claims)
-            .subject(guestId)
+            .subject(jitsiXmppDomain)
             .issuedAt(Date.from(Instant.now()))
             .expiration(Date.from(expiration))
-            .signWith(accessTokenKey)
+            .signWith(jitsiAppKey)
             .compact();
     }
 

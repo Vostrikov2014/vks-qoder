@@ -45,7 +45,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: jmp-api-dev:latest
+    image: jmp-api-dev
+    pull_policy: never
     container_name: jmp-api-dev
     restart: "no"
     environment:
@@ -63,6 +64,8 @@ services:
       JMP_STORAGE_S3_ENDPOINT: http://minio:9000
       JITSI_JWT_APP_ID: jmp-platform
       JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JITSI_JWT_AUDIENCE: jitsi
+      JITSI_XMPP_DOMAIN: meet.jitsi
       JITSI_DOMAIN: localhost:8000
       #CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
     ports:
@@ -88,7 +91,8 @@ services:
     build:
       context: ./jmp-ui
       dockerfile: Dockerfile
-    image: jmp-ui-dev:latest
+    image: jmp-ui-dev
+    pull_policy: never
     container_name: jmp-ui-dev
     restart: "no"
     environment:
@@ -164,7 +168,8 @@ services:
     build:
       context: ./jitsi-meet
       dockerfile: Dockerfile
-    image: jmp-jitsi-web-dev:latest
+    image: jmp-jitsi-web-dev
+    pull_policy: never
     container_name: jmp-jitsi-web-dev
     restart: "no"
     environment:

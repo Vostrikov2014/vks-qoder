@@ -742,48 +742,54 @@ export default function ConferencesPage() {
 
                     {/* Actions */}
                     <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
-                      {conference.status === 'SCHEDULED' && (
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          startIcon={<Play size={16} />}
-                          onClick={() => handleStart(conference.id)}
-                          sx={{
-                            py: 1,
-                            borderRadius: 'var(--radius-lg)',
-                            background: '#3b82b6',
-                            color: 'white',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            '&:hover': {
-                              background: '#2563eb',
-                            },
-                          }}
-                        >
-                          {t('common.start')}
-                        </Button>
-                      )}
-                      {conference.status === 'ACTIVE' && (
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          startIcon={<Square size={16} />}
-                          onClick={() => handleEnd(conference.id)}
-                          sx={{
-                            py: 1,
-                            borderRadius: 'var(--radius-lg)',
-                            background: '#6b7280',
-                            color: 'white',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            '&:hover': {
-                              background: '#4b5563',
-                            },
-                          }}
-                        >
-                          {t('common.end')}
-                        </Button>
-                      )}
+                      <Button
+                        variant="contained"
+                        startIcon={<Play size={16} />}
+                        onClick={() => handleStart(conference.id)}
+                        disabled={conference.status === 'ACTIVE'}
+                        sx={{
+                          py: 1,
+                          flex: 1,
+                          borderRadius: 'var(--radius-lg)',
+                          background: conference.status !== 'ACTIVE' ? '#3b82b6' : 'rgba(59, 130, 182, 0.2)',
+                          color: 'white',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                          '&:hover': {
+                            background: conference.status !== 'ACTIVE' ? '#2563eb' : 'rgba(59, 130, 182, 0.2)',
+                          },
+                          '&.Mui-disabled': {
+                            background: 'rgba(59, 130, 182, 0.12)',
+                            color: 'rgba(59, 130, 182, 0.4)',
+                          },
+                        }}
+                      >
+                        {t('common.start')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<Square size={16} />}
+                        onClick={() => handleEnd(conference.id)}
+                        disabled={conference.status !== 'ACTIVE'}
+                        sx={{
+                          py: 1,
+                          flex: 1,
+                          borderRadius: 'var(--radius-lg)',
+                          background: conference.status === 'ACTIVE' ? '#6b7280' : 'rgba(107, 114, 128, 0.2)',
+                          color: 'white',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                          '&:hover': {
+                            background: conference.status === 'ACTIVE' ? '#4b5563' : 'rgba(107, 114, 128, 0.2)',
+                          },
+                          '&.Mui-disabled': {
+                            background: 'rgba(107, 114, 128, 0.08)',
+                            color: 'rgba(107, 114, 128, 0.35)',
+                          },
+                        }}
+                      >
+                        {t('common.end')}
+                      </Button>
                       <Tooltip title={t('common.share')}>
                         <IconButton
                           onClick={() => handleShare(conference)}
@@ -1021,40 +1027,40 @@ export default function ConferencesPage() {
 
                       {/* Actions */}
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                        {conference.status === 'SCHEDULED' && (
                           <Tooltip title={t('common.start')}>
                             <IconButton
                               size="small"
                               onClick={() => handleStart(conference.id)}
+                              disabled={conference.status === 'ACTIVE'}
                               sx={{
                                 p: 0.75,
                                 borderRadius: 'var(--radius-md)',
-                                background: 'rgba(59, 130, 182, 0.1)',
-                                color: '#3b82b6',
+                                background: conference.status !== 'ACTIVE' ? 'rgba(59, 130, 182, 0.1)' : 'transparent',
+                                color: conference.status !== 'ACTIVE' ? '#3b82b6' : 'var(--text-muted)',
+                                opacity: conference.status !== 'ACTIVE' ? 1 : 0.35,
                                 '&:hover': { background: 'rgba(59, 130, 182, 0.2)' },
                               }}
                             >
                               <Play size={14} />
                             </IconButton>
                           </Tooltip>
-                        )}
-                        {conference.status === 'ACTIVE' && (
                           <Tooltip title={t('common.end')}>
                             <IconButton
                               size="small"
                               onClick={() => handleEnd(conference.id)}
+                              disabled={conference.status !== 'ACTIVE'}
                               sx={{
                                 p: 0.75,
                                 borderRadius: 'var(--radius-md)',
-                                background: 'rgba(107, 114, 128, 0.1)',
-                                color: '#6b7280',
+                                background: conference.status === 'ACTIVE' ? 'rgba(107, 114, 128, 0.1)' : 'transparent',
+                                color: conference.status === 'ACTIVE' ? '#6b7280' : 'var(--text-muted)',
+                                opacity: conference.status === 'ACTIVE' ? 1 : 0.35,
                                 '&:hover': { background: 'rgba(107, 114, 128, 0.2)' },
                               }}
                             >
                               <Square size={14} />
                             </IconButton>
                           </Tooltip>
-                        )}
                         <Tooltip title={t('common.share')}>
                           <IconButton
                             size="small"

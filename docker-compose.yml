@@ -47,11 +47,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: vostrlog/jmp-api:latest
+    image: vostrlog/jmp-api
     container_name: jmp-api
     restart: unless-stopped
     environment:
-      SPRING_PROFILES_ACTIVE: docker,dev
       DB_URL: jdbc:postgresql://postgres:5432/jmp
       DB_USER: jmp
       DB_PASS: jmp
@@ -65,7 +64,9 @@ services:
       JMP_STORAGE_S3_ENDPOINT: http://minio:9000
       JITSI_JWT_APP_ID: jmp-platform
       JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JITSI_DOMAIN: a.slamx.ru
+      JITSI_JWT_AUDIENCE: jitsi
+      JITSI_XMPP_DOMAIN: meet.jitsi
+      JITSI_DOMAIN: a.slamx.ru/jitsi
       CORS_ALLOWED_ORIGINS: http://a.slamx.ru,http://localhost:5173,http://localhost:3000
     ports:
       - "8081:8080"
@@ -90,7 +91,7 @@ services:
     build:
       context: ./jmp-ui
       dockerfile: Dockerfile
-    image: vostrlog/jmp-ui:latest
+    image: vostrlog/jmp-ui
     container_name: jmp-ui
     restart: unless-stopped
     environment:
@@ -166,7 +167,7 @@ services:
     build:
       context: ./jitsi-meet
       dockerfile: Dockerfile
-    image: vostrlog/jmp-jitsi-web:latest
+    image: vostrlog/jmp-jitsi-web
     container_name: jmp-jitsi-web
     restart: unless-stopped
     environment:
