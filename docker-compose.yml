@@ -353,31 +353,41 @@ services:
   # Reads your nginx-proxy.conf from /etc/nginx/user_conf.d/ and
   # inspects every `server_name` to request certificates for those hosts.
   nginx-proxy:
-    image: jonasal/nginx-certbot:latest
+    image: nginxproxy/nginx-proxy:alpine
     container_name: jmp-nginx-proxy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      # CHANGE THIS to a real address before first start
-      CERTBOT_EMAIL: admin@slamx.ru
-      # Set STAGING=1 while you verify DNS/firewall; LE staging certs are
-      # NOT trusted by browsers. Remove (or set 0) once it works.
-      # STAGING: "1"
-      # FORCE_RENEWAL: "1"   # run once after switching staging -> prod
-      USE_ECDSA: "1"
-      RENEWAL_INTERVAL: 8d
     volumes:
-      - ./nginx-proxy.conf:/etc/nginx/user_conf.d/default.conf:ro
-      - nginx_secrets:/etc/letsencrypt
+      - ./certs:/etc/nginx/certs:rw
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     depends_on:
       jmp-api:
         condition: service_healthy
       jmp-ui:
         condition: service_started
       jitsi-web:
-        condition: service_started
+        condition: service_started  
+    networks:
+      - jmp-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: jmp-letsencrypt
+    restart: unless-stopped
+    environment:
+      NGINX_PROXY_CONTAINER: jmp-nginx-proxy
+      DEFAULT_EMAIL: your@email.com
+    volumes:
+      - ./certs:/etc/nginx/certs:rw
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy
     networks:
       - jmp-network
 
