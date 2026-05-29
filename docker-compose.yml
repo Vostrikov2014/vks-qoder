@@ -96,6 +96,10 @@ services:
     restart: unless-stopped
     environment:
       VITE_API_URL: /api/v1
+      # nginx-proxy virtual host configuration (ONLY for this container)
+      VIRTUAL_HOST: a.slamx.ru,meet.slamx.ru
+      LETSENCRYPT_HOST: a.slamx.ru,meet.slamx.ru
+      LETSENCRYPT_EMAIL: admin@slamx.ru
     # Port 80 exposed internally only (accessed via nginx-proxy)
     expose:
       - "80"
@@ -380,7 +384,7 @@ services:
     restart: unless-stopped
     environment:
       NGINX_PROXY_CONTAINER: jmp-nginx-proxy
-      DEFAULT_EMAIL: your@email.com
+      DEFAULT_EMAIL: admin@slamx.ru
     volumes:
       - ./certs:/etc/nginx/certs:rw
       - ./vhost.d:/etc/nginx/vhost.d
