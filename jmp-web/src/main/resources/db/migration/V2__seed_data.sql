@@ -4,9 +4,9 @@
 INSERT INTO jmp.tenants (id, name, slug, description, status, domain, jitsi_domain, 
     max_concurrent_conferences, max_participants_per_conference, max_recording_storage_mb,
     max_conference_duration_minutes, allowed_features)
-VALUES 
-    ('11111111-1111-1111-1111-111111111111', 'Default Tenant', 'default', 
-     'Default tenant for initial setup', 'ACTIVE', 'a.slamx.ru', 'a.slamx.ru/jitsi',
+VALUES
+    ('11111111-1111-1111-1111-111111111111', 'Default Tenant', 'default',
+     'Default tenant for initial setup', 'ACTIVE', 'a.slamx.ru', 'meet.slamx.ru/jitsi',
      50, 100, 51200, 240, 'chat,screen_share,recording,live_streaming');
 
 -- System permissions (21 total)
