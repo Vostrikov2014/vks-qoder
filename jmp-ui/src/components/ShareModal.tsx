@@ -97,6 +97,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(20px)',
           border: '1px solid var(--glass-border)',
+          borderTop: '3px solid #C99A5B',
         },
       }}
     >
@@ -160,14 +161,16 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                 py: 1.5,
                 px: 4,
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+                boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+                border: '1px solid rgba(201, 154, 91, 0.25)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                  background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+                  boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
+                  borderColor: 'rgba(201, 154, 91, 0.4)',
                 },
               }}
             >
@@ -201,8 +204,8 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                         borderRadius: 'var(--radius-md)',
                         color: copied ? '#22c55e' : 'var(--text-muted)',
                         '&:hover': {
-                          background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 182, 0.08)',
-                          color: copied ? '#16a34a' : '#3b82b6',
+                          background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(201, 154, 91, 0.08)',
+                          color: copied ? '#16a34a' : '#C99A5B',
                         },
                       }}
                     >
@@ -223,7 +226,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                     borderColor: 'var(--border)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#3b82b6',
+                    borderColor: '#C99A5B',
                   },
                 },
               }}
@@ -242,7 +245,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
               />
             )}
 
-            <Alert severity="info" sx={{ mt: 1, background: 'rgba(59, 130, 182, 0.08)', color: '#3b82b6', border: '1px solid rgba(59, 130, 182, 0.2)' }}>
+            <Alert severity="info" sx={{ mt: 1, background: 'rgba(201, 154, 91, 0.08)', color: '#C99A5B', border: '1px solid rgba(201, 154, 91, 0.2)' }}>
               <Typography variant="caption">
                 <strong>{t('share.howToUse')}</strong> {t('share.howToUseDesc')}
               </Typography>
@@ -251,7 +254,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
         <Button
           onClick={handleClose}
           sx={{
