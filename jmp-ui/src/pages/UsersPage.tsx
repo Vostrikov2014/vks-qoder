@@ -846,7 +846,7 @@ export default function UsersPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
-            borderRadius: 'var(--radius-2xl)',
+            borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-xl)',
           },
         }}

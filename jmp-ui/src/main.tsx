@@ -8,6 +8,9 @@ import App from './App'
 import './index.css'
 
 const theme = createTheme({
+  shape: {
+    borderRadius: 2,
+  },
   palette: {
     mode: 'light',
     primary: {

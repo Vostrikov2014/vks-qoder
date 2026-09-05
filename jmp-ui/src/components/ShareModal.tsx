@@ -93,7 +93,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 'var(--radius-xl)',
+          borderRadius: 'var(--radius-md)',
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(20px)',
           border: '1px solid var(--glass-border)',
