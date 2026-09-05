@@ -37,10 +37,10 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#3b82b6', requiresAdmin: true, requiresSuperAdmin: false },
-  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#3b82b6', requiresAdmin: false, requiresSuperAdmin: true },
+  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#C99A5B', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: true },
 ];
 
 const itemVariants = {
@@ -109,11 +109,11 @@ export default function Layout() {
             width: 44,
             height: 44,
             borderRadius: 'var(--radius-xl)',
-            background: 'linear-gradient(135deg, #3b82b6 0%, #60a5fa 100%)',
+            background: 'linear-gradient(135deg, #0B7186 0%, #19B3C6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(201, 154, 91, 0.4)',
           }}
         >
           <Video size={24} color="white" />
@@ -304,7 +304,7 @@ export default function Layout() {
           sx={{
             ml: 2,
             fontWeight: 700,
-            color: '#3b82b6',
+            color: '#0B7186',
           }}
         >
           {t('common.appName')}
@@ -461,7 +461,8 @@ export default function Layout() {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                  boxShadow: '0 0 0 2px rgba(201, 154, 91, 0.35)',
                   fontWeight: 600,
                   fontSize: '0.875rem',
                 }}

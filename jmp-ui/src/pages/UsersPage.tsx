@@ -110,13 +110,13 @@ const getRoleColor = (role: string) => {
   switch (role) {
     case 'SUPER_ADMIN':
     case 'ROLE_SUPER_ADMIN':
-      return '#3b82b6';
+      return '#0B7186';
     case 'TENANT_ADMIN':
     case 'ROLE_TENANT_ADMIN':
-      return '#2563eb';
+      return '#075D70';
     case 'MODERATOR':
     case 'ROLE_MODERATOR':
-      return '#60a5fa';
+      return '#19B3C6';
     case 'PARTICIPANT':
     case 'ROLE_PARTICIPANT':
       return '#6b7280';
@@ -212,11 +212,11 @@ export default function UsersPage() {
 
   const getAvatarGradient = (id: string) => {
     const gradients = [
-      'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
-      'linear-gradient(135deg, #60a5fa 0%, #3b82b6 100%)',
-      'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-      'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
-      'linear-gradient(135deg, #3b82b6 0%, #1d4ed8 100%)',
+      'linear-gradient(135deg, #0B7186 0%, #075D70 100%)',
+      'linear-gradient(135deg, #19B3C6 0%, #0B7186 100%)',
+      'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+      'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+      'linear-gradient(135deg, #0B7186 0%, #05323C 100%)',
     ];
     const index = id.charCodeAt(0) % gradients.length;
     return gradients[index];
@@ -243,14 +243,14 @@ export default function UsersPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #0B7186 0%, #075D70 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+              boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4)',
               },
             }}
           >
@@ -277,14 +277,16 @@ export default function UsersPage() {
                 py: 1.5,
                 px: 3,
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+                boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+                border: '1px solid rgba(201, 154, 91, 0.25)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                  background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+                  boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
+                  borderColor: 'rgba(201, 154, 91, 0.4)',
                 },
               }}
           >
@@ -316,7 +318,7 @@ export default function UsersPage() {
                   borderColor: 'var(--border)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#3b82b6',
+                  borderColor: '#C99A5B',
                 },
               },
             }}
@@ -347,6 +349,8 @@ export default function UsersPage() {
               '& .MuiToggleButtonGroup-grouped': {
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border)',
+                borderLeft: '1px solid var(--border) !important',
+                marginLeft: '0 !important',
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
@@ -363,9 +367,9 @@ export default function UsersPage() {
                 p: 1,
                 color: 'var(--text-muted)',
                 '&.Mui-selected': {
-                  background: 'rgba(59, 130, 182, 0.12)',
-                  color: '#3b82b6',
-                  borderColor: '#3b82b6',
+                  background: 'rgba(201, 154, 91, 0.12)',
+                  color: '#C99A5B',
+                  borderColor: '#C99A5B',
                 },
                 '&:hover': {
                   background: 'var(--glass-bg)',
@@ -382,9 +386,9 @@ export default function UsersPage() {
                 p: 1,
                 color: 'var(--text-muted)',
                 '&.Mui-selected': {
-                  background: 'rgba(59, 130, 182, 0.12)',
-                  color: '#3b82b6',
-                  borderColor: '#3b82b6',
+                  background: 'rgba(201, 154, 91, 0.12)',
+                  color: '#C99A5B',
+                  borderColor: '#C99A5B',
                 },
                 '&:hover': {
                   background: 'var(--glass-bg)',
@@ -440,7 +444,7 @@ export default function UsersPage() {
                       transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                       '&:hover': {
                         transform: 'translateY(-4px)',
-                        boxShadow: 'var(--shadow-xl)',
+                        boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
                       },
                     }}
                   >
@@ -453,7 +457,7 @@ export default function UsersPage() {
                           background: getAvatarGradient(user.id),
                           fontWeight: 700,
                           fontSize: '1.25rem',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.1), 0 0 0 2px rgba(201, 154, 91, 0.35)',
                         }}
                       >
                         {getInitials(user.firstName, user.lastName)}
@@ -536,17 +540,18 @@ export default function UsersPage() {
                         gap: 1,
                         p: 1.5,
                         borderRadius: 'var(--radius-lg)',
-                        background: 'rgba(59, 130, 182, 0.08)',
+                        background: 'rgba(201, 154, 91, 0.08)',
+                        border: '1px solid rgba(201, 154, 91, 0.1)',
                       }}
                     >
-                      <User size={16} color="var(--text-muted)" />
+                      <User size={16} color="#C99A5B" />
                       <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
                         {t('users.joined')} {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                       </Typography>
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 0.5, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
                       <Button
                         fullWidth
                         variant="outlined"
@@ -555,13 +560,14 @@ export default function UsersPage() {
                         sx={{
                           py: 1,
                           borderRadius: 'var(--radius-lg)',
-                          borderColor: 'var(--border)',
+                          borderColor: 'rgba(201, 154, 91, 0.3)',
                           color: 'var(--text)',
                           fontWeight: 600,
                           textTransform: 'none',
                           '&:hover': {
-                            borderColor: '#3b82b6',
-                            background: 'rgba(59, 130, 182, 0.08)',
+                            borderColor: '#C99A5B',
+                            background: 'rgba(201, 154, 91, 0.08)',
+                            boxShadow: '0 2px 8px rgba(201, 154, 91, 0.15)',
                           },
                         }}
                       >
@@ -619,7 +625,7 @@ export default function UsersPage() {
                 gap: 2,
                 p: 2,
                 borderBottom: '1px solid var(--border)',
-                background: 'rgba(59, 130, 182, 0.04)',
+                background: 'rgba(11, 113, 134, 0.04)',
               }}
             >
               <Box />
@@ -669,7 +675,7 @@ export default function UsersPage() {
                         borderBottom: '1px solid var(--border)',
                         transition: 'background 0.15s ease',
                         '&:hover': {
-                          background: 'rgba(59, 130, 182, 0.04)',
+                          background: 'rgba(11, 113, 134, 0.04)',
                         },
                         '&:last-child': {
                           borderBottom: 'none',
@@ -754,7 +760,7 @@ export default function UsersPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(user)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#3b82b6' } }}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#C99A5B' } }}
                           >
                             <Edit2 size={14} />
                           </IconButton>
@@ -809,7 +815,7 @@ export default function UsersPage() {
                 justifyContent: 'center',
               }}
             >
-              <Users size={40} color="#3b82b6" />
+              <Users size={40} color="#0B7186" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
               {t('users.noUsers')}
@@ -823,10 +829,12 @@ export default function UsersPage() {
               onClick={handleCreate}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
+                border: '1px solid rgba(201, 154, 91, 0.25)',
+                boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
               }}
             >
               {t('users.addUser')}
@@ -846,12 +854,13 @@ export default function UsersPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
+            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingUser ? t('users.editUser') : t('users.addUser')}
           </Typography>
@@ -882,9 +891,11 @@ export default function UsersPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#3b82b6',
+                  borderColor: '#C99A5B',
                 },
               },
+              '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
             }}
           />
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -904,9 +915,11 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#525252',
+                    borderColor: '#C99A5B',
                   },
                 },
+                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
               }}
             />
             <TextField
@@ -925,9 +938,11 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#525252',
+                    borderColor: '#C99A5B',
                   },
                 },
+                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
               }}
             />
           </Box>
@@ -949,9 +964,11 @@ export default function UsersPage() {
                     borderColor: 'var(--border-strong)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#525252',
+                    borderColor: '#C99A5B',
                   },
                 },
+                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
               }}
             />
           )}
@@ -987,8 +1004,9 @@ export default function UsersPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#3b82b6',
+                  borderColor: '#C99A5B',
                 },
+                '&.Mui-focused .MuiInputLabel-root': { color: '#C99A5B' },
               }}
             >
               <MenuItem value="ROLE_SUPER_ADMIN">{t('roles.SUPER_ADMIN')}</MenuItem>
@@ -999,7 +1017,7 @@ export default function UsersPage() {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
@@ -1016,11 +1034,18 @@ export default function UsersPage() {
             variant="contained"
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
+              border: '1px solid rgba(201, 154, 91, 0.25)',
+              boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+                boxShadow: '0 6px 20px rgba(11, 113, 134, 0.4), 0 2px 10px rgba(201, 154, 91, 0.3)',
+                borderColor: 'rgba(201, 154, 91, 0.4)',
+              },
             }}
           >
             {editingUser ? t('common.update') : t('common.create')}

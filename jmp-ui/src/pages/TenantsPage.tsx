@@ -92,10 +92,10 @@ const fieldSx = {
     color: 'var(--text)',
     '& fieldset': { borderColor: 'var(--border)' },
     '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-    '&.Mui-focused fieldset': { borderColor: '#3b82b6' },
+    '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
   },
   '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#3b82b6' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
 };
 
 export default function TenantsPage() {
@@ -249,14 +249,16 @@ export default function TenantsPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(59, 130, 182, 0.3)',
+              boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+              border: '1px solid rgba(201, 154, 91, 0.25)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                boxShadow: '0 6px 25px rgba(59, 130, 182, 0.4)',
+                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+                boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
+                borderColor: 'rgba(201, 154, 91, 0.4)',
               },
             }}
           >
@@ -283,7 +285,7 @@ export default function TenantsPage() {
                 border: '1px solid var(--glass-border)',
                 '& fieldset': { borderColor: 'transparent' },
                 '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: '#3b82b6' },
+                '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
               },
             }}
           />
@@ -300,6 +302,8 @@ export default function TenantsPage() {
               '& .MuiToggleButtonGroup-grouped': {
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border)',
+                borderLeft: '1px solid var(--border) !important',
+                marginLeft: '0 !important',
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
@@ -316,9 +320,9 @@ export default function TenantsPage() {
                 p: 1,
                 color: 'var(--text-muted)',
                 '&.Mui-selected': {
-                  background: 'rgba(59, 130, 182, 0.12)',
-                  color: '#3b82b6',
-                  borderColor: '#3b82b6',
+                  background: 'rgba(201, 154, 91, 0.12)',
+                  color: '#C99A5B',
+                  borderColor: '#C99A5B',
                 },
                 '&:hover': { background: 'var(--glass-bg)' },
               }}
@@ -333,9 +337,9 @@ export default function TenantsPage() {
                 p: 1,
                 color: 'var(--text-muted)',
                 '&.Mui-selected': {
-                  background: 'rgba(59, 130, 182, 0.12)',
-                  color: '#3b82b6',
-                  borderColor: '#3b82b6',
+                  background: 'rgba(201, 154, 91, 0.12)',
+                  color: '#C99A5B',
+                  borderColor: '#C99A5B',
                 },
                 '&:hover': { background: 'var(--glass-bg)' },
               }}
@@ -390,7 +394,7 @@ export default function TenantsPage() {
                         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                         '&:hover': {
                           transform: 'translateY(-4px)',
-                          boxShadow: 'var(--shadow-xl)',
+                          boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
                         },
                         position: 'relative',
                         overflow: 'hidden',
@@ -423,6 +427,7 @@ export default function TenantsPage() {
                               color: statusConfig.color,
                               fontWeight: 700,
                               fontSize: '0.9rem',
+                              boxShadow: '0 0 0 2px rgba(201, 154, 91, 0.3)',
                             }}
                           >
                             {initials}
@@ -473,7 +478,7 @@ export default function TenantsPage() {
                       )}
 
                       {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
                         {tenant.status === 'ACTIVE' && (
                           <Button
                             fullWidth
@@ -520,8 +525,8 @@ export default function TenantsPage() {
                               borderRadius: 'var(--radius-lg)',
                               color: 'var(--text-muted)',
                               '&:hover': {
-                                background: 'rgba(59, 130, 182, 0.1)',
-                                color: '#3b82b6',
+                                background: 'rgba(201, 154, 91, 0.12)',
+                                color: '#C99A5B',
                               },
                             }}
                           >
@@ -578,7 +583,7 @@ export default function TenantsPage() {
                 gap: 2,
                 p: 2,
                 borderBottom: '1px solid var(--border)',
-                background: 'rgba(59, 130, 182, 0.04)',
+                background: 'rgba(11, 113, 134, 0.04)',
               }}
             >
               <Box />
@@ -628,7 +633,7 @@ export default function TenantsPage() {
                         alignItems: 'center',
                         borderBottom: '1px solid var(--border)',
                         transition: 'background 0.15s ease',
-                        '&:hover': { background: 'rgba(59, 130, 182, 0.04)' },
+                        '&:hover': { background: 'rgba(11, 113, 134, 0.04)' },
                         '&:last-child': { borderBottom: 'none' },
                       }}
                     >
@@ -747,7 +752,7 @@ export default function TenantsPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(tenant)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#3b82b6' } }}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#C99A5B' } }}
                           >
                             <Edit2 size={14} />
                           </IconButton>
@@ -802,7 +807,7 @@ export default function TenantsPage() {
                 justifyContent: 'center',
               }}
             >
-              <Building2 size={40} color="#3b82b6" />
+              <Building2 size={40} color="#0B7186" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
               {t('tenants.noTenants')}
@@ -816,10 +821,12 @@ export default function TenantsPage() {
               onClick={handleCreate}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
+                border: '1px solid rgba(201, 154, 91, 0.25)',
+                boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
               }}
             >
               {t('tenants.addTenant')}
@@ -839,12 +846,13 @@ export default function TenantsPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
+            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingTenant ? t('tenants.editTenant') : t('tenants.addTenant')}
           </Typography>
@@ -896,7 +904,7 @@ export default function TenantsPage() {
 
           {/* Quotas Section */}
           <Box sx={{ mt: 3 }}>
-            <Divider sx={{ borderColor: 'var(--glass-border)', mb: 2 }} />
+            <Divider sx={{ borderColor: 'rgba(201, 154, 91, 0.15)', mb: 2 }} />
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
               {t('tenants.quotas')}
             </Typography>
@@ -949,7 +957,7 @@ export default function TenantsPage() {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
@@ -966,11 +974,18 @@ export default function TenantsPage() {
             variant="contained"
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #3b82b6 0%, #2563eb 100%)',
+              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
+              border: '1px solid rgba(201, 154, 91, 0.25)',
+              boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
+                boxShadow: '0 6px 20px rgba(11, 113, 134, 0.4), 0 2px 10px rgba(201, 154, 91, 0.3)',
+                borderColor: 'rgba(201, 154, 91, 0.4)',
+              },
             }}
           >
             {editingTenant ? t('common.update') : t('common.create')}
@@ -989,12 +1004,13 @@ export default function TenantsPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
+            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {t('tenants.suspendTenant')}
           </Typography>
