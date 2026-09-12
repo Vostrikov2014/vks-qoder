@@ -256,6 +256,13 @@ public class ConferenceController {
         return jitsiDomain;
     }
 
+    /**
+     * Extract the tenant ID of the authenticated user from the {@code tenant_id}
+     * JWT claim carried in the authentication details set by
+     * {@link JwtAuthenticationFilter}. The details are only present for requests
+     * authenticated with a valid JWT access token; anything else indicates an
+     * unexpected authentication mechanism.
+     */
     private UUID extractTenantId(Authentication authentication) {
         if (authentication.getDetails() instanceof JwtAuthenticationFilter.WebAuthenticationDetails details) {
             return details.getTenantId();
