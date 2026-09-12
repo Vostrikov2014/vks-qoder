@@ -6,7 +6,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: jmp-postgres
-    restart: "no"
+    restart: unless-stopped
     environment:
       POSTGRES_DB: jmp
       POSTGRES_USER: jmp
@@ -27,7 +27,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: jmp-redis
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -108,9 +108,11 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: jmp-prometheus
-    restart: "no"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
@@ -124,7 +126,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: jmp-grafana
-    restart: "no"
+    restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
@@ -142,7 +144,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: jmp-minio
-    restart: "no"
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -211,7 +213,7 @@ services:
   jitsi-prosody:
     image: jitsi/prosody:stable
     container_name: jmp-jitsi-prosody
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -257,7 +259,7 @@ services:
   jitsi-jicofo:
     image: jitsi/jicofo:stable
     container_name: jmp-jitsi-jicofo
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -299,7 +301,7 @@ services:
   jitsi-jvb:
     image: jitsi/jvb:stable
     container_name: jmp-jitsi-jvb
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
