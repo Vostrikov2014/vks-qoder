@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -53,6 +54,14 @@ public class ConferenceController {
     private final ConferenceRepository conferenceRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+
+    /**
+     * Per-environment fallback Jitsi domain from application config (jitsi.domain),
+     * used when the tenant has no jitsiDomain configured. Non-final so it is
+     * excluded from the Lombok-generated constructor.
+     */
+    @Value("${jitsi.domain:}")
+    private String defaultJitsiDomain;
 
     @PostMapping
     @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
@@ -182,11 +191,8 @@ public class ConferenceController {
         User user = userRepository.findWithRolesById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        // Validate jitsiDomain is configured
-        String jitsiDomain = conference.getTenant().getJitsiDomain();
-        if (jitsiDomain == null || jitsiDomain.isBlank()) {
-            throw new IllegalStateException("Jitsi domain not configured for tenant");
-        }
+        // Tenant-specific domain takes priority, config value is the fallback
+        String jitsiDomain = resolveJitsiDomain(conference);
 
         String token = jwtService.generateJitsiToken(conference, user,
             request.isModerator() != null ? request.isModerator() : false);
@@ -216,11 +222,8 @@ public class ConferenceController {
 
         String displayName = request.displayName() != null ? request.displayName() : "Guest";
 
-        // Validate jitsiDomain is configured
-        String jitsiDomain = conference.getTenant().getJitsiDomain();
-        if (jitsiDomain == null || jitsiDomain.isBlank()) {
-            throw new IllegalStateException("Jitsi domain not configured for tenant");
-        }
+        // Tenant-specific domain takes priority, config value is the fallback
+        String jitsiDomain = resolveJitsiDomain(conference);
 
         String token = jwtService.generateGuestToken(conference, displayName, false);
 
@@ -235,6 +238,22 @@ public class ConferenceController {
             roomUrl,
             expiresAt
         ));
+    }
+
+    /**
+     * Resolve the Jitsi domain for a conference: the tenant-specific value takes
+     * priority, falling back to the application property jitsi.domain when the
+     * tenant has none configured.
+     */
+    private String resolveJitsiDomain(Conference conference) {
+        String jitsiDomain = conference.getTenant().getJitsiDomain();
+        if (jitsiDomain == null || jitsiDomain.isBlank()) {
+            jitsiDomain = defaultJitsiDomain;
+        }
+        if (jitsiDomain == null || jitsiDomain.isBlank()) {
+            throw new IllegalStateException("Jitsi domain not configured for tenant");
+        }
+        return jitsiDomain;
     }
 
     private UUID extractTenantId(Authentication authentication) {
