@@ -184,18 +184,13 @@ public class AnalyticsService {
                 .mapToLong(c -> c.getParticipants() != null ? c.getParticipants().size() : 0)
                 .sum();
 
-            // If no real data, generate reasonable sample values
-            if (participantsOnDay == 0 && conferences.isEmpty()) {
-                participantsOnDay = (long) (Math.random() * 50) + 10; // 10-60 sample participants
-            }
-
             participantTrend.put(dateStr, participantsOnDay);
         }
 
         return new ParticipantAnalytics(
-            uniqueParticipants > 0 ? uniqueParticipants : (long) (Math.random() * 100) + 50,
-            averageParticipantsPerConference > 0 ? averageParticipantsPerConference : (Math.random() * 10) + 5,
-            maxConcurrentParticipants > 0 ? maxConcurrentParticipants : (long) (Math.random() * 30) + 10,
+            uniqueParticipants,
+            averageParticipantsPerConference,
+            maxConcurrentParticipants,
             participantTrend
         );
     }
@@ -230,17 +225,10 @@ public class AnalyticsService {
                 Collectors.counting()
             ));
 
-        // If no data, provide sample values
-        if (recordingsByType.isEmpty()) {
-            recordingsByType.put("VIDEO", (long) (Math.random() * 50) + 20);
-            recordingsByType.put("AUDIO", (long) (Math.random() * 20) + 5);
-            recordingsByType.put("TRANSCRIPT", (long) (Math.random() * 10) + 2);
-        }
-
         return new RecordingAnalytics(
             totalRecordings,
             totalStorage != null ? totalStorage : 0L,
-            (long) (avgDuration > 0 ? avgDuration : (Math.random() * 1800) + 300), // 5-35 min default
+            (long) avgDuration,
             recordingsByType
         );
     }
@@ -305,13 +293,7 @@ public class AnalyticsService {
             .toList();
 
         if (durations.isEmpty()) {
-            // Return sample data if no real data available
-            return new ConferenceDurationStats(
-                1800L, // 30 min average
-                300L,  // 5 min min
-                7200L, // 2 hour max
-                36000L // 10 hours total
-            );
+            return new ConferenceDurationStats(0L, 0L, 0L, 0L);
         }
 
         long totalDuration = durations.stream().mapToLong(Long::longValue).sum();
@@ -369,13 +351,6 @@ public class AnalyticsService {
             // Count recordings for this day
             long recordingCount = countRecordingsForDay(tenantId, dayStart, dayEnd);
 
-            // If no real data, generate reasonable sample values
-            if (conferenceCount == 0 && conferences.isEmpty()) {
-                conferenceCount = (long) (Math.random() * 10) + 1; // 1-10 conferences
-                participantCount = conferenceCount * ((long) (Math.random() * 8) + 2); // 2-10 participants per conference
-                recordingCount = (long) (Math.random() * 5); // 0-4 recordings
-            }
-
             usage.add(new DailyUsage(dateStr, conferenceCount, participantCount, recordingCount));
         }
 
@@ -430,10 +405,6 @@ public class AnalyticsService {
                 .max(java.util.Comparator.comparingInt(c -> c.getParticipants() != null ? c.getParticipants().size() : 0))
                 .map(Conference::getScheduledStartAt)
                 .orElse(Instant.now());
-        } else {
-            // Generate reasonable sample values
-            maxConcurrentParticipants = (long) (Math.random() * 100) + 20;
-            maxConcurrentConferences = (int) (Math.random() * 10) + 2;
         }
 
         return new PeakUsage(

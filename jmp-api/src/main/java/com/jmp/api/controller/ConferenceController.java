@@ -1,10 +1,8 @@
 package com.jmp.api.controller;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,12 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jmp.application.dto.ConferenceDto;
+import com.jmp.application.service.ConferenceLinkService;
 import com.jmp.application.service.ConferenceService;
-import com.jmp.application.service.JwtService;
-import com.jmp.domain.entity.Conference;
-import com.jmp.domain.entity.User;
-import com.jmp.domain.repository.ConferenceRepository;
-import com.jmp.domain.repository.UserRepository;
 import com.jmp.infrastructure.security.JwtAuthenticationFilter;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,17 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ConferenceController {
 
     private final ConferenceService conferenceService;
-    private final ConferenceRepository conferenceRepository;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-
-    /**
-     * Per-environment fallback Jitsi domain from application config (jitsi.domain),
-     * used when the tenant has no jitsiDomain configured. Non-final so it is
-     * excluded from the Lombok-generated constructor.
-     */
-    @Value("${jitsi.domain:}")
-    private String defaultJitsiDomain;
+    private final ConferenceLinkService conferenceLinkService;
 
     @PostMapping
     @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
@@ -174,86 +158,23 @@ public class ConferenceController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Entry address for the caller's own participation, e.g. the "start and join" button.
+     *
+     * <p>Deliberately takes no request body: the conference comes from the path, the
+     * participant from the access token, and the Jitsi role is derived from that
+     * identity. Previously the caller could ask for {@code isModerator} on any conference
+     * of any tenant.
+     */
     @PostMapping("/{id}/token")
     @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Generate Jitsi JWT token for conference")
+    @Operation(summary = "Generate a Jitsi entry address for the calling user")
     public ResponseEntity<ConferenceDto.TokenResponse> generateToken(
             @PathVariable UUID id,
-            @Valid @RequestBody ConferenceDto.TokenRequest request,
             Authentication authentication) {
 
-        UUID userId = extractUserId(authentication);
-
-        Conference conference = conferenceRepository.findWithDetailsById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
-
-        // Load user from database instead of creating transient object
-        User user = userRepository.findWithRolesById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-
-        // Tenant-specific domain takes priority, config value is the fallback
-        String jitsiDomain = resolveJitsiDomain(conference);
-
-        String token = jwtService.generateJitsiToken(conference, user,
-            request.isModerator() != null ? request.isModerator() : false);
-
-        String roomUrl = String.format("http://%s/%s?jwt=%s",
-            jitsiDomain,
-            conference.getRoomName(),
-            token);
-
-        return ResponseEntity.ok(new ConferenceDto.TokenResponse(
-            token,
-            roomUrl,
-            jwtService.getExpirationTime(token)
-        ));
-    }
-
-    @PostMapping("/{id}/share")
-    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Generate shareable link for conference")
-    public ResponseEntity<ConferenceDto.ShareResponse> generateShareLink(
-            @PathVariable UUID id,
-            @Valid @RequestBody ConferenceDto.ShareRequest request,
-            Authentication authentication) {
-
-        Conference conference = conferenceRepository.findWithDetailsById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + id));
-
-        String displayName = request.displayName() != null ? request.displayName() : "Guest";
-
-        // Tenant-specific domain takes priority, config value is the fallback
-        String jitsiDomain = resolveJitsiDomain(conference);
-
-        String token = jwtService.generateGuestToken(conference, displayName, false);
-
-        String roomUrl = String.format("http://%s/%s?jwt=%s",
-            jitsiDomain,
-            conference.getRoomName(),
-            token);
-
-        Instant expiresAt = jwtService.getGuestTokenExpiration();
-
-        return ResponseEntity.ok(new ConferenceDto.ShareResponse(
-            roomUrl,
-            expiresAt
-        ));
-    }
-
-    /**
-     * Resolve the Jitsi domain for a conference: the tenant-specific value takes
-     * priority, falling back to the application property jitsi.domain when the
-     * tenant has none configured.
-     */
-    private String resolveJitsiDomain(Conference conference) {
-        String jitsiDomain = conference.getTenant().getJitsiDomain();
-        if (jitsiDomain == null || jitsiDomain.isBlank()) {
-            jitsiDomain = defaultJitsiDomain;
-        }
-        if (jitsiDomain == null || jitsiDomain.isBlank()) {
-            throw new IllegalStateException("Jitsi domain not configured for tenant");
-        }
-        return jitsiDomain;
+        return ResponseEntity.ok(conferenceLinkService.mintPersonalToken(
+            id, extractTenantId(authentication), extractUserId(authentication), isAdmin(authentication)));
     }
 
     /**

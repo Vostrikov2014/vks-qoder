@@ -48,7 +48,6 @@ import {
   List,
 } from 'lucide-react';
 import { conferenceApi, participantAssignmentApi } from '../services/api';
-import { useAuthStore } from '../store/authStore';
 import ShareModal from '../components/ShareModal';
 import ParticipantManagementPanel from '../components/ParticipantManagementPanel';
 import type { Conference, ConferenceType, AccessPolicy, ParticipantAssignment } from '../types';
@@ -336,17 +335,12 @@ export default function ConferencesPage() {
       await conferenceApi.startConference(id);
       fetchConferences();
 
-      // Generate Jitsi token and open Jitsi Web
-      const user = useAuthStore.getState().user;
-      const displayName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : 'Guest';
-      const tokenResponse = await conferenceApi.generateToken(id, {
-        conferenceId: id,
-        displayName,
-        isModerator: true,
-      });
+      // Own entry address: the Jitsi role is derived from the access token on the server,
+      // so there is nothing to send along with the conference id.
+      const tokenResponse = await conferenceApi.generateToken(id);
       const { roomUrl } = tokenResponse.data;
       if (roomUrl) {
-        window.open(roomUrl, '_blank');
+        window.open(roomUrl, '_blank', 'noopener');
       }
     } catch (error) {
       console.error('Failed to start conference:', error);

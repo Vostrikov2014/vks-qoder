@@ -29,6 +29,8 @@ import {
   ChevronRight,
   Sun,
   Moon,
+  BarChart3,
+  HardDrive,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
@@ -39,6 +41,8 @@ const DRAWER_WIDTH = 280;
 const menuItems = [
   { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
   { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.analytics', icon: BarChart3, path: '/dashboard/analytics', color: '#19B3C6', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.recordings', icon: HardDrive, path: '/dashboard/recordings', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
   { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#C99A5B', requiresAdmin: true, requiresSuperAdmin: false },
   { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: true },
 ];

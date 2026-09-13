@@ -1,13 +1,22 @@
 package com.jmp.api.controller;
 
 import com.jmp.application.service.ConferenceService;
+import com.jmp.application.service.RecordingService;
+import com.jmp.domain.entity.Conference;
+import com.jmp.domain.entity.ConferenceParticipant;
+import com.jmp.domain.entity.Recording;
+import com.jmp.domain.repository.ConferenceParticipantRepository;
+import com.jmp.domain.repository.ConferenceRepository;
+import com.jmp.domain.repository.RecordingRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +38,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class JitsiWebhookController {
 
     private final ConferenceService conferenceService;
+    private final ConferenceRepository conferenceRepository;
+    private final ConferenceParticipantRepository participantRepository;
+    private final RecordingRepository recordingRepository;
+    private final RecordingService recordingService;
 
     @PostMapping
     @Operation(summary = "Receive Jitsi webhook events")
@@ -64,36 +77,131 @@ public class JitsiWebhookController {
     }
 
     private void handleConferenceCreated(JitsiWebhookEvent event) {
-        log.info("Conference created: {} in tenant: {}", 
+        log.info("Conference created in Jitsi: {} in tenant: {}", 
             event.roomName(), event.tenantId());
-        // Update conference status if tracked
+        // Conference status is managed by our own service, no action needed
     }
 
     private void handleConferenceEnded(JitsiWebhookEvent event) {
-        log.info("Conference ended: {} in tenant: {}", 
+        log.info("Conference ended in Jitsi: {} in tenant: {}", 
             event.roomName(), event.tenantId());
-        // Update conference status
+        
+        if (event.tenantId() == null) {
+            log.warn("Cannot process CONFERENCE_ENDED without tenantId");
+            return;
+        }
+        
+        UUID tenantId = UUID.fromString(event.tenantId());
+        Conference conference = conferenceService.findByRoomNameAndTenantId(event.roomName(), tenantId);
+        
+        if (conference == null) {
+            log.warn("Conference not found for roomName: {} and tenantId: {}", event.roomName(), tenantId);
+            return;
+        }
+        
+        if (conference.getStatus() == Conference.ConferenceStatus.ACTIVE) {
+            conference.end();
+            conferenceRepository.save(conference);
+            log.info("Conference {} ended via Jitsi webhook", conference.getId());
+        }
     }
 
     private void handleParticipantJoined(JitsiWebhookEvent event) {
-        log.info("Participant joined: {} to room: {}", 
-            event.participant() != null ? event.participant().get("id") : "unknown",
-            event.roomName());
-        // Update participant count, audit log
+        String participantId = event.participant() != null ? event.participant().get("id") : null;
+        log.info("Participant joined: {} to room: {}", participantId, event.roomName());
+        
+        if (participantId == null || event.tenantId() == null) {
+            log.warn("Cannot process PARTICIPANT_JOINED without participant id or tenantId");
+            return;
+        }
+        
+        UUID tenantId = UUID.fromString(event.tenantId());
+        Conference conference = conferenceService.findByRoomNameAndTenantId(event.roomName(), tenantId);
+        
+        if (conference == null) {
+            log.warn("Conference not found for roomName: {} and tenantId: {}", event.roomName(), tenantId);
+            return;
+        }
+        
+        // Check if participant already exists
+        participantRepository.findByConferenceIdAndExternalId(conference.getId(), participantId)
+            .ifPresentOrElse(
+                existing -> {
+                    if (existing.getStatus() != ConferenceParticipant.ParticipantStatus.JOINED) {
+                        existing.markJoined();
+                        participantRepository.save(existing);
+                    }
+                },
+                () -> {
+                    ConferenceParticipant participant = new ConferenceParticipant();
+                    participant.setConference(conference);
+                    participant.setExternalId(participantId);
+                    participant.setDisplayName(event.participant().getOrDefault("name", "Unknown"));
+                    participant.setRole(ConferenceParticipant.ParticipantRole.PARTICIPANT);
+                    participant.markJoined();
+                    participantRepository.save(participant);
+                }
+            );
     }
 
     private void handleParticipantLeft(JitsiWebhookEvent event) {
-        log.info("Participant left: {} from room: {}", 
-            event.participant() != null ? event.participant().get("id") : "unknown",
-            event.roomName());
-        // Update participant count
+        String participantId = event.participant() != null ? event.participant().get("id") : null;
+        log.info("Participant left: {} from room: {}", participantId, event.roomName());
+        
+        if (participantId == null || event.tenantId() == null) {
+            log.warn("Cannot process PARTICIPANT_LEFT without participant id or tenantId");
+            return;
+        }
+        
+        UUID tenantId = UUID.fromString(event.tenantId());
+        Conference conference = conferenceService.findByRoomNameAndTenantId(event.roomName(), tenantId);
+        
+        if (conference == null) {
+            log.warn("Conference not found for roomName: {} and tenantId: {}", event.roomName(), tenantId);
+            return;
+        }
+        
+        participantRepository.findByConferenceIdAndExternalId(conference.getId(), participantId)
+            .ifPresent(participant -> {
+                if (participant.getStatus() == ConferenceParticipant.ParticipantStatus.JOINED) {
+                    participant.markLeft();
+                    participantRepository.save(participant);
+                }
+            });
     }
 
     private void handleRecordingStatusChanged(JitsiWebhookEvent event) {
-        log.info("Recording status changed for room: {} - status: {}", 
-            event.roomName(), 
-            event.data() != null ? event.data().get("status") : "unknown");
-        // Handle recording lifecycle
+        String status = event.data() != null ? String.valueOf(event.data().get("status")) : "unknown";
+        log.info("Recording status changed for room: {} - status: {}", event.roomName(), status);
+        
+        if (event.tenantId() == null) {
+            log.warn("Cannot process RECORDING_STATUS_CHANGED without tenantId");
+            return;
+        }
+        
+        UUID tenantId = UUID.fromString(event.tenantId());
+        Conference conference = conferenceService.findByRoomNameAndTenantId(event.roomName(), tenantId);
+        
+        if (conference == null) {
+            log.warn("Conference not found for roomName: {} and tenantId: {}", event.roomName(), tenantId);
+            return;
+        }
+        
+        // Find recordings for this conference in PROCESSING state
+        List<Recording> recordings = recordingRepository.findByConferenceIdAndDeletedAtIsNull(conference.getId());
+        for (Recording recording : recordings) {
+            if (recording.getStatus() == Recording.RecordingStatus.PROCESSING 
+                    && "READY".equalsIgnoreCase(status)) {
+                recording.markReady();
+                recordingRepository.save(recording);
+                log.info("Recording {} marked as READY via webhook", recording.getId());
+            } else if (recording.getStatus() == Recording.RecordingStatus.PENDING 
+                    && "ON".equalsIgnoreCase(status)) {
+                recording.setStatus(Recording.RecordingStatus.PROCESSING);
+                recordingRepository.save(recording);
+                log.info("Recording {} set to PROCESSING via webhook", recording.getId());
+            }
+        }
     }
 
     private void handleStreamingStatusChanged(JitsiWebhookEvent event) {

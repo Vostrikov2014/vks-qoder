@@ -40,6 +40,7 @@ public class ConferenceService {
     private final ConferenceMapper conferenceMapper;
     private final ParticipantAssignmentRepository assignmentRepository;
     private final ParticipantAssignmentMapper assignmentMapper;
+    private final JitsiRoomService jitsiRoomService;
 
     /**
      * Create a new conference.
@@ -104,6 +105,14 @@ public class ConferenceService {
         }
 
         return conferenceMapper.toResponse(saved);
+    }
+
+    /**
+     * Find conference by room name and tenant ID.
+     */
+    public Conference findByRoomNameAndTenantId(String roomName, UUID tenantId) {
+        return conferenceRepository.findByRoomNameAndTenantId(roomName, tenantId)
+            .orElse(null);
     }
 
     /**
@@ -281,6 +290,9 @@ public class ConferenceService {
 
         conference.end();
         Conference updated = conferenceRepository.save(conference);
+
+        // Destroy the Jitsi room to kick all participants
+        jitsiRoomService.destroyRoom(conference.getRoomName());
 
         log.info("Conference ended: {}", id);
         return conferenceMapper.toResponse(updated);

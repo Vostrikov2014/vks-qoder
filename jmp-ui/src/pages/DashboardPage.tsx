@@ -249,6 +249,17 @@ export default function DashboardPage() {
 
 
 
+  const computeTrend = (key: 'conferences' | 'participants' | 'recordings'): number | undefined => {
+    if (!dashboardMetrics?.weeklyUsage || dashboardMetrics.weeklyUsage.length < 2) return undefined;
+    const mid = Math.floor(dashboardMetrics.weeklyUsage.length / 2);
+    const prev = dashboardMetrics.weeklyUsage.slice(0, mid);
+    const curr = dashboardMetrics.weeklyUsage.slice(mid);
+    const prevSum = prev.reduce((sum, d) => sum + d[key], 0);
+    const currSum = curr.reduce((sum, d) => sum + d[key], 0);
+    if (prevSum === 0) return currSum > 0 ? 100 : 0;
+    return Math.round(((currSum - prevSum) / prevSum) * 100);
+  };
+
   const chartData = dashboardMetrics?.weeklyUsage?.map((item) => ({
     date: item.date,
     conferences: item.conferences,
@@ -282,7 +293,7 @@ export default function DashboardPage() {
           title={t('dashboard.activeConferences')}
           value={stats.activeConferences}
           icon={<Video size={24} />}
-          trend={12}
+          trend={computeTrend('conferences')}
           color="#0B7186"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
@@ -290,7 +301,6 @@ export default function DashboardPage() {
           title={t('dashboard.upcoming')}
           value={stats.upcomingConferences}
           icon={<Calendar size={24} />}
-          trend={8}
           color="#19B3C6"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
@@ -298,7 +308,7 @@ export default function DashboardPage() {
           title={t('dashboard.activeParticipants')}
           value={stats.totalParticipants}
           icon={<Users size={24} />}
-          trend={-3}
+          trend={computeTrend('participants')}
           color="#075D70"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
@@ -306,7 +316,7 @@ export default function DashboardPage() {
           title={t('dashboard.recordings')}
           value={dashboardMetrics?.recordingsThisMonth || 0}
           icon={<HardDrive size={24} />}
-          trend={24}
+          trend={computeTrend('recordings')}
           color="#C99A5B"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
@@ -556,10 +566,10 @@ export default function DashboardPage() {
           }}
         >
           {[
-            { label: t('dashboard.startConference'), icon: <Video size={20} />, color: '#C99A5B', path: '/conferences', requiresConferenceAccess: true },
-            { label: t('dashboard.viewRecordings'), icon: <HardDrive size={20} />, color: '#C99A5B', path: '/recordings' },
-            { label: t('dashboard.manageUsers'), icon: <Users size={20} />, color: '#0B7186', path: '/users', requiresAdmin: true },
-            { label: t('dashboard.viewReports'), icon: <TrendingUp size={20} />, color: '#19B3C6', path: '/analytics' },
+            { label: t('dashboard.startConference'), icon: <Video size={20} />, color: '#C99A5B', path: '/dashboard/conferences', requiresConferenceAccess: true },
+            { label: t('dashboard.viewRecordings'), icon: <HardDrive size={20} />, color: '#C99A5B', path: '/dashboard/recordings' },
+            { label: t('dashboard.manageUsers'), icon: <Users size={20} />, color: '#0B7186', path: '/dashboard/users', requiresAdmin: true },
+            { label: t('dashboard.viewReports'), icon: <TrendingUp size={20} />, color: '#19B3C6', path: '/dashboard/analytics' },
           ]
             .filter((action) => {
               if (action.requiresAdmin) return isAdmin;

@@ -116,3 +116,14 @@ export interface ConferenceFormData {
   waitingRoomEnabled: boolean;
   requireAuthForAssigned: boolean;
 }
+
+export interface RecordingSummary {
+  id: string;
+  originalFilename: string;
+  status: string;
+  recordingType: string;
+  conferenceName: string;
+  durationSeconds: number | null;
+  fileSizeBytes: number | null;
+  createdAt: string;
+}
