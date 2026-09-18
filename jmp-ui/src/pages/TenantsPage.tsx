@@ -404,18 +404,6 @@ export default function TenantsPage() {
                         overflow: 'hidden',
                       }}
                     >
-                      {/* Status Indicator */}
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 4,
-                          background: statusConfig.color,
-                        }}
-                      />
-
                       {/* Header */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pt: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
