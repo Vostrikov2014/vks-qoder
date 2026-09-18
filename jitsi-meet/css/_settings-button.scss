@@ -3,27 +3,27 @@
 
     .toolbox-icon {
         align-items: center;
-        border-radius: 3px;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         justify-content: center;
 
         &.disabled, .disabled & {
             cursor: initial;
-            color: #929292;
-            background-color: #36383c;
+            color: #7C93B8;
+            background-color: #24365C;
 
             &:hover {
-                background-color: #36383c;
+                background-color: #24365C;
             }
         }
     }
 }
 
 .settings-button-small-icon {
-    background: #36383C;
+    background: #1B2A4A;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
+    border-radius: 6px;
     cursor: pointer;
     padding: 1px;
     position: absolute;
@@ -31,32 +31,32 @@
     top: -3px;
 
     &:hover {
-        background: #F2F3F4;
+        background: #24365C;
         box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
 
         & svg {
-            fill: #040404;
+            fill: #E9F0FB;
         }
 
         &.settings-button-small-icon--disabled {
-            background: #36383C;
+            background: #24365C;
 
             & svg {
-                fill: #929292;
+                fill: #57718E;
             }
         }
     }
 
     & svg {
-        fill: #fff;
+        fill: #E9F0FB;
     }
 
     &--disabled {
-        background-color: #36383c;
+        background-color: #24365C;
         cursor: default;
 
         & svg {
-            fill: #929292;
+            fill: #57718E;
         }
     }
 }

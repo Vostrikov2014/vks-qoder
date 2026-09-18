@@ -9,7 +9,7 @@
 
     // Firefox only
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, .5) transparent;
+    scrollbar-color: rgba(124, 147, 184, .5) transparent;
 }
 
 input,
@@ -31,8 +31,8 @@ body {
     font-size: 0.75rem;
     font-weight: 400;
     overflow: hidden;
-    color: #F1F1F1;
-    background: #040404; // should match DEFAULT_BACKGROUND from interface_config
+    color: #E9F0FB;
+    background: #0B1226; // should match DEFAULT_BACKGROUND from interface_config
 }
 
 /**
@@ -50,11 +50,11 @@ body {
 }
 
 .disabled .jitsi-icon svg {
-    fill: #929292;
+    fill: #57718E;
 }
 
 .jitsi-icon.gray svg {
-    fill: #5E6D7A;
+    fill: #7C93B8;
     cursor: pointer;
 }
 
@@ -90,7 +90,7 @@ input[type='text'], input[type='password'], textarea {
 
 button {
     color: #FFF;
-    background-color: #44A5FF;
+    background-color: #3B82F6;
     border-radius: $borderRadius;
 
     &.no-icon {
@@ -140,7 +140,7 @@ form {
     left: 25;
     bottom: 7;
     font-size: 0.875rem;
-    color: rgba(255,255,255,.50);
+    color: rgba(169, 190, 224, .50);
     text-decoration: none;
     z-index: $watermarkZ;
 }
@@ -167,7 +167,7 @@ form {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #3D3D3D;
+    background: #2B3F6B;
     border-radius: 4px;
 }
 

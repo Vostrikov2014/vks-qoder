@@ -27,7 +27,7 @@
     }
 
     .recording-header-line {
-        border-top: 1px solid #5e6d7a;
+        border-top: 1px solid rgba(59, 130, 246, 0.16);
         padding-top: 16px;
         margin-top: 16px;
     }
@@ -40,13 +40,13 @@
         padding: 8px 16px;
 
         &.text {
-            color: #fff;
-            background-color: #3D3D3D;
+            color: #E9F0FB;
+            background-color: #1B2A4A;
         }
 
         &.notification {
-            color: #040404;
-            background-color: #F8AE1A;
+            color: #0B1226;
+            background-color: #EAB308;
         }
     }
 
@@ -56,7 +56,7 @@
     }
 
     .file-sharing-icon-container {
-        background-color: #525252;
+        background-color: #1B2A4A;
         border-radius: 4px;
         height: 40px;
         justify-content: center;
@@ -64,7 +64,7 @@
     }
 
     .cloud-content-recording-icon-container {
-        background-color: #FFFFFF;
+        background-color: #E9F0FB;
         border-radius: 4px;
         height: 40px;
         justify-content: center;
@@ -76,14 +76,14 @@
     }
 
     .jitsi-content-recording-icon-container-with-switch {
-        background-color: #FFFFFF;
+        background-color: #E9F0FB;
         border-radius: 4px;
         height: 40px;
         width: 40px;
     }
 
     .jitsi-content-recording-icon-container-without-switch {
-        background-color: #FFFFFF;
+        background-color: #E9F0FB;
         border-radius: 4px;
         height: 40px;
         width: 46px;
@@ -109,8 +109,8 @@
     }
 
     .recording-info{
-        background-color: #FFD740;
-        color: black;
+        background-color: #EAB308;
+        color: #0B1226;
         display: inline-flex;
         margin: 32px 0;
         width: 100%;
@@ -181,7 +181,7 @@
     }
 
     .google-error {
-        color: #c61600;
+        color: #EF4444;
     }
 
     .google-panel {
@@ -193,17 +193,17 @@
     }
 
     .warning-text {
-        color:#FFD740;
+        color:#EAB308;
         font-size: 0.75rem;
     }
 
     .youtube-go-live-warning {
         margin-bottom: 16px;
         padding: 8px 12px;
-        background-color: rgba(248, 174, 26, 0.1);
-        border-left: 3px solid #FFD740;
+        background-color: rgba(234, 179, 8, 0.1);
+        border-left: 3px solid #EAB308;
         font-size: 0.875rem;
         line-height: 1.25rem;
-        color: #FFD740;
+        color: #EAB308;
     }
 }

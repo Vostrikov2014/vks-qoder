@@ -13,7 +13,7 @@ const SIZE = {
     large: 48
 };
 
-const DEFAULT_COLOR = '#E6EDFA';
+const DEFAULT_COLOR = '#E9F0FB';
 
 const useStyles = makeStyles<{ color?: string; }>()((_, { color }) => {
     return {

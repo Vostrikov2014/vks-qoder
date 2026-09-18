@@ -2,6 +2,7 @@
 
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const fs = require('fs');
+const { responseInterceptor } = require('http-proxy-middleware');
 const { join, resolve } = require('path');
 const process = require('process');
 const webpack = require('webpack');
@@ -89,6 +90,19 @@ function devServerProxyBypass({ path }) {
 
         return tpath;
     }
+}
+
+/**
+ * Reads the JITSI_WATERMARK_LINK value from the local interface_config.js.
+ *
+ * @returns {string|undefined} The locally configured link, undefined if the
+ * option is not set or is commented out.
+ */
+function getLocalWatermarkLink() {
+    const interfaceConfigSource = fs.readFileSync(join(__dirname, 'interface_config.js'), 'utf8');
+    const match = interfaceConfigSource.match(/^\s*JITSI_WATERMARK_LINK:\s*'([^']*)'/m);
+
+    return match && match[1];
 }
 
 /**
@@ -269,6 +283,8 @@ function getConfig(options = {}) {
  * @returns {Object} the dev server configuration.
  */
 function getDevServerConfig() {
+    const watermarkLink = getLocalWatermarkLink();
+
     return {
         client: {
             overlay: {
@@ -288,7 +304,25 @@ function getDevServerConfig() {
                 target: devServerProxyTarget,
                 headers: {
                     'Host': new URL(devServerProxyTarget).host
-                }
+                },
+
+                // The proxy target serves its own interface_config.js inlined
+                // in the HTML document, overriding the local one. Replace the
+                // JITSI_WATERMARK_LINK value with the locally configured one so
+                // the watermark links to the local deployment.
+                selfHandleResponse: true,
+                onProxyRes: responseInterceptor((responseBuffer, proxyRes) => {
+                    const contentType = proxyRes.headers['content-type'] || '';
+
+                    if (watermarkLink === undefined || !contentType.includes('text/html')) {
+                        return responseBuffer;
+                    }
+
+                    return responseBuffer.toString('utf8').replace(
+                        /JITSI_WATERMARK_LINK:\s*'[^']*'/,
+                        `JITSI_WATERMARK_LINK: '${watermarkLink}'`
+                    );
+                })
             }
         ],
         server: 'http',

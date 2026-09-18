@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => {
 
         logoContainer: {
             width: `calc(100% - ${SCROLL_SIZE}px)`,
-            backgroundColor: '#121119',
+            backgroundColor: '#14203E',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

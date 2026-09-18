@@ -1,7 +1,7 @@
 /**
  * Style variables
  */
-$baseFontFamily: -apple-system, BlinkMacSystemFont, 'open_sanslight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$baseFontFamily: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
 /**
  * Size variables.
@@ -13,7 +13,7 @@ $thumbnailsBorder: 2px;
 /**
  * Toolbar
  */
-$newToolbarBackgroundColor: #131519;
+$newToolbarBackgroundColor: #14203E;
 $newToolbarSize: 48px;
 $newToolbarSizeMobile: 60px;
 $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
@@ -21,12 +21,12 @@ $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
 /**
  * Chat
  */
-$chatBackgroundColor: #131519;
+$chatBackgroundColor: #14203E;
 
 /**
  * Misc.
  */
-$borderRadius: 4px;
+$borderRadius: 6px;
 $scrollHeight: 7px;
 
 /**
@@ -46,13 +46,13 @@ $filmstripVideosZ: $toolbarZ + 1;
 /**
  * Unsupported browser
  */
-$primaryUnsupportedBrowserButtonBgColor: #0052CC;
-$unsupportedBrowserButtonBgColor: rgba(9, 30, 66, 0.04);
-$unsupportedBrowserTextColor: #4a4a4a;
+$primaryUnsupportedBrowserButtonBgColor: #2563EB;
+$unsupportedBrowserButtonBgColor: rgba(59, 130, 246, 0.12);
+$unsupportedBrowserTextColor: #A9BEE0;
 $unsupportedBrowserTextSmallFontSize: 1rem;
-$unsupportedBrowserTitleColor: #fff;
+$unsupportedBrowserTitleColor: #E9F0FB;
 $unsupportedBrowserTitleFontSize: 1.5rem;
-$unsupportedDesktopBrowserTextColor: rgba(255, 255, 255, 0.7);
+$unsupportedDesktopBrowserTextColor: rgba(233, 240, 251, 0.7);
 $unsupportedDesktopBrowserTextFontSize: 1.25rem;
 
 /**
@@ -67,21 +67,21 @@ $welcomePageWatermarkHeight: 32px;
 /**
  * Welcome page variables.
  */
-$welcomePageDescriptionColor: #fff;
+$welcomePageDescriptionColor: #A9BEE0;
 $welcomePageFontFamily: inherit;
 $welcomePageBackground: none;
-$welcomePageTitleColor: #fff;
+$welcomePageTitleColor: #E9F0FB;
 
-$welcomePageHeaderBackground: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('../images/welcome-background.png');
+$welcomePageHeaderBackground: linear-gradient(135deg, #0B1226 0%, #14203E 100%);
 $welcomePageHeaderBackgroundPosition: center;
 $welcomePageHeaderBackgroundRepeat: none;
 $welcomePageHeaderBackgroundSize: cover;
 $welcomePageHeaderPadding: 1rem;
 $welcomePageHeaderTitleMaxWidth: initial;
 $welcomePageHeaderTextAlign: center;
-$welcomePageButtonBg: #0074E0;
-$welcomePageButtonHoverBg: #4687ED;
-$welcomePageButtonFocusOutline: #00225A;
+$welcomePageButtonBg: #3B82F6;
+$welcomePageButtonHoverBg: #2563EB;
+$welcomePageButtonFocusOutline: #60A5FA;
 
 $welcomePageHeaderContainerMarginTop: 104px;
 $welcomePageHeaderContainerDisplay: flex;
@@ -108,7 +108,7 @@ $welcomePageTabDisplay: block;
  */
 $deepLinkingMobileLogoHeight: 40px;
 
-$deepLinkingMobileHeaderBackground: #f1f2f5;
+$deepLinkingMobileHeaderBackground: #14203E;
 
 $deepLinkingMobileLinkColor: inherit;
 $deepLinkingMobileTextFontSize: inherit;

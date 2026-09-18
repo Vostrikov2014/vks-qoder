@@ -1,5 +1,5 @@
 .deep-linking-mobile {
-    background-color: #fff;
+    background-color: #0B1226;
     height: 100dvh;
     overflow: auto;
     position: relative;
@@ -119,9 +119,9 @@
         padding: 0px 10px 0px 10px;
         max-width: 300px;
         width: $deepLinkingMobileButtonWidth;
-        @include border-radius(3px);
+        @include border-radius(6px);
         background-color: $unsupportedBrowserButtonBgColor;
-        color: #505F79;
+        color: #A9BEE0;
         font-weight: $deepLinkingMobileButtonFontWeight;
         font-size: $deepLinkingMobileButtonFontSize;
 

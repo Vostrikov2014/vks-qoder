@@ -14,7 +14,7 @@ import { getConnectionData } from '../../functions';
 const useStyles = makeStyles()(theme => {
     return {
         connectionStatus: {
-            color: '#fff',
+            color: '#E9F0FB',
             ...theme.typography.bodyShortRegular,
             position: 'absolute',
             width: '100%',
@@ -37,7 +37,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status-header': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                backgroundColor: 'rgba(11, 18, 38, 0.9)',
                 alignItems: 'center',
                 display: 'flex',
                 padding: '12px 16px',
@@ -52,19 +52,19 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status--good': {
-                background: '#31B76A'
+                background: '#22C55E'
             },
 
             '& .con-status--failed': {
-                background: '#E12D2D'
+                background: '#EF4444'
             },
 
             '& .con-status--poor': {
-                background: '#E12D2D'
+                background: '#EF4444'
             },
 
             '& .con-status--non-optimal': {
-                background: '#E39623'
+                background: '#EAB308'
             },
 
             '& .con-status-arrow': {
@@ -81,7 +81,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status-arrow:hover': {
-                backgroundColor: 'rgba(1, 1, 1, 0.1)'
+                backgroundColor: 'rgba(59, 130, 246, 0.16)'
             },
 
             '& .con-status-text': {
@@ -89,8 +89,8 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status-details': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                borderTop: '1px solid #5E6D7A',
+                backgroundColor: 'rgba(11, 18, 38, 0.9)',
+                borderTop: '1px solid rgba(59, 130, 246, 0.16)',
                 padding: theme.spacing(3),
                 transition: 'opacity 0.16s ease-out'
             },

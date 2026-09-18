@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
-import { ColorPalette } from '../../../../base/styles/components/styles/ColorPalette';
 import {
     getDeviceStatusText,
     getDeviceStatusType
@@ -16,7 +15,7 @@ const useStyles = makeStyles<{ deviceStatusType?: string; }>()((theme, { deviceS
             alignItems: 'center',
             justifyContent: 'center',
             ...theme.typography.bodyShortRegular,
-            color: '#fff',
+            color: '#E9F0FB',
             marginTop: theme.spacing(4),
 
             '& span': {
@@ -41,7 +40,7 @@ const useStyles = makeStyles<{ deviceStatusType?: string; }>()((theme, { deviceS
             width: '16px',
             height: '16px',
             borderRadius: '100%',
-            backgroundColor: deviceStatusType === 'ok' ? theme.palette.prejoinDeviceStatusOk : ColorPalette.darkGrey,
+            backgroundColor: deviceStatusType === 'ok' ? theme.palette.prejoinDeviceStatusOk : '#7C93B8',
             flexShrink: 0
         }
     };

@@ -4,7 +4,7 @@
     line-height: 1.25rem;
     color: $welcomePageTitleColor;
     text-align: left;
-    font-family: 'open_sanslight', Helvetica, sans-serif;
+    font-family: $baseFontFamily;
 }
 %navigate-section-list-tile-text {
     @extend %navigate-section-list-text;
@@ -13,8 +13,8 @@
     float: left;
 }
 .navigate-section-list-tile {
-    background-color: #1754A9;
-    border-radius: 4px;
+    background-color: #1D4ED8;
+    border-radius: 6px;
     box-sizing: border-box;
     display: inline-flex;
     margin-bottom: 8px;
@@ -28,7 +28,7 @@
     }
 
     &.with-click-handler:hover {
-        background-color: #1a5dbb;
+        background-color: #2563EB;
     }
 
     i {
