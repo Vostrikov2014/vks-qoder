@@ -285,6 +285,10 @@ export default function TenantsPage() {
                 '&:hover fieldset': { borderColor: 'var(--border)' },
                 '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
               },
+              '& .MuiOutlinedInput-input': {
+                color: 'var(--text)',
+                '&::placeholder': { color: 'var(--text-muted)', opacity: 1 },
+              },
             }}
           />
           <ToggleButtonGroup
@@ -420,7 +424,7 @@ export default function TenantsPage() {
                               width: 44,
                               height: 44,
                               borderRadius: 'var(--radius-lg)',
-                              background: `linear-gradient(135deg, ${statusConfig.color}20 0%, ${statusConfig.color}10 100%)`,
+                              background: `${statusConfig.color}18`,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -643,7 +647,7 @@ export default function TenantsPage() {
                             width: 32,
                             height: 32,
                             borderRadius: 'var(--radius-md)',
-                            background: `linear-gradient(135deg, ${statusConfig.color}20 0%, ${statusConfig.color}10 100%)`,
+                            background: `${statusConfig.color}18`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -800,7 +804,7 @@ export default function TenantsPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)',
+                background: 'rgba(0, 0, 0, 0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

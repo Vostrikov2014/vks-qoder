@@ -458,6 +458,13 @@ export default function ConferencesPage() {
                   borderColor: 'var(--primary-600)',
                 },
               },
+              '& .MuiOutlinedInput-input': {
+                color: 'var(--text)',
+                '&::placeholder': {
+                  color: 'var(--text-muted)',
+                  opacity: 1,
+                },
+              },
             }}
           />
           <Button
@@ -590,27 +597,15 @@ export default function ConferencesPage() {
                       overflow: 'hidden',
                     }}
                   >
-                    {/* Status Indicator */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 4,
-                        background: statusConfig.color,
-                      }}
-                    />
-
                     {/* Header */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pt: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Box
                           sx={{
                             width: 44,
                             height: 44,
                             borderRadius: 'var(--radius-lg)',
-                            background: `linear-gradient(135deg, ${statusConfig.color}20 0%, ${statusConfig.color}10 100%)`,
+                            background: `${statusConfig.color}18`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1128,7 +1123,7 @@ export default function ConferencesPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)',
+                background: 'rgba(0, 0, 0, 0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

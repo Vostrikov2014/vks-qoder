@@ -113,7 +113,7 @@ export default function Layout() {
             width: 44,
             height: 44,
             borderRadius: 'var(--radius-xl)',
-            background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%)',
+            background: 'var(--primary-600)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

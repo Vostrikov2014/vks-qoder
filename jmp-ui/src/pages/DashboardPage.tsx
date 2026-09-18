@@ -124,7 +124,7 @@ const StatCard = ({ title, value, icon, trend, color, bgGradient, locale = 'en-U
           width: 48,
           height: 48,
           borderRadius: 'var(--radius-lg)',
-          background: `linear-gradient(135deg, ${color}20 0%, ${color}10 100%)`,
+          background: `${color}18`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

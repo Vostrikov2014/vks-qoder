@@ -280,7 +280,7 @@ export default function LoginPage() {
                   mx: 'auto',
                   mb: 3,
                   borderRadius: 'var(--radius-xl)',
-                  background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%)',
+                  background: 'var(--primary-600)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -407,6 +407,10 @@ export default function RecordingsPage() {
                 '&:hover fieldset': { borderColor: 'var(--border)' },
                 '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
               },
+              '& .MuiOutlinedInput-input': {
+                color: 'var(--text)',
+                '&::placeholder': { color: 'var(--text-muted)', opacity: 1 },
+              },
             }}
           />
           <FormControl size="small" sx={{ ...fieldSx, minWidth: 140 }}>

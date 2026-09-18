@@ -319,6 +319,13 @@ export default function UsersPage() {
                   borderColor: 'var(--primary-600)',
                 },
               },
+              '& .MuiOutlinedInput-input': {
+                color: 'var(--text)',
+                '&::placeholder': {
+                  color: 'var(--text-muted)',
+                  opacity: 1,
+                },
+              },
             }}
           />
           <Button
@@ -809,7 +816,7 @@ export default function UsersPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)',
+                background: 'rgba(0, 0, 0, 0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

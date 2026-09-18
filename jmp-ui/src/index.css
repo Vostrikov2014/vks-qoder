@@ -1,5 +1,5 @@
 :root {
-  /* EMOO Design System - Blue (light) / Deep-Teal (dark) */
+  /* EMOO Design System - Blue (light) / Deep Blue (dark) */
   
   /* Primary Colors - Blue Palette (light theme) */
   --primary-50: #EFF6FF;
@@ -99,7 +99,7 @@
 
   font: 16px/1.6 var(--sans);
   letter-spacing: -0.01em;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -112,59 +112,60 @@
   }
 }
 
-/* Dark Mode - Deep Teal */
+/* Dark Mode - Deep Blue */
 html.dark,
 html.dark body {
-  --text: #9CC9D1;
-  --text-h: #EAF7F8;
-  --text-muted: #7FB4BD;
-  --text-inverse: #05323C;
+  color-scheme: dark;
+  --text: #A9BEE0;
+  --text-h: #E9F0FB;
+  --text-muted: #7C93B8;
+  --text-inverse: #0B1226;
   
-  --bg: #031E24;
-  --bg-elevated: #05323C;
-  --bg-gradient-start: #031E24;
-  --bg-gradient-end: #05323C;
+  --bg: #0B1226;
+  --bg-elevated: #14203E;
+  --bg-gradient-start: #0B1226;
+  --bg-gradient-end: #14203E;
   
-  --sidebar-bg: #05323C;
-  --sidebar-bg-dark: #031E24;
-  --sidebar-text: #EAF7F8;
-  --sidebar-text-muted: #9CC9D1;
-  --sidebar-active-bg: rgba(25, 179, 198, 0.2);
-  --sidebar-active-border: rgba(255, 255, 255, 0.9);
+  --sidebar-bg: #14203E;
+  --sidebar-bg-dark: #0B1226;
+  --sidebar-text: #E9F0FB;
+  --sidebar-text-muted: #A3BBDF;
+  --sidebar-active-bg: rgba(96, 165, 250, 0.2);
+  --sidebar-active-border: rgba(147, 197, 253, 0.85);
   
-  --glass-bg: rgba(5, 50, 60, 0.8);
+  --glass-bg: rgba(20, 32, 62, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --border: rgba(var(--primary-rgb), 0.16);
+  --border-strong: rgba(var(--primary-rgb), 0.28);
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 40px rgba(25, 179, 198, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 40px rgba(var(--primary-rgb), 0.18);
   
-  --accent-blue: #19B3C6;
-  --accent-blue-light: #63D6E0;
-  --accent-blue-dark: #0B7186;
+  --accent-blue: #3B82F6;
+  --accent-blue-light: #60A5FA;
+  --accent-blue-dark: #2563EB;
   --accent-green: #4ade80;
   --accent-green-light: #22c55e;
 
-  /* Deep-teal primary palette kept for dark mode */
-  --primary-50: #F1FAFB;
-  --primary-100: #D9F0F3;
-  --primary-200: #B3E4EA;
-  --primary-300: #7DD1DB;
-  --primary-400: #63D6E0;
-  --primary-500: #19B3C6;
-  --primary-600: #0B7186;
-  --primary-700: #075D70;
-  --primary-800: #05323C;
-  --primary-900: #031E24;
-  --primary-rgb: 11, 113, 134;
-  --primary-500-rgb: 25, 179, 198;
-  --primary-700-rgb: 7, 93, 112;
+  /* Blue primary palette shifted one step lighter so accents stay legible on dark surfaces */
+  --primary-50: #F5F9FF;
+  --primary-100: #EFF6FF;
+  --primary-200: #DBEAFE;
+  --primary-300: #BFDBFE;
+  --primary-400: #93C5FD;
+  --primary-500: #60A5FA;
+  --primary-600: #3B82F6;
+  --primary-700: #2563EB;
+  --primary-800: #1D4ED8;
+  --primary-900: #1E40AF;
+  --primary-rgb: 59, 130, 246;
+  --primary-500-rgb: 96, 165, 250;
+  --primary-700-rgb: 37, 99, 235;
 }
 
 /* Smooth theme transition for all properties */
@@ -251,7 +252,7 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
-/* Gradient Text - Teal */
+/* Gradient Text - Blue */
 .gradient-text {
   background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
   -webkit-background-clip: text;
@@ -332,8 +333,8 @@ html.dark select:-webkit-autofill,
 html.dark select:-webkit-autofill:hover,
 html.dark select:-webkit-autofill:focus,
 html.dark select:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #05323C inset !important;
-  -webkit-text-fill-color: #9CC9D1 !important;
+  -webkit-box-shadow: 0 0 0 1000px #14203E inset !important;
+  -webkit-text-fill-color: #A9BEE0 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -357,7 +358,7 @@ html.dark input[type="datetime-local"] {
 }
 
 html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+  /* color-scheme: dark already renders the native icon light; inverting it again would make it black */
   opacity: 0.6;
   cursor: pointer;
 }

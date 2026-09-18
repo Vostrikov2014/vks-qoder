@@ -173,7 +173,7 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  background: var(--primary-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,10 +185,7 @@
   font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-600);
 }
 
 .tagline {
@@ -253,17 +250,17 @@
 }
 
 .create-icon {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  background: var(--primary-600);
   box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
 .connect-icon {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  background: var(--primary-600);
   box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
 .signin-icon {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  background: var(--primary-600);
   box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
@@ -361,7 +358,6 @@
 .meeting-input:focus {
   outline: none;
   border-color: var(--primary-600);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 .meeting-input::placeholder {
