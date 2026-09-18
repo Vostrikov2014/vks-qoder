@@ -51,6 +51,11 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/webhooks/**").permitAll()
+                // Public join links: reachable without an account, but the conference
+                // access policy is applied inside the endpoint before a Jitsi token is
+                // minted. JwtAuthenticationFilter still runs, so a signed-in visitor is
+                // recognised and can be matched against the participant list.
+                .requestMatchers(HttpMethod.GET, "/api/v1/join/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/conferences/*/participants/access-check").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

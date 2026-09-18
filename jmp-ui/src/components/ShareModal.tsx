@@ -1,21 +1,32 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
+  Alert,
   Box,
-  Typography,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  FormControlLabel,
   IconButton,
   InputAdornment,
-  Alert,
-  Chip,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { Copy, X, Link, Clock } from 'lucide-react';
+import { Check, Clock, Copy, Link as LinkIcon, Plus, ShieldCheck, Trash2, User, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { conferenceApi } from '../services/api';
+import { conferenceLinkApi, extractApiError } from '../services/api';
+import type { ConferenceLink, ConferenceLinkCreateRequest, ConferenceLinkRole } from '../services/api';
+import { useAuthStore } from '../store/authStore';
 import type { Conference } from '../types';
 
 interface ShareModalProps {
@@ -24,65 +35,297 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
+const MODERATOR_ROLES = ['MODERATOR', 'TENANT_ADMIN', 'SUPER_ADMIN'];
+
+const formatDateTime = (value: string | undefined, locale: string): string => {
+  if (!value) return '';
+  return new Date(value).toLocaleString(locale, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// datetime-local value -> ISO instant the backend can parse
+const toInstant = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const isRevoked = (link: ConferenceLink): boolean => Boolean(link.revokedAt);
+
+/**
+ * Палитра MUI в проекте светлая (main.tsx), а тёмная тема переключается классом
+ * html.dark, поэтому текст полей задаётся явно через CSS-переменные: иначе в тёмной
+ * теме он остаётся чёрным и сливается с фоном диалога.
+ */
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 'var(--radius-md)',
+    color: 'var(--text-h)',
+    '& input': { color: 'var(--text-h)' },
+    '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
+    '& fieldset': { borderColor: 'var(--border-strong)' },
+    '&:hover fieldset': { borderColor: 'var(--text-muted)' },
+    '&.Mui-focused fieldset': { borderColor: '#0B7186', borderWidth: 2 },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'var(--text-muted)',
+    '&.Mui-focused': { color: '#0B7186' },
+  },
+};
+
+/** Меню выбора роли — в тех же цветах, что и диалог, а не дефолтный белый Paper. */
+const menuProps = {
+  PaperProps: {
+    sx: {
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--glass-border)',
+      '& .MuiMenuItem-root': { color: 'var(--text-h)' },
+      '& .MuiMenuItem-root.Mui-selected': { background: 'rgba(11, 113, 134, 0.15)', color: '#0B7186' },
+    },
+  },
+};
+
+const isExpired = (link: ConferenceLink): boolean => {
+  if (!link.expiresAt || link.revokedAt) return false;
+  return new Date(link.expiresAt).getTime() < Date.now();
+};
+
 export default function ShareModal({ conference, open, onClose }: ShareModalProps) {
-  const { t } = useTranslation();
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const user = useAuthStore((state) => state.user);
+
+  const [links, setLinks] = useState<ConferenceLink[]>([]);
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [label, setLabel] = useState('');
+  const [role, setRole] = useState<ConferenceLinkRole>('PARTICIPANT');
+  const [limited, setLimited] = useState(false);
+  const [expiresAt, setExpiresAt] = useState('');
 
-  const handleGenerateLink = async () => {
+  const canModerate =
+    MODERATOR_ROLES.some((roleName) => user?.roles?.includes(roleName)) ||
+    Boolean(user && conference && user.id === conference.createdById);
+
+  const fetchLinks = useCallback(async () => {
     if (!conference) return;
-
     try {
       setLoading(true);
       setError(null);
-      setCopied(false);
-
-      const response = await conferenceApi.generateShareLink(conference.id, {
-        displayName: 'Guest',
-      });
-
-      setShareUrl(response.data.shareUrl);
-      setExpiresAt(response.data.expiresAt);
-    } catch (err: any) {
-      console.error('Failed to generate share link:', err);
-      setError(err.response?.data?.detail || err.message || 'Failed to generate share link');
+      const response = await conferenceLinkApi.getLinks(conference.id);
+      setLinks(response.data);
+    } catch (err: unknown) {
+      setError(extractApiError(err, t('share.loadFailed')));
     } finally {
       setLoading(false);
     }
-  };
+  }, [conference, t]);
 
-  const handleCopyLink = async () => {
-    if (!shareUrl) return;
+  useEffect(() => {
+    if (!open) return;
+    setLabel('');
+    setRole('PARTICIPANT');
+    setLimited(false);
+    setExpiresAt('');
+    setCopiedId(null);
+    fetchLinks();
+  }, [open, fetchLinks]);
 
+  const handleCopy = async (link: ConferenceLink) => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(link.joinUrl);
+      setCopiedId(link.id);
+      setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
   };
 
+  const handleCreate = async () => {
+    if (!conference) return;
+
+    const request: ConferenceLinkCreateRequest = {
+      label: label.trim() || undefined,
+      role,
+      expiresAt: limited ? toInstant(expiresAt) : undefined,
+    };
+
+    try {
+      setSaving(true);
+      setError(null);
+      const response = await conferenceLinkApi.createLink(conference.id, request);
+      setLinks((prev) => [...prev, response.data]);
+      setLabel('');
+      setRole('PARTICIPANT');
+      setLimited(false);
+      setExpiresAt('');
+    } catch (err: unknown) {
+      setError(extractApiError(err, t('share.createFailed')));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRevoke = async (link: ConferenceLink) => {
+    if (!conference) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+      await conferenceLinkApi.revokeLink(conference.id, link.id);
+      setLinks((prev) =>
+        prev.map((item) => (item.id === link.id ? { ...item, revokedAt: new Date().toISOString() } : item))
+      );
+    } catch (err: unknown) {
+      setError(extractApiError(err, t('share.revokeFailed')));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleClose = () => {
-    setShareUrl(null);
-    setExpiresAt(null);
+    setLinks([]);
     setError(null);
-    setCopied(false);
+    setCopiedId(null);
     onClose();
   };
 
-  const formatExpiration = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const activeLinks = links.filter((link) => !isRevoked(link));
+  const revokedLinks = links.filter((link) => isRevoked(link));
+
+  const renderLink = (link: ConferenceLink, isPrimary: boolean) => {
+    const expired = isExpired(link);
+    const copied = copiedId === link.id;
+
+    return (
+      <Box
+        key={link.id}
+        sx={{
+          p: 2,
+          mb: 2,
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--glass-border)',
+          background: 'rgba(255, 255, 255, 0.03)',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
+            {link.label || t('share.unnamedLink')}
+          </Typography>
+          {isPrimary && (
+            <Chip label={t('share.primaryBadge')} size="small" sx={{ background: 'rgba(11, 113, 134, 0.15)', color: '#0B7186', fontWeight: 600 }} />
+          )}
+          <Chip
+            size="small"
+            icon={link.role === 'MODERATOR' ? <ShieldCheck size={14} /> : <User size={14} />}
+            label={t(`roles.${link.role}`)}
+            sx={{
+              background: link.role === 'MODERATOR' ? 'rgba(201, 154, 91, 0.15)' : 'rgba(107, 114, 128, 0.12)',
+              color: link.role === 'MODERATOR' ? '#C99A5B' : 'var(--text-muted)',
+              fontWeight: 600,
+            }}
+          />
+          {link.expiresAt && (
+            <Chip
+              size="small"
+              icon={<Clock size={14} />}
+              label={`${formatDateTime(link.expiresAt, i18n.language)}${expired ? ` · ${t('share.expiredBadge')}` : ''}`}
+              sx={{
+                background: expired ? 'rgba(239, 68, 68, 0.12)' : 'rgba(107, 114, 128, 0.12)',
+                color: expired ? '#dc2626' : 'var(--text-muted)',
+                fontWeight: 600,
+              }}
+            />
+          )}
+          {isRevoked(link) && (
+            <Chip
+              size="small"
+              label={t('share.revokedBadge')}
+              sx={{ background: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', fontWeight: 600 }}
+            />
+          )}
+          <Box sx={{ flex: 1 }} />
+          <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
+            {t('share.visits', { total: link.visitCount })}
+          </Typography>
+        </Box>
+
+        <TextField
+          fullWidth
+          size="small"
+          value={link.joinUrl}
+          aria-label={t('share.copyAriaLabel')}
+          InputProps={{
+            readOnly: true,
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => handleCopy(link)}
+                  aria-label={t('share.copyAriaLabel')}
+                  disabled={isRevoked(link) || expired}
+                  sx={{
+                    p: 1,
+                    borderRadius: 'var(--radius-md)',
+                    color: copied ? '#22c55e' : 'var(--text-muted)',
+                    '&:hover': {
+                      background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(201, 154, 91, 0.08)',
+                      color: copied ? '#16a34a' : '#C99A5B',
+                    },
+                  }}
+                >
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.05)',
+              fontFamily: 'var(--mono)',
+              fontSize: '0.8125rem',
+              color: 'var(--text-h)',
+              '& input': { color: 'var(--text-h)' },
+              '& fieldset': { borderColor: 'transparent' },
+              '&:hover fieldset': { borderColor: 'var(--border)' },
+            },
+          }}
+        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+          <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
+            {t('share.createdBy', { name: link.createdByName || '—', date: formatDateTime(link.createdAt, i18n.language) })}
+          </Typography>
+          {!isRevoked(link) && (
+            <Tooltip title={t('share.revokeHint')}>
+              <span>
+                <Button
+                  size="small"
+                  startIcon={<Trash2 size={16} />}
+                  onClick={() => handleRevoke(link)}
+                  disabled={saving || (!canModerate && (isPrimary || link.role === 'MODERATOR'))}
+                  sx={{
+                    borderRadius: 'var(--radius-md)',
+                    color: '#dc2626',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    '&:hover': { background: 'rgba(239, 68, 68, 0.08)' },
+                    '&.Mui-disabled': { color: 'var(--text-muted)', opacity: 0.6 },
+                  }}
+                >
+                  {t('share.revoke')}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+        </Box>
+      </Box>
+    );
   };
 
   return (
@@ -110,13 +353,14 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Link size={24} color="var(--text-h)" />
+          <LinkIcon size={24} color="var(--text-h)" />
           <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
             {t('share.title')}
           </Typography>
         </Box>
         <IconButton
           onClick={handleClose}
+          aria-label={t('common.close')}
           sx={{
             color: 'var(--text-muted)',
             '&:hover': {
@@ -131,7 +375,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
 
       <DialogContent sx={{ pt: 2 }}>
         {conference && (
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 0.5 }}>
               {conference.displayName}
             </Typography>
@@ -141,120 +385,146 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </Box>
         )}
 
+        <Alert
+          severity="info"
+          sx={{
+            mb: 3,
+            background: 'rgba(201, 154, 91, 0.08)',
+            color: '#C99A5B',
+            border: '1px solid rgba(201, 154, 91, 0.2)',
+          }}
+        >
+          <Typography variant="caption">{t('share.howItWorks')}</Typography>
+        </Alert>
+
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
-        {!shareUrl ? (
-          <Box sx={{ textAlign: 'center', py: 2 }}>
-            <Typography variant="body2" sx={{ color: 'var(--text)', mb: 2 }}>
-              {t('share.generateDesc')}
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Link size={18} />}
-              onClick={handleGenerateLink}
-              loading={loading}
-              sx={{
-                py: 1.5,
-                px: 4,
-                borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
-                color: 'white',
-                fontWeight: 600,
-                textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
-                border: '1px solid rgba(201, 154, 91, 0.25)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                  boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
-                  borderColor: 'rgba(201, 154, 91, 0.4)',
-                },
-              }}
-            >
-              {t('share.generateButton')}
-            </Button>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress size={28} sx={{ color: '#0B7186' }} />
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Alert severity="success" sx={{ mb: 1, background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-              {t('share.successMessage')}
-            </Alert>
+          <>
+            {activeLinks.map((link, index) => renderLink(link, index === 0))}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Clock size={14} color="var(--text-muted)" />
-              <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                {t('share.expires')} {formatExpiration(expiresAt)}
+            {activeLinks.length === 0 && (
+              <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 2 }}>
+                {t('share.noLinks')}
               </Typography>
-            </Box>
-
-            <TextField
-              fullWidth
-              value={shareUrl}
-              InputProps={{
-                readOnly: true,
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleCopyLink}
-                      sx={{
-                        p: 1,
-                        borderRadius: 'var(--radius-md)',
-                        color: copied ? '#22c55e' : 'var(--text-muted)',
-                        '&:hover': {
-                          background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(201, 154, 91, 0.08)',
-                          color: copied ? '#16a34a' : '#C99A5B',
-                        },
-                      }}
-                    >
-                      <Copy size={18} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border)',
-                  '& fieldset': {
-                    borderColor: 'transparent',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'var(--border)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#C99A5B',
-                  },
-                },
-              }}
-            />
-
-            {copied && (
-              <Chip
-                label={t('share.copiedMessage')}
-                size="small"
-                sx={{
-                  background: 'rgba(34, 197, 94, 0.15)',
-                  color: '#16a34a',
-                  fontWeight: 600,
-                  alignSelf: 'center',
-                }}
-              />
             )}
 
-            <Alert severity="info" sx={{ mt: 1, background: 'rgba(201, 154, 91, 0.08)', color: '#C99A5B', border: '1px solid rgba(201, 154, 91, 0.2)' }}>
-              <Typography variant="caption">
-                <strong>{t('share.howToUse')}</strong> {t('share.howToUseDesc')}
-              </Typography>
-            </Alert>
-          </Box>
+            {revokedLinks.length > 0 && (
+              <>
+                <Typography variant="overline" sx={{ color: 'var(--text-muted)' }}>
+                  {t('share.revokedSection')}
+                </Typography>
+                {revokedLinks.map((link) => renderLink(link, false))}
+              </>
+            )}
+          </>
         )}
+
+        <Divider sx={{ my: 2, borderColor: 'rgba(201, 154, 91, 0.12)' }} />
+
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1.5 }}>
+          {t('share.addLinkTitle')}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            fullWidth
+            size="small"
+            label={t('share.linkLabel')}
+            placeholder={t('share.linkLabelPlaceholder')}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            inputProps={{ maxLength: 100 }}
+            sx={fieldSx}
+          />
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="link-role-label" sx={{ color: 'var(--text-muted)', '&.Mui-focused': { color: '#0B7186' } }}>
+                {t('share.linkRole')}
+              </InputLabel>
+              <Select
+                labelId="link-role-label"
+                label={t('share.linkRole')}
+                value={role}
+                onChange={(e) => setRole(e.target.value as ConferenceLinkRole)}
+                MenuProps={menuProps}
+                sx={{
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-h)',
+                  '& fieldset': { borderColor: 'var(--border-strong)' },
+                  '&:hover fieldset': { borderColor: 'var(--text-muted)' },
+                  '&.Mui-focused fieldset': { borderColor: '#0B7186' },
+                  '& .MuiSelect-icon': { color: 'var(--text-muted)' },
+                }}
+              >
+                <MenuItem value="PARTICIPANT">{t('roles.PARTICIPANT')}</MenuItem>
+                {canModerate && <MenuItem value="MODERATOR">{t('roles.MODERATOR')}</MenuItem>}
+              </Select>
+            </FormControl>
+            <Box sx={{ minWidth: 240 }}>
+              <FormControlLabel
+                sx={{ '& .MuiFormControlLabel-label': { color: 'var(--text)' } }}
+                control={
+                  <Switch
+                    checked={limited}
+                    onChange={(e) => setLimited(e.target.checked)}
+                    inputProps={{ 'aria-label': t('share.setExpiryAriaLabel') }}
+                    sx={{
+                      color: 'var(--text-muted)',
+                      '& .MuiSwitch-track': { backgroundColor: 'var(--text-muted)', opacity: 0.5 },
+                      '&.Mui-checked': { color: '#0B7186', '& .MuiSwitch-track': { backgroundColor: '#0B7186', opacity: 0.6 } },
+                    }}
+                  />
+                }
+                label={t('share.setExpiry')}
+              />
+              {limited && (
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="datetime-local"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  label={t('share.expiresAt')}
+                  sx={{ ...fieldSx, mt: 1 }}
+                />
+              )}
+            </Box>
+          </Box>
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={saving ? <CircularProgress size={16} /> : <Plus size={18} />}
+              onClick={handleCreate}
+              disabled={saving || (limited && !expiresAt)}
+              sx={{
+                borderRadius: 'var(--radius-lg)',
+                borderColor: 'rgba(11, 113, 134, 0.4)',
+                color: '#0B7186',
+                textTransform: 'none',
+                fontWeight: 600,
+                '&:hover': { borderColor: '#0B7186', background: 'rgba(11, 113, 134, 0.06)' },
+                '&.Mui-disabled': { color: 'var(--text-muted)', borderColor: 'var(--border)' },
+              }}
+            >
+              {t('share.addLinkButton')}
+            </Button>
+          </Box>
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2, pt: 1.5, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+        <Typography variant="caption" sx={{ color: 'var(--text-muted)', mr: 'auto' }}>
+          {t('share.policyNote')}
+        </Typography>
         <Button
           onClick={handleClose}
           sx={{

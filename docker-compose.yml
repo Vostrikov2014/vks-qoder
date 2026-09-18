@@ -67,6 +67,8 @@ services:
       JITSI_JWT_AUDIENCE: jitsi
       JITSI_XMPP_DOMAIN: meet.jitsi
       JITSI_DOMAIN: meet.slamx.ru
+      # Public address of the UI — conference join links are built from it.
+      JMP_PUBLIC_URL: https://a.slamx.ru
       CORS_ALLOWED_ORIGINS: https://a.slamx.ru,https://meet.slamx.ru,http://localhost:5173,http://localhost:3000
     ports:
       - "8081:8080"

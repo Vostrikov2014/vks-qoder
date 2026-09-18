@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
-import type { Conference, ConferenceType, ParticipantAssignment, ParticipantAssignmentCreateRequest, ParticipantAssignmentUpdateRequest, BulkAssignRequest, AccessCheckRequest, AccessCheckResult, AssignmentAuditEntry } from '../types';
+import type { Conference, ConferenceType, ParticipantAssignment, ParticipantAssignmentCreateRequest, ParticipantAssignmentUpdateRequest, BulkAssignRequest, AccessCheckRequest, AccessCheckResult, AssignmentAuditEntry, RecordingSummary } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -33,6 +33,7 @@ export interface UsageReport {
   totalParticipants: number;
   totalDurationMinutes: number;
   totalRecordings: number;
+  totalStorageBytes: number;
   peakConcurrentConferences: number;
   peakConcurrentParticipants: number;
 }
@@ -112,6 +113,17 @@ api.interceptors.response.use(
   }
 );
 
+interface ApiErrorBody {
+  response?: { data?: { detail?: string; message?: string } };
+  message?: string;
+}
+
+/** Human-readable message of a failed request, for alerts. */
+export const extractApiError = (err: unknown, fallback: string): string => {
+  const error = err as ApiErrorBody;
+  return error.response?.data?.detail || error.response?.data?.message || error.message || fallback;
+};
+
 // Auth API
 export const authApi = {
   login: (email: string, password: string) =>
@@ -179,10 +191,69 @@ export const conferenceApi = {
   deleteConference: (id: string) => api.delete(`/conferences/${id}`),
   startConference: (id: string) => api.post(`/conferences/${id}/start`),
   endConference: (id: string) => api.post(`/conferences/${id}/end`),
-  generateToken: (id: string, data: unknown) =>
-    api.post(`/conferences/${id}/token`, data),
-  generateShareLink: (id: string, data: { displayName: string }) =>
-    api.post<{ shareUrl: string; expiresAt: string }>(`/conferences/${id}/share`, data),
+  // Own entry address: the conference is taken from the path, the participant and the
+  // Jitsi role from the access token — there is nothing to send in the body.
+  generateToken: (id: string) =>
+    api.post<TokenResponse>(`/conferences/${id}/token`),
+};
+
+export interface TokenResponse {
+  roomUrl: string;
+  expiresAt: string;
+}
+
+// Conference join links — permanent addresses that can be shared and revoked
+export type ConferenceLinkRole = 'PARTICIPANT' | 'MODERATOR';
+
+export interface ConferenceLink {
+  id: string;
+  slug: string;
+  joinUrl: string;
+  label?: string;
+  role: ConferenceLinkRole;
+  expiresAt?: string;
+  revokedAt?: string;
+  visitCount: number;
+  lastVisitedAt?: string;
+  createdByName?: string;
+  createdAt: string;
+}
+
+export interface ConferenceLinkCreateRequest {
+  label?: string;
+  role?: ConferenceLinkRole;
+  expiresAt?: string;
+}
+
+export const conferenceLinkApi = {
+  /** Oldest link first; the primary link is created on the first call. */
+  getLinks: (conferenceId: string) =>
+    api.get<ConferenceLink[]>(`/conferences/${conferenceId}/links`),
+  createLink: (conferenceId: string, data: ConferenceLinkCreateRequest) =>
+    api.post<ConferenceLink>(`/conferences/${conferenceId}/links`, data),
+  revokeLink: (conferenceId: string, linkId: string) =>
+    api.delete(`/conferences/${conferenceId}/links/${linkId}`),
+};
+
+/**
+ * What to do with a visitor that opened a join link. Values are the serialized names of
+ * the backend ConferenceLinkDto.Decision enum.
+ */
+export type JoinDecision = 'REDIRECT' | 'LOGIN' | 'ENDED' | 'DENIED' | 'NOT_FOUND';
+
+export interface JoinResult {
+  decision: JoinDecision;
+  reason: string;
+  roomUrl?: string;
+  expiresAt?: string;
+  displayName?: string;
+  conferenceName?: string;
+}
+
+// Public: resolves a shared join link into a freshly signed Jitsi address
+export const joinApi = {
+  resolve: (slug: string, displayName?: string) =>
+    api.get<JoinResult>(`/join/${slug}`, { params: displayName ? { displayName } : undefined }),
 };
 
 // Participant Assignment API
@@ -293,4 +364,16 @@ export const analyticsApi = {
   getRecordingAnalytics: (startDate: string, endDate: string) =>
     api.get<RecordingAnalytics>('/analytics/recordings', { params: { startDate, endDate } }),
   getSystemHealth: () => api.get<SystemHealthMetrics>('/analytics/system-health'),
+};
+
+// Recording API
+export const recordingApi = {
+  getRecordings: (params?: { page?: number; size?: number; search?: string }) =>
+    api.get<{ content: RecordingSummary[]; totalElements: number }>('/recordings', { params }),
+  getRecording: (id: string) => api.get<RecordingSummary>(`/recordings/${id}`),
+  getDownloadUrl: (id: string, expirationMinutes?: number) =>
+    api.get<{ downloadUrl: string; expiresAt: string }>(`/recordings/${id}/download`, { params: { expirationMinutes } }),
+  deleteRecording: (id: string) => api.delete(`/recordings/${id}`),
+  getStorageStats: () =>
+    api.get<{ totalStorageBytes: number; totalRecordings: number; recordingsThisMonth: number }>('/recordings/stats/storage'),
 };

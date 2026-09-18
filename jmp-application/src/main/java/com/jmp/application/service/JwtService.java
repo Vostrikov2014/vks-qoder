@@ -34,6 +34,7 @@ public class JwtService {
     private final String jitsiAppId;
     private final String jitsiAudience;
     private final String jitsiXmppDomain;
+    private final long jitsiTokenTtlMinutes;
 
     public JwtService(
             @Value("${jmp.security.jwt.access-token-secret}") String accessTokenSecret,
@@ -43,7 +44,8 @@ public class JwtService {
             @Value("${jitsi.jwt.app-id:}") String jitsiAppId,
             @Value("${jitsi.jwt.app-secret:}") String jitsiAppSecret,
             @Value("${jitsi.jwt.audience:jitsi}") String jitsiAudience,
-            @Value("${jitsi.xmpp-domain:meet.jitsi}") String jitsiXmppDomain) {
+            @Value("${jitsi.xmpp-domain:meet.jitsi}") String jitsiXmppDomain,
+            @Value("${jitsi.jwt.token-ttl-minutes:240}") long jitsiTokenTtlMinutes) {
         this.accessTokenKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessTokenSecret));
         this.refreshTokenKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshTokenSecret));
         this.accessTokenExpirationMinutes = accessTokenExpirationMinutes;
@@ -54,6 +56,7 @@ public class JwtService {
         this.jitsiAppId = jitsiAppId;
         this.jitsiAudience = jitsiAudience;
         this.jitsiXmppDomain = jitsiXmppDomain;
+        this.jitsiTokenTtlMinutes = jitsiTokenTtlMinutes;
     }
 
     /**
@@ -104,12 +107,14 @@ public class JwtService {
      * Generate Jitsi conference token compatible with Prosody JWT auth.
      * Required claims: iss, aud, sub (XMPP domain), room, context
      * Per specification §5.4, §7.2
+     *
+     * @param isModerator must be decided by the server, never taken from the client
      */
     public String generateJitsiToken(Conference conference, User user, boolean isModerator) {
         log.debug("Generating Jitsi token for conference: {}, user: {}",
             conference.getId(), user.getId());
 
-        Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS);
+        Instant expiration = jitsiTokenExpiration();
 
         Map<String, Object> contextUser = new HashMap<>();
         contextUser.put("id", user.getId().toString());
@@ -143,20 +148,23 @@ public class JwtService {
     }
 
     /**
-     * Get guest token expiration time (4 hours from now).
+     * Expiration time of a Jitsi token issued now. Read from the same configured TTL that
+     * goes into the token, so a reported expiration never drifts from the real one.
      */
-    public Instant getGuestTokenExpiration() {
-        return Instant.now().plus(4, ChronoUnit.HOURS);
+    public Instant jitsiTokenExpiration() {
+        return Instant.now().plus(jitsiTokenTtlMinutes, ChronoUnit.MINUTES);
     }
 
     /**
      * Generate guest token for external participants compatible with Prosody JWT auth.
      * Required claims: iss, aud, sub (XMPP domain), room, context
+     *
+     * @param isModerator must be decided by the server, never taken from the client
      */
     public String generateGuestToken(Conference conference, String displayName, boolean isModerator) {
         log.debug("Generating guest token for conference: {}", conference.getId());
 
-        Instant expiration = Instant.now().plus(4, ChronoUnit.HOURS);
+        Instant expiration = jitsiTokenExpiration();
 
         Map<String, Object> contextUser = new HashMap<>();
         contextUser.put("name", displayName);

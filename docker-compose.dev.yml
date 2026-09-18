@@ -6,7 +6,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: jmp-postgres
-    restart: "no"
+    restart: unless-stopped
     environment:
       POSTGRES_DB: jmp
       POSTGRES_USER: jmp
@@ -27,7 +27,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: jmp-redis
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -41,76 +41,78 @@ services:
       - jmp-network
 
   # JMP Backend API
-  jmp-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: jmp-api-dev
-    pull_policy: never
-    container_name: jmp-api-dev
-    restart: "no"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker,dev
-      DB_URL: jdbc:postgresql://postgres:5432/jmp
-      DB_USER: jmp
-      DB_PASS: jmp
-      REDIS_URL: redis
-      JWT_ACCESS_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JWT_REFRESH_SECRET: cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=
-      JMP_STORAGE_S3_BUCKET: jmp-recordings
-      JMP_STORAGE_S3_REGION: us-east-1
-      JMP_STORAGE_S3_ACCESS_KEY: test-access-key
-      JMP_STORAGE_S3_SECRET_KEY: test-secret-key
-      JMP_STORAGE_S3_ENDPOINT: http://minio:9000
-      JITSI_JWT_APP_ID: jmp-platform
-      JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JITSI_JWT_AUDIENCE: jitsi
-      JITSI_XMPP_DOMAIN: meet.jitsi
-      JITSI_DOMAIN: localhost:8000
-      #CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
-    ports:
-      - "8081:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    networks:
-      - jmp-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health/liveness"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+  # jmp-api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   image: jmp-api-dev
+  #   pull_policy: never
+  #   container_name: jmp-api-dev
+  #   restart: "no"
+  #   environment:
+  #     SPRING_PROFILES_ACTIVE: docker,dev
+  #     DB_URL: jdbc:postgresql://postgres:5432/jmp
+  #     DB_USER: jmp
+  #     DB_PASS: jmp
+  #     REDIS_URL: redis
+  #     JWT_ACCESS_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+  #     JWT_REFRESH_SECRET: cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=
+  #     JMP_STORAGE_S3_BUCKET: jmp-recordings
+  #     JMP_STORAGE_S3_REGION: us-east-1
+  #     JMP_STORAGE_S3_ACCESS_KEY: test-access-key
+  #     JMP_STORAGE_S3_SECRET_KEY: test-secret-key
+  #     JMP_STORAGE_S3_ENDPOINT: http://minio:9000
+  #     JITSI_JWT_APP_ID: jmp-platform
+  #     JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+  #     JITSI_JWT_AUDIENCE: jitsi
+  #     JITSI_XMPP_DOMAIN: meet.jitsi
+  #     JITSI_DOMAIN: localhost:8000
+  #     #CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+  #   ports:
+  #     - "8081:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #   networks:
+  #     - jmp-network
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health/liveness"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 30s
 
   # JMP Frontend (React)
-  jmp-ui:
-    build:
-      context: ./jmp-ui
-      dockerfile: Dockerfile
-    image: jmp-ui-dev
-    pull_policy: never
-    container_name: jmp-ui-dev
-    restart: "no"
-    environment:
-      VITE_API_URL: /api/v1
-    ports:
-      - "5173:80"
-    depends_on:
-      - jmp-api
-    networks:
-      - jmp-network
+  # jmp-ui:
+  #   build:
+  #     context: ./jmp-ui
+  #     dockerfile: Dockerfile
+  #   image: jmp-ui-dev
+  #   pull_policy: never
+  #   container_name: jmp-ui-dev
+  #   restart: "no"
+  #   environment:
+  #     VITE_API_URL: /api/v1
+  #   ports:
+  #     - "5173:80"
+  #   depends_on:
+  #     - jmp-api
+  #   networks:
+  #     - jmp-network
 
   # Prometheus (Metrics)
   prometheus:
     image: prom/prometheus:latest
     container_name: jmp-prometheus
-    restart: "no"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
@@ -124,7 +126,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: jmp-grafana
-    restart: "no"
+    restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
@@ -142,7 +144,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: jmp-minio
-    restart: "no"
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: test-access-key
       MINIO_ROOT_PASSWORD: test-secret-key
@@ -164,54 +166,54 @@ services:
   # Build locally: docker compose build jitsi-web
   # Push to registry: docker compose push jitsi-web
   # On remote: docker compose pull jitsi-web && docker compose up -d jitsi-web
-  jitsi-web:
-    build:
-      context: ./jitsi-meet
-      dockerfile: Dockerfile
-    image: jmp-jitsi-web-dev
-    pull_policy: never
-    container_name: jmp-jitsi-web-dev
-    restart: "no"
-    environment:
-      # General
-      TZ: UTC
-      PUBLIC_URL: http://localhost:8000
-      ENABLE_AUTH: 1
-      ENABLE_GUESTS: 0
-      AUTH_TYPE: jwt
-      # JWT configuration
-      JWT_APP_ID: jmp-platform
-      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JWT_ACCEPTED_ISSUERS: jmp-platform
-      JWT_ACCEPTED_AUDIENCES: jitsi
-      JWT_ALLOW_EMPTY: 0
-      # XMPP configuration
-      XMPP_DOMAIN: meet.jitsi
-      XMPP_AUTH_DOMAIN: auth.meet.jitsi
-      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
-      XMPP_MUC_DOMAIN: muc.meet.jitsi
-      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
-      XMPP_GUEST_DOMAIN: guest.meet.jitsi
-      XMPP_MODULES: ''
-      XMPP_MUC_MODULES: ''
-      XMPP_INTERNAL_MUC_MODULES: ''
-      # Web-specific settings
-      ENABLE_LOBBY: 1
-      ENABLE_PREJOIN_PAGE: 1
-      ENABLE_WELCOME_PAGE: 0
-      ENABLE_RECORDING: 1
-    ports:
-      - "8000:80"
-    depends_on:
-      - jitsi-prosody
-    networks:
-      - jmp-network
+  # jitsi-web:
+  #   build:
+  #     context: ./jitsi-meet
+  #     dockerfile: Dockerfile
+  #   image: jmp-jitsi-web-dev
+  #   pull_policy: never
+  #   container_name: jmp-jitsi-web-dev
+  #   restart: "no"
+  #   environment:
+  #     # General
+  #     TZ: UTC
+  #     PUBLIC_URL: http://localhost:8000
+  #     ENABLE_AUTH: 1
+  #     ENABLE_GUESTS: 0
+  #     AUTH_TYPE: jwt
+  #     # JWT configuration
+  #     JWT_APP_ID: jmp-platform
+  #     JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+  #     JWT_ACCEPTED_ISSUERS: jmp-platform
+  #     JWT_ACCEPTED_AUDIENCES: jitsi
+  #     JWT_ALLOW_EMPTY: 0
+  #     # XMPP configuration
+  #     XMPP_DOMAIN: meet.jitsi
+  #     XMPP_AUTH_DOMAIN: auth.meet.jitsi
+  #     XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
+  #     XMPP_MUC_DOMAIN: muc.meet.jitsi
+  #     XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+  #     XMPP_GUEST_DOMAIN: guest.meet.jitsi
+  #     XMPP_MODULES: ''
+  #     XMPP_MUC_MODULES: ''
+  #     XMPP_INTERNAL_MUC_MODULES: ''
+  #     # Web-specific settings
+  #     ENABLE_LOBBY: 1
+  #     ENABLE_PREJOIN_PAGE: 1
+  #     ENABLE_WELCOME_PAGE: 0
+  #     ENABLE_RECORDING: 1
+  #   ports:
+  #     - "8000:80"
+  #   depends_on:
+  #     - jitsi-prosody
+  #   networks:
+  #     - jmp-network
 
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
     image: jitsi/prosody:stable
     container_name: jmp-jitsi-prosody
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -242,8 +244,11 @@ services:
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvb-pass-changeme
       JVB_BREWERY_MUC: jvbbrewery
-    expose:
-      - "5222"
+    #expose:
+    #  - "5222"
+    ports:
+      - "5280:5280"
+      - "5222:5222"
     volumes:
       - jitsi_prosody_config:/config
       - jitsi_prosody_plugins:/prosody-plugins-custom
@@ -254,7 +259,7 @@ services:
   jitsi-jicofo:
     image: jitsi/jicofo:stable
     container_name: jmp-jitsi-jicofo
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -296,7 +301,7 @@ services:
   jitsi-jvb:
     image: jitsi/jvb:stable
     container_name: jmp-jitsi-jvb
-    restart: "no"
+    restart: unless-stopped
     environment:
       # General
       TZ: UTC
@@ -346,9 +351,9 @@ volumes:
   prometheus_data:
   grafana_data:
   minio_data:
-  jitsi_web_config:
-  jitsi_web_certs:
-  jitsi_transcripts:
+  #jitsi_web_config:
+  #jitsi_web_certs:
+  #jitsi_transcripts:
   jitsi_prosody_config:
   jitsi_prosody_plugins:
   jitsi_jicofo_config:

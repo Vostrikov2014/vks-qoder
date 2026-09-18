@@ -3,7 +3,6 @@ package com.jmp.application.dto;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
@@ -187,36 +186,11 @@ public sealed interface ConferenceDto {
     }
 
     /**
-     * DTO for JWT token generation request.
-     */
-    record TokenRequest(
-        @NotNull UUID conferenceId,
-        @NotBlank String displayName,
-        Boolean isModerator,
-        Set<String> features
-    ) {}
-
-    /**
-     * DTO for JWT token response.
+     * DTO for the caller's own entry into a conference. The signed Jitsi token is kept
+     * server-side inside the address: exposing it separately would only leak a credential.
      */
     record TokenResponse(
-        String token,
         String roomUrl,
         Instant expiresAt
-    ) {}
-
-    /**
-     * DTO for share link generation response.
-     */
-    record ShareResponse(
-        String shareUrl,
-        Instant expiresAt
-    ) {}
-
-    /**
-     * DTO for share link generation request.
-     */
-    record ShareRequest(
-        @NotBlank String displayName
     ) {}
 }

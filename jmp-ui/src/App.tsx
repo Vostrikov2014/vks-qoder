@@ -8,6 +8,9 @@ import DashboardPage from './pages/DashboardPage';
 import ConferencesPage from './pages/ConferencesPage';
 import UsersPage from './pages/UsersPage';
 import TenantsPage from './pages/TenantsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import RecordingsPage from './pages/RecordingsPage';
+import JoinPage from './pages/JoinPage';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -17,6 +20,9 @@ function App() {
       <Routes>
         {/* Public Home Page - Accessible without authentication */}
         <Route path="/" element={<HomePage />} />
+
+        {/* Public join link entry point: /j/<slug> resolves into a fresh Jitsi address */}
+        <Route path="/j/:slug" element={<JoinPage />} />
 
         {/* Login Page */}
         <Route
@@ -31,6 +37,8 @@ function App() {
         >
           <Route index element={<DashboardPage />} />
           <Route path="conferences" element={<ConferencesPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="recordings" element={<RecordingsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="tenants" element={<TenantsPage />} />
         </Route>
