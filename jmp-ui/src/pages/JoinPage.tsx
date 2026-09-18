@@ -137,7 +137,7 @@ export default function JoinPage() {
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -159,7 +159,7 @@ export default function JoinPage() {
             color: 'var(--text-muted)',
             fontSize: '0.75rem',
             fontWeight: 600,
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -176,7 +176,7 @@ export default function JoinPage() {
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -195,7 +195,6 @@ export default function JoinPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-2xl)',
             boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
             p: { xs: 3, sm: 5 },
@@ -210,11 +209,11 @@ export default function JoinPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, #0B7186 0%, #19B3C6 50%, #075D70 100%)',
+                background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 30px rgba(11, 113, 134, 0.35), 0 0 0 2px rgba(201, 154, 91, 0.4)',
+                boxShadow: '0 8px 30px rgba(var(--primary-rgb), 0.35)',
               }}
             >
               {phase === 'blocked' ? <DoorOpen size={36} color="white" /> : <Video size={36} color="white" />}
@@ -236,9 +235,9 @@ export default function JoinPage() {
                   textAlign: 'left',
                   borderRadius: 'var(--radius-lg)',
                   color: 'var(--text-h)',
-                  background: blockedSeverity === 'info' ? 'rgba(11, 113, 134, 0.16)' : 'rgba(239, 68, 68, 0.12)',
-                  border: `1px solid ${blockedSeverity === 'info' ? 'rgba(11, 113, 134, 0.3)' : 'rgba(239, 68, 68, 0.25)'}`,
-                  '& .MuiAlert-icon': { color: blockedSeverity === 'info' ? '#19B3C6' : '#ef4444' },
+                  background: blockedSeverity === 'info' ? 'rgba(var(--primary-rgb), 0.16)' : 'rgba(239, 68, 68, 0.12)',
+                  border: `1px solid ${blockedSeverity === 'info' ? 'rgba(var(--primary-rgb), 0.3)' : 'rgba(239, 68, 68, 0.25)'}`,
+                  '& .MuiAlert-icon': { color: blockedSeverity === 'info' ? 'var(--primary-500)' : '#ef4444' },
                 }}
               >
                 {blockedMessage}
@@ -295,11 +294,11 @@ export default function JoinPage() {
                       '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
                       '& fieldset': { borderColor: 'var(--border)' },
                       '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                      '&.Mui-focused fieldset': { borderColor: '#0B7186', borderWidth: 2 },
+                      '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)', borderWidth: 2 },
                     },
                     '& .MuiInputLabel-root': {
                       color: 'var(--text-muted)',
-                      '&.Mui-focused': { color: '#0B7186' },
+                      '&.Mui-focused': { color: 'var(--primary-600)' },
                     },
                   }}
                 />
@@ -314,12 +313,12 @@ export default function JoinPage() {
                   sx={{
                     py: 1.5,
                     borderRadius: 'var(--radius-lg)',
-                    background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                    background: 'var(--primary-600)',
                     color: 'white',
                     fontWeight: 600,
                     textTransform: 'none',
-                    boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3)',
-                    '&:hover': { background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)' },
+                    boxShadow: 'none',
+                    '&:hover': { background: 'var(--primary-700)', boxShadow: '0 8px 25px rgba(var(--primary-rgb), 0.3)' },
                   }}
                 >
                   {t('common.join')}
@@ -337,10 +336,12 @@ export default function JoinPage() {
                   sx={{
                     py: 1.5,
                     borderRadius: 'var(--radius-lg)',
-                    background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                    background: 'var(--primary-600)',
                     color: 'white',
                     fontWeight: 600,
                     textTransform: 'none',
+                    boxShadow: 'none',
+                    '&:hover': { background: 'var(--primary-700)', boxShadow: '0 8px 25px rgba(var(--primary-rgb), 0.3)' },
                   }}
                 >
                   {t('common.signIn')}

@@ -85,8 +85,8 @@ const getStatusConfig = (status: string) => {
       };
     case 'SCHEDULED':
       return {
-        color: '#0B7186',
-        bgColor: 'rgba(11, 113, 134, 0.12)',
+        color: 'var(--primary-600)',
+        bgColor: 'rgba(var(--primary-rgb), 0.12)',
         icon: <Calendar size={14} />,
         labelKey: 'common.scheduled',
       };
@@ -111,15 +111,15 @@ const getTypeConfig = (type: ConferenceType) => {
   switch (type) {
     case 'SCHEDULED':
       return {
-        color: '#0B7186',
-        bgColor: 'rgba(11, 113, 134, 0.12)',
+        color: 'var(--primary-600)',
+        bgColor: 'rgba(var(--primary-rgb), 0.12)',
         icon: <Calendar size={12} />,
         labelKey: 'common.conference',
       };
     case 'PERMANENT':
       return {
-        color: '#075D70',
-        bgColor: 'rgba(7, 93, 112, 0.12)',
+        color: 'var(--primary-700)',
+        bgColor: 'rgba(var(--primary-700-rgb), 0.12)',
         icon: <DoorOpen size={12} />,
         labelKey: 'common.room',
       };
@@ -382,14 +382,14 @@ export default function ConferencesPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #0B7186 0%, #075D70 100%)',
+              background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3)',
+              boxShadow: '0 4px 20px rgba(var(--primary-rgb), 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
-                boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4)',
+                background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
+                boxShadow: '0 6px 25px rgba(var(--primary-rgb), 0.4)',
               },
             }}
           >
@@ -416,16 +416,14 @@ export default function ConferencesPage() {
                 py: 1.5,
                 px: 3,
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                background: 'var(--primary-600)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
-                border: '1px solid rgba(201, 154, 91, 0.25)',
+                boxShadow: 'none',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                  boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
-                  borderColor: 'rgba(201, 154, 91, 0.4)',
+                  background: 'var(--primary-700)',
+                  boxShadow: 'none',
                 },
               }}
           >
@@ -457,7 +455,7 @@ export default function ConferencesPage() {
                   borderColor: 'var(--border)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#C99A5B',
+                  borderColor: 'var(--primary-600)',
                 },
               },
             }}
@@ -497,6 +495,9 @@ export default function ConferencesPage() {
                 '&:not(:last-of-type)': {
                   borderRadius: 'var(--radius-lg)',
                 },
+                '&.Mui-selected': {
+                  borderLeft: '1px solid var(--primary-600) !important',
+                },
               },
             }}
           >
@@ -505,13 +506,13 @@ export default function ConferencesPage() {
               sx={{
                 p: 1,
                 color: 'var(--text-muted)',
-                '&.Mui-selected': {
-                  background: 'rgba(201, 154, 91, 0.12)',
-                  color: '#C99A5B',
-                  borderColor: '#C99A5B',
-                },
                 '&:hover': {
-                  background: 'var(--glass-bg)',
+                  background: 'rgba(var(--primary-rgb), 0.08)',
+                },
+                '&.Mui-selected': {
+                  background: 'rgba(var(--primary-rgb), 0.12)',
+                  color: 'var(--primary-600)',
+                  borderColor: 'var(--primary-600)',
                 },
               }}
             >
@@ -524,13 +525,13 @@ export default function ConferencesPage() {
               sx={{
                 p: 1,
                 color: 'var(--text-muted)',
-                '&.Mui-selected': {
-                  background: 'rgba(201, 154, 91, 0.12)',
-                  color: '#C99A5B',
-                  borderColor: '#C99A5B',
-                },
                 '&:hover': {
-                  background: 'var(--glass-bg)',
+                  background: 'rgba(var(--primary-rgb), 0.08)',
+                },
+                '&.Mui-selected': {
+                  background: 'rgba(var(--primary-rgb), 0.12)',
+                  color: 'var(--primary-600)',
+                  borderColor: 'var(--primary-600)',
                 },
               }}
             >
@@ -581,10 +582,9 @@ export default function ConferencesPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 2,
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      transition: 'box-shadow 0.2s ease',
                       '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
+                        boxShadow: 'var(--shadow-xl)',
                       },
                       position: 'relative',
                       overflow: 'hidden',
@@ -686,8 +686,8 @@ export default function ConferencesPage() {
                       )}
                       {conference.type === 'PERMANENT' && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Infinity size={16} color="#C99A5B" />
-                          <Typography variant="body2" sx={{ color: '#C99A5B', fontWeight: 500 }}>
+                          <Infinity size={16} color="var(--primary-600)" />
+                          <Typography variant="body2" sx={{ color: 'var(--primary-600)', fontWeight: 500 }}>
                             {t('conferences.alwaysAvailable')}
                           </Typography>
                         </Box>
@@ -729,8 +729,8 @@ export default function ConferencesPage() {
                           sx={{
                             p: 0.75,
                             borderRadius: 'var(--radius-md)',
-                            background: 'rgba(201, 154, 91, 0.12)',
-                            color: '#C99A5B',
+                            background: 'rgba(var(--primary-rgb), 0.12)',
+                            color: 'var(--primary-600)',
                           }}
                         >
                           <Monitor size={14} />
@@ -739,7 +739,7 @@ export default function ConferencesPage() {
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}
@@ -749,20 +749,18 @@ export default function ConferencesPage() {
                           py: 1,
                           flex: 1,
                           borderRadius: 'var(--radius-lg)',
-                          background: conference.status !== 'ACTIVE' ? 'linear-gradient(135deg, #075D70 0%, #05323C 100%)' : 'rgba(11, 113, 134, 0.2)',
+                          background: conference.status !== 'ACTIVE' ? 'var(--primary-600)' : 'rgba(var(--primary-rgb), 0.2)',
                           color: 'white',
                           fontWeight: 600,
                           textTransform: 'none',
-                          border: conference.status !== 'ACTIVE' ? '1px solid rgba(201, 154, 91, 0.25)' : 'none',
-                          boxShadow: conference.status !== 'ACTIVE' ? '0 2px 8px rgba(11, 113, 134, 0.2), 0 0 0 1px rgba(201, 154, 91, 0.1)' : 'none',
+                          boxShadow: 'none',
                           '&:hover': {
-                            background: conference.status !== 'ACTIVE' ? 'linear-gradient(135deg, #05323C 0%, #031E24 100%)' : 'rgba(11, 113, 134, 0.2)',
-                            boxShadow: conference.status !== 'ACTIVE' ? '0 4px 12px rgba(11, 113, 134, 0.3), 0 2px 8px rgba(201, 154, 91, 0.2)' : 'none',
-                            borderColor: 'rgba(201, 154, 91, 0.4)',
+                            background: conference.status !== 'ACTIVE' ? 'var(--primary-700)' : 'rgba(var(--primary-rgb), 0.2)',
+                            boxShadow: 'none',
                           },
                           '&.Mui-disabled': {
-                            background: 'rgba(11, 113, 134, 0.12)',
-                            color: 'rgba(11, 113, 134, 0.4)',
+                            background: 'rgba(var(--primary-rgb), 0.12)',
+                            color: 'rgba(var(--primary-rgb), 0.4)',
                             border: 'none',
                           },
                         }}
@@ -778,16 +776,14 @@ export default function ConferencesPage() {
                           py: 1,
                           flex: 1,
                           borderRadius: 'var(--radius-lg)',
-                          background: conference.status === 'ACTIVE' ? 'linear-gradient(135deg, #4b5563 0%, #374151 100%)' : 'rgba(107, 114, 128, 0.2)',
+                          background: conference.status === 'ACTIVE' ? '#4b5563' : 'rgba(107, 114, 128, 0.2)',
                           color: 'white',
                           fontWeight: 600,
                           textTransform: 'none',
-                          border: conference.status === 'ACTIVE' ? '1px solid rgba(201, 154, 91, 0.2)' : 'none',
-                          boxShadow: conference.status === 'ACTIVE' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
+                          boxShadow: 'none',
                           '&:hover': {
-                            background: conference.status === 'ACTIVE' ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)' : 'rgba(107, 114, 128, 0.2)',
-                            boxShadow: conference.status === 'ACTIVE' ? '0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(201, 154, 91, 0.15)' : 'none',
-                            borderColor: 'rgba(201, 154, 91, 0.35)',
+                            background: conference.status === 'ACTIVE' ? '#374151' : 'rgba(107, 114, 128, 0.2)',
+                            boxShadow: 'none',
                           },
                           '&.Mui-disabled': {
                             background: 'rgba(107, 114, 128, 0.08)',
@@ -806,8 +802,8 @@ export default function ConferencesPage() {
                             borderRadius: 'var(--radius-lg)',
                             color: 'var(--text-muted)',
                             '&:hover': {
-                              background: 'rgba(201, 154, 91, 0.12)',
-                              color: '#C99A5B',
+                              background: 'rgba(var(--primary-rgb), 0.12)',
+                              color: 'var(--primary-600)',
                             },
                           }}
                         >
@@ -822,8 +818,8 @@ export default function ConferencesPage() {
                             borderRadius: 'var(--radius-lg)',
                             color: 'var(--text-muted)',
                             '&:hover': {
-                              background: 'rgba(201, 154, 91, 0.12)',
-                              color: '#C99A5B',
+                              background: 'rgba(var(--primary-rgb), 0.12)',
+                              color: 'var(--primary-600)',
                             },
                           }}
                         >
@@ -880,7 +876,7 @@ export default function ConferencesPage() {
                 gap: 2,
                 p: 2,
                 borderBottom: '1px solid var(--border)',
-                background: 'rgba(11, 113, 134, 0.04)',
+                background: 'rgba(var(--primary-rgb), 0.04)',
               }}
             >
               <Box />
@@ -934,7 +930,7 @@ export default function ConferencesPage() {
                         borderBottom: '1px solid var(--border)',
                         transition: 'background 0.15s ease',
                         '&:hover': {
-                          background: 'rgba(11, 113, 134, 0.04)',
+                          background: 'rgba(var(--primary-rgb), 0.04)',
                         },
                         '&:last-child': {
                           borderBottom: 'none',
@@ -1026,7 +1022,7 @@ export default function ConferencesPage() {
                         )}
                         {conference.enableScreenSharing && (
                           <Tooltip title={t('conferences.screenSharing')}>
-                            <Box sx={{ p: 0.5, borderRadius: 'var(--radius-sm)', background: 'rgba(201, 154, 91, 0.1)', color: '#C99A5B', display: 'flex', alignItems: 'center' }}>
+                            <Box sx={{ p: 0.5, borderRadius: 'var(--radius-sm)', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary-600)', display: 'flex', alignItems: 'center' }}>
                               <Monitor size={12} />
                             </Box>
                           </Tooltip>
@@ -1043,11 +1039,11 @@ export default function ConferencesPage() {
                               sx={{
                                 p: 0.75,
                                 borderRadius: 'var(--radius-md)',
-                                background: conference.status !== 'ACTIVE' ? 'rgba(11, 113, 134, 0.1)' : 'transparent',
-                                color: conference.status !== 'ACTIVE' ? '#075D70' : 'var(--text-muted)',
+                                background: conference.status !== 'ACTIVE' ? 'rgba(var(--primary-rgb), 0.1)' : 'transparent',
+                                color: conference.status !== 'ACTIVE' ? 'var(--primary-700)' : 'var(--text-muted)',
                                 opacity: conference.status !== 'ACTIVE' ? 1 : 0.35,
-                                border: conference.status !== 'ACTIVE' ? '1px solid rgba(201, 154, 91, 0.2)' : 'none',
-                                '&:hover': { background: 'rgba(201, 154, 91, 0.12)', borderColor: 'rgba(201, 154, 91, 0.35)' },
+                                border: conference.status !== 'ACTIVE' ? '1px solid rgba(var(--primary-rgb), 0.2)' : 'none',
+                                '&:hover': { background: 'rgba(var(--primary-rgb), 0.12)', borderColor: 'rgba(var(--primary-rgb), 0.35)' },
                               }}
                             >
                               <Play size={14} />
@@ -1074,7 +1070,7 @@ export default function ConferencesPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleShare(conference)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#C99A5B' } }}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
                           >
                             <Share2 size={14} />
                           </IconButton>
@@ -1083,7 +1079,7 @@ export default function ConferencesPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(conference)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#C99A5B' } }}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
                           >
                             <Edit2 size={14} />
                           </IconButton>
@@ -1138,7 +1134,7 @@ export default function ConferencesPage() {
                 justifyContent: 'center',
               }}
             >
-              <Video size={40} color="#0B7186" />
+              <Video size={40} color="var(--primary-600)" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
               {t('conferences.noConferences')}
@@ -1152,12 +1148,11 @@ export default function ConferencesPage() {
               onClick={handleCreate}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                background: 'var(--primary-600)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                border: '1px solid rgba(201, 154, 91, 0.25)',
-                boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+                boxShadow: 'none',
               }}
             >
               {t('conferences.createConference')}
@@ -1177,16 +1172,14 @@ export default function ConferencesPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingConference ? t('conferences.editConference') : t('conferences.createConference')}
           </Typography>
@@ -1250,12 +1243,15 @@ export default function ConferencesPage() {
                   fontWeight: 500,
                   py: 1.5,
                   '&.Mui-selected': {
-                    background: 'rgba(201, 154, 91, 0.12)',
-                    color: '#C99A5B',
-                    borderColor: '#C99A5B'
+                    background: 'var(--primary-600)',
+                    color: '#ffffff',
+                    borderColor: 'var(--primary-600)',
+                  },
+                  '&.Mui-selected:hover': {
+                    background: 'var(--primary-700)',
                   },
                   '&:hover': {
-                    background: 'var(--glass-bg)',
+                    background: 'rgba(var(--primary-rgb), 0.08)',
                   },
                 },
               }}
@@ -1289,14 +1285,14 @@ export default function ConferencesPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#C99A5B',
+                  borderColor: 'var(--primary-600)',
                 },
               },
               '& .MuiInputLabel-root': {
                 color: 'var(--text-muted)',
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#C99A5B',
+                color: 'var(--primary-600)',
               },
             }}
           />
@@ -1317,14 +1313,14 @@ export default function ConferencesPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#C99A5B',
+                  borderColor: 'var(--primary-600)',
                 },
               },
               '& .MuiInputLabel-root': {
                 color: 'var(--text-muted)',
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#C99A5B',
+                color: 'var(--primary-600)',
               },
             }}
           />
@@ -1347,14 +1343,14 @@ export default function ConferencesPage() {
                   borderColor: 'var(--border-strong)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#C99A5B',
+                  borderColor: 'var(--primary-600)',
                 },
               },
               '& .MuiInputLabel-root': {
                 color: 'var(--text-muted)',
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#C99A5B',
+                color: 'var(--primary-600)',
               },
             }}
           />
@@ -1380,14 +1376,14 @@ export default function ConferencesPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#C99A5B',
+                      borderColor: 'var(--primary-600)',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     color: 'var(--text-muted)',
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#C99A5B',
+                    color: 'var(--primary-600)',
                   },
                 }}
                 InputLabelProps={{ shrink: true }}
@@ -1410,14 +1406,14 @@ export default function ConferencesPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#C99A5B',
+                      borderColor: 'var(--primary-600)',
                     },
                   },
                   '& .MuiInputLabel-root': {
                     color: 'var(--text-muted)',
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#C99A5B',
+                    color: 'var(--primary-600)',
                   },
                 }}
                 InputLabelProps={{ shrink: true }}
@@ -1433,16 +1429,19 @@ export default function ConferencesPage() {
                   onChange={(e) => setFormData({ ...formData, enableRecording: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase': {
-                      color: 'var(--text-muted)',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-track': {
-                      backgroundColor: 'var(--border-strong)',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      opacity: 1,
                     },
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#C99A5B',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: 'rgba(201, 154, 91, 0.4)',
+                      backgroundColor: 'rgba(var(--primary-rgb), 0.5)',
+                      opacity: 1,
                     },
                   }}
                 />
@@ -1457,16 +1456,19 @@ export default function ConferencesPage() {
                   onChange={(e) => setFormData({ ...formData, enableLiveStreaming: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase': {
-                      color: 'var(--text-muted)',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-track': {
-                      backgroundColor: 'var(--border-strong)',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      opacity: 1,
                     },
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#C99A5B',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: 'rgba(201, 154, 91, 0.4)',
+                      backgroundColor: 'rgba(var(--primary-rgb), 0.5)',
+                      opacity: 1,
                     },
                   }}
                 />
@@ -1481,16 +1483,19 @@ export default function ConferencesPage() {
                   onChange={(e) => setFormData({ ...formData, enableLobby: e.target.checked })}
                   sx={{
                     '& .MuiSwitch-switchBase': {
-                      color: 'var(--text-muted)',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-track': {
-                      backgroundColor: 'var(--border-strong)',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      opacity: 1,
                     },
                     '& .MuiSwitch-switchBase.Mui-checked': {
-                      color: '#C99A5B',
+                      color: 'var(--primary-600)',
                     },
                     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                      backgroundColor: 'rgba(201, 154, 91, 0.4)',
+                      backgroundColor: 'rgba(var(--primary-rgb), 0.5)',
+                      opacity: 1,
                     },
                   }}
                 />
@@ -1502,7 +1507,7 @@ export default function ConferencesPage() {
 
           {/* Access Control Section */}
           <Box sx={{ mt: 3 }}>
-            <Divider sx={{ borderColor: 'rgba(201, 154, 91, 0.15)', mb: 2 }} />
+            <Divider sx={{ borderColor: 'rgba(var(--primary-rgb), 0.15)', mb: 2 }} />
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
               {t('conferences.accessControl')}
             </Typography>
@@ -1518,10 +1523,10 @@ export default function ConferencesPage() {
                   color: 'var(--text)',
                   '& fieldset': { borderColor: 'var(--border)' },
                   '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                  '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
+                  '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
                 },
                 '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
+                '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
                 '& .MuiSelect-icon': { color: 'var(--text-muted)' },
               }}
             >
@@ -1539,8 +1544,8 @@ export default function ConferencesPage() {
                       borderRadius: 'var(--radius-lg)',
                       '& .MuiMenuItem-root': {
                         color: 'var(--text)',
-                        '&:hover': { background: 'rgba(11, 113, 134, 0.08)' },
-                        '&.Mui-selected': { background: 'rgba(201, 154, 91, 0.12)', color: '#C99A5B' },
+                        '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
+                        '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
                       },
                     },
                   },
@@ -1568,10 +1573,10 @@ export default function ConferencesPage() {
                     color: 'var(--text)',
                     '& fieldset': { borderColor: 'var(--border)' },
                     '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                    '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
                   },
                   '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
                 }}
               />
             )}
@@ -1583,10 +1588,10 @@ export default function ConferencesPage() {
                   checked={formData.waitingRoomEnabled}
                   onChange={(e) => setFormData({ ...formData, waitingRoomEnabled: e.target.checked })}
                   sx={{
-                    '& .MuiSwitch-switchBase': { color: 'var(--text-muted)' },
-                    '& .MuiSwitch-track': { backgroundColor: 'var(--border-strong)' },
-                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#C99A5B' },
-                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(201, 154, 91, 0.4)' },
+                    '& .MuiSwitch-switchBase': { color: 'var(--primary-600)' },
+                    '& .MuiSwitch-track': { backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)', opacity: 1 },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--primary-600)' },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(var(--primary-rgb), 0.5)', opacity: 1 },
                   }}
                 />
               }
@@ -1601,10 +1606,10 @@ export default function ConferencesPage() {
                   checked={formData.requireAuthForAssigned}
                   onChange={(e) => setFormData({ ...formData, requireAuthForAssigned: e.target.checked })}
                   sx={{
-                    '& .MuiSwitch-switchBase': { color: 'var(--text-muted)' },
-                    '& .MuiSwitch-track': { backgroundColor: 'var(--border-strong)' },
-                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#C99A5B' },
-                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(201, 154, 91, 0.4)' },
+                    '& .MuiSwitch-switchBase': { color: 'var(--primary-600)' },
+                    '& .MuiSwitch-track': { backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)', opacity: 1 },
+                    '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--primary-600)' },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(var(--primary-rgb), 0.5)', opacity: 1 },
                   }}
                 />
               }
@@ -1622,7 +1627,7 @@ export default function ConferencesPage() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
           <Button
             onClick={() => {
               setOpenDialog(false);
@@ -1642,17 +1647,15 @@ export default function ConferencesPage() {
             variant="contained"
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+              background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
-              border: '1px solid rgba(201, 154, 91, 0.25)',
-              boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
+              boxShadow: 'none',
               '&:hover': {
-                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                boxShadow: '0 6px 20px rgba(11, 113, 134, 0.4), 0 2px 10px rgba(201, 154, 91, 0.3)',
-                borderColor: 'rgba(201, 154, 91, 0.4)',
+                background: 'var(--primary-700)',
+                boxShadow: 'none',
               },
             }}
           >

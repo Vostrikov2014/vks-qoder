@@ -39,12 +39,12 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 
 const menuItems = [
-  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.analytics', icon: BarChart3, path: '/dashboard/analytics', color: '#19B3C6', requiresAdmin: true, requiresSuperAdmin: false },
-  { textKey: 'common.recordings', icon: HardDrive, path: '/dashboard/recordings', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#C99A5B', requiresAdmin: true, requiresSuperAdmin: false },
-  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#C99A5B', requiresAdmin: false, requiresSuperAdmin: true },
+  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.analytics', icon: BarChart3, path: '/dashboard/analytics', color: 'var(--primary-500)', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.recordings', icon: HardDrive, path: '/dashboard/recordings', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#ffffff', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: true },
 ];
 
 const itemVariants = {
@@ -113,11 +113,11 @@ export default function Layout() {
             width: 44,
             height: 44,
             borderRadius: 'var(--radius-xl)',
-            background: 'linear-gradient(135deg, #0B7186 0%, #19B3C6 100%)',
+            background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(201, 154, 91, 0.4)',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
           }}
         >
           <Video size={24} color="white" />
@@ -308,7 +308,7 @@ export default function Layout() {
           sx={{
             ml: 2,
             fontWeight: 700,
-            color: '#0B7186',
+            color: 'var(--primary-600)',
           }}
         >
           {t('common.appName')}
@@ -465,8 +465,7 @@ export default function Layout() {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
-                  boxShadow: '0 0 0 2px rgba(201, 154, 91, 0.35)',
+                  background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
                   fontWeight: 600,
                   fontSize: '0.875rem',
                 }}

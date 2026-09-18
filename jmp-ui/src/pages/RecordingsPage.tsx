@@ -58,6 +58,16 @@ const itemVariants = {
   },
 };
 
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: 'var(--border)' },
+    '&:hover fieldset': { borderColor: 'var(--border)' },
+    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
+  },
+  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
+};
+
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'READY':
@@ -247,6 +257,10 @@ export default function RecordingsPage() {
               border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               boxShadow: 'var(--shadow-lg)',
+              transition: 'box-shadow 0.2s ease',
+              '&:hover': {
+                boxShadow: 'var(--shadow-xl)',
+              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -255,11 +269,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(201, 154, 91, 0.12)',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#C99A5B',
+                  color: 'var(--primary-600)',
                 }}
               >
                 <HardDrive size={20} />
@@ -284,6 +298,10 @@ export default function RecordingsPage() {
               border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               boxShadow: 'var(--shadow-lg)',
+              transition: 'box-shadow 0.2s ease',
+              '&:hover': {
+                boxShadow: 'var(--shadow-xl)',
+              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -292,11 +310,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(11, 113, 134, 0.12)',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#0B7186',
+                  color: 'var(--primary-600)',
                 }}
               >
                 <Film size={20} />
@@ -321,6 +339,10 @@ export default function RecordingsPage() {
               border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               boxShadow: 'var(--shadow-lg)',
+              transition: 'box-shadow 0.2s ease',
+              '&:hover': {
+                boxShadow: 'var(--shadow-xl)',
+              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -329,11 +351,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(25, 179, 198, 0.12)',
+                  background: 'rgba(var(--primary-500-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#19B3C6',
+                  color: 'var(--primary-500)',
                 }}
               >
                 <FileText size={20} />
@@ -381,10 +403,13 @@ export default function RecordingsPage() {
               '& .MuiOutlinedInput-root': {
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--glass-bg)',
+                '& fieldset': { borderColor: 'var(--border)' },
+                '&:hover fieldset': { borderColor: 'var(--border)' },
+                '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
               },
             }}
           />
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...fieldSx, minWidth: 140 }}>
             <InputLabel>{t('recordings.type')}</InputLabel>
             <Select
               value={typeFilter}
@@ -401,7 +426,7 @@ export default function RecordingsPage() {
               <MenuItem value="TRANSCRIPT">{t('recordings.TRANSCRIPT')}</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...fieldSx, minWidth: 140 }}>
             <InputLabel>{t('recordings.status')}</InputLabel>
             <Select
               value={statusFilter}
@@ -436,7 +461,7 @@ export default function RecordingsPage() {
         >
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress sx={{ color: '#C99A5B' }} />
+              <CircularProgress sx={{ color: 'var(--primary-600)' }} />
             </Box>
           ) : recordings.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -532,7 +557,7 @@ export default function RecordingsPage() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handlePlay(recording)}
-                                    sx={{ color: '#0B7186' }}
+                                    sx={{ color: 'var(--primary-600)' }}
                                   >
                                     <Play size={18} />
                                   </IconButton>
@@ -543,7 +568,7 @@ export default function RecordingsPage() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handleDownload(recording)}
-                                    sx={{ color: '#19B3C6' }}
+                                    sx={{ color: 'var(--primary-500)' }}
                                   >
                                     <Download size={18} />
                                   </IconButton>
@@ -590,8 +615,7 @@ export default function RecordingsPage() {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-xl)',
           },

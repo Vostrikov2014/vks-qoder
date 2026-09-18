@@ -69,11 +69,11 @@ const fieldSx = {
     '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
     '& fieldset': { borderColor: 'var(--border-strong)' },
     '&:hover fieldset': { borderColor: 'var(--text-muted)' },
-    '&.Mui-focused fieldset': { borderColor: '#0B7186', borderWidth: 2 },
+    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)', borderWidth: 2 },
   },
   '& .MuiInputLabel-root': {
     color: 'var(--text-muted)',
-    '&.Mui-focused': { color: '#0B7186' },
+    '&.Mui-focused': { color: 'var(--primary-600)' },
   },
 };
 
@@ -84,7 +84,7 @@ const menuProps = {
       background: 'var(--bg-elevated)',
       border: '1px solid var(--glass-border)',
       '& .MuiMenuItem-root': { color: 'var(--text-h)' },
-      '& .MuiMenuItem-root.Mui-selected': { background: 'rgba(11, 113, 134, 0.15)', color: '#0B7186' },
+      '& .MuiMenuItem-root.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.15)', color: 'var(--primary-600)' },
     },
   },
 };
@@ -218,15 +218,15 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
             {link.label || t('share.unnamedLink')}
           </Typography>
           {isPrimary && (
-            <Chip label={t('share.primaryBadge')} size="small" sx={{ background: 'rgba(11, 113, 134, 0.15)', color: '#0B7186', fontWeight: 600 }} />
+            <Chip label={t('share.primaryBadge')} size="small" sx={{ background: 'rgba(var(--primary-rgb), 0.15)', color: 'var(--primary-600)', fontWeight: 600 }} />
           )}
           <Chip
             size="small"
             icon={link.role === 'MODERATOR' ? <ShieldCheck size={14} /> : <User size={14} />}
             label={t(`roles.${link.role}`)}
             sx={{
-              background: link.role === 'MODERATOR' ? 'rgba(201, 154, 91, 0.15)' : 'rgba(107, 114, 128, 0.12)',
-              color: link.role === 'MODERATOR' ? '#C99A5B' : 'var(--text-muted)',
+              background: link.role === 'MODERATOR' ? 'rgba(var(--primary-rgb), 0.15)' : 'rgba(107, 114, 128, 0.12)',
+              color: link.role === 'MODERATOR' ? 'var(--primary-600)' : 'var(--text-muted)',
               fontWeight: 600,
             }}
           />
@@ -273,8 +273,8 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                     borderRadius: 'var(--radius-md)',
                     color: copied ? '#22c55e' : 'var(--text-muted)',
                     '&:hover': {
-                      background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(201, 154, 91, 0.08)',
-                      color: copied ? '#16a34a' : '#C99A5B',
+                      background: copied ? 'rgba(34, 197, 94, 0.1)' : 'rgba(var(--primary-rgb), 0.08)',
+                      color: copied ? '#16a34a' : 'var(--primary-600)',
                     },
                   }}
                 >
@@ -337,10 +337,8 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
       PaperProps={{
         sx: {
           borderRadius: 'var(--radius-md)',
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(20px)',
+          background: 'var(--bg-elevated)',
           border: '1px solid var(--glass-border)',
-          borderTop: '3px solid #C99A5B',
         },
       }}
     >
@@ -389,9 +387,9 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           severity="info"
           sx={{
             mb: 3,
-            background: 'rgba(201, 154, 91, 0.08)',
-            color: '#C99A5B',
-            border: '1px solid rgba(201, 154, 91, 0.2)',
+            background: 'rgba(var(--primary-rgb), 0.08)',
+            color: 'var(--primary-600)',
+            border: '1px solid rgba(var(--primary-rgb), 0.2)',
           }}
         >
           <Typography variant="caption">{t('share.howItWorks')}</Typography>
@@ -405,7 +403,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={28} sx={{ color: '#0B7186' }} />
+            <CircularProgress size={28} sx={{ color: 'var(--primary-600)' }} />
           </Box>
         ) : (
           <>
@@ -428,7 +426,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </>
         )}
 
-        <Divider sx={{ my: 2, borderColor: 'rgba(201, 154, 91, 0.12)' }} />
+        <Divider sx={{ my: 2, borderColor: 'rgba(var(--primary-rgb), 0.12)' }} />
 
         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1.5 }}>
           {t('share.addLinkTitle')}
@@ -446,7 +444,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel id="link-role-label" sx={{ color: 'var(--text-muted)', '&.Mui-focused': { color: '#0B7186' } }}>
+              <InputLabel id="link-role-label" sx={{ color: 'var(--text-muted)', '&.Mui-focused': { color: 'var(--primary-600)' } }}>
                 {t('share.linkRole')}
               </InputLabel>
               <Select
@@ -460,7 +458,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                   color: 'var(--text-h)',
                   '& fieldset': { borderColor: 'var(--border-strong)' },
                   '&:hover fieldset': { borderColor: 'var(--text-muted)' },
-                  '&.Mui-focused fieldset': { borderColor: '#0B7186' },
+                  '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
                   '& .MuiSelect-icon': { color: 'var(--text-muted)' },
                 }}
               >
@@ -477,9 +475,10 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                     onChange={(e) => setLimited(e.target.checked)}
                     inputProps={{ 'aria-label': t('share.setExpiryAriaLabel') }}
                     sx={{
-                      color: 'var(--text-muted)',
-                      '& .MuiSwitch-track': { backgroundColor: 'var(--text-muted)', opacity: 0.5 },
-                      '&.Mui-checked': { color: '#0B7186', '& .MuiSwitch-track': { backgroundColor: '#0B7186', opacity: 0.6 } },
+                      '& .MuiSwitch-switchBase': { color: 'var(--primary-600)' },
+                      '& .MuiSwitch-track': { backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)', opacity: 1 },
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--primary-600)' },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'rgba(var(--primary-rgb), 0.5)', opacity: 1 },
                     }}
                   />
                 }
@@ -507,11 +506,11 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
               disabled={saving || (limited && !expiresAt)}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                borderColor: 'rgba(11, 113, 134, 0.4)',
-                color: '#0B7186',
+                borderColor: 'rgba(var(--primary-rgb), 0.4)',
+                color: 'var(--primary-600)',
                 textTransform: 'none',
                 fontWeight: 600,
-                '&:hover': { borderColor: '#0B7186', background: 'rgba(11, 113, 134, 0.06)' },
+                '&:hover': { borderColor: 'var(--primary-600)', background: 'rgba(var(--primary-rgb), 0.06)' },
                 '&.Mui-disabled': { color: 'var(--text-muted)', borderColor: 'var(--border)' },
               }}
             >
@@ -521,7 +520,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
         <Typography variant="caption" sx={{ color: 'var(--text-muted)', mr: 'auto' }}>
           {t('share.policyNote')}
         </Typography>

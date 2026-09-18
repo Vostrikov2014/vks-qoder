@@ -61,8 +61,7 @@
 }
 
 .theme-toggle:hover {
-  color: var(--text-h);
-  transform: scale(1.05);
+  color: var(--primary-600);
   box-shadow: var(--shadow-xl);
 }
 
@@ -98,8 +97,7 @@
 }
 
 .language-toggle:hover {
-  color: var(--text-h);
-  transform: scale(1.05);
+  color: var(--primary-600);
   box-shadow: var(--shadow-xl);
 }
 
@@ -131,7 +129,7 @@
   left: 10%;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(11, 113, 134, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 70%);
   animation: float 8s ease-in-out infinite;
 }
 
@@ -140,7 +138,7 @@
   right: 10%;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(201, 154, 91, 0.10) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.10) 0%, transparent 70%);
   animation: float 10s ease-in-out infinite reverse;
 }
 
@@ -175,19 +173,19 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, #0B7186 0%, #19B3C6 50%, #075D70 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 30px rgba(11, 113, 134, 0.35), 0 0 0 2px rgba(201, 154, 91, 0.4);
+  box-shadow: 0 8px 30px rgba(var(--primary-rgb), 0.35);
 }
 
 .logo-text {
   font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #0B7186 0%, #075D70 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -230,30 +228,11 @@
   text-align: center;
   gap: var(--space-4);
   cursor: pointer;
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-}
-
-.action-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #C99A5B, #F4EADA, #C99A5B);
-  transform: scaleX(0);
-  transition: transform var(--transition-slow);
-}
-
-.action-card:hover::before {
-  transform: scaleX(1);
+  transition: box-shadow var(--transition-base);
 }
 
 .action-card:hover {
   box-shadow: var(--shadow-xl);
-  border-color: rgba(201, 154, 91, 0.4);
 }
 
 .action-card:focus-visible {
@@ -274,18 +253,18 @@
 }
 
 .create-icon {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
 .connect-icon {
-  background: linear-gradient(135deg, #0B7186 0%, #19B3C6 100%);
-  box-shadow: 0 8px 25px rgba(11, 113, 134, 0.3), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
 .signin-icon {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
 }
 
 /* Card Typography */
@@ -316,7 +295,7 @@
 }
 
 .action-card:hover .card-arrow {
-  color: #0B7186;
+  color: var(--primary-600);
   transform: translateX(4px);
 }
 
@@ -381,8 +360,8 @@
 
 .meeting-input:focus {
   outline: none;
-  border-color: #0B7186;
-  box-shadow: 0 0 0 3px rgba(11, 113, 134, 0.15);
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 .meeting-input::placeholder {
@@ -393,9 +372,9 @@
   flex-shrink: 0;
   min-width: 80px;
   padding: var(--space-3) var(--space-6);
-  background: linear-gradient(135deg, #075D70 0%, #05323C 100%);
+  background: var(--primary-600);
   color: white;
-  border: 1px solid rgba(201, 154, 91, 0.25);
+  border: none;
   border-radius: var(--radius-lg);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -403,13 +382,10 @@
   cursor: pointer;
   transition: all var(--transition-base);
   white-space: nowrap;
-  box-shadow: 0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15);
 }
 
 .join-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #05323C 0%, #031E24 100%);
-  box-shadow: 0 4px 15px rgba(11, 113, 134, 0.35), 0 2px 10px rgba(201, 154, 91, 0.3);
-  border-color: rgba(201, 154, 91, 0.4);
+  background: var(--primary-700);
 }
 
 .join-button:disabled {
@@ -636,8 +612,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .decorative-blob,
-  .card-arrow,
-  .action-card::before {
+  .card-arrow {
     animation: none;
     transition: none;
   }
@@ -670,17 +645,17 @@
    ========================================================================== */
 
 html.dark .logo-icon {
-  box-shadow: 0 8px 30px rgba(11, 113, 134, 0.25), 0 0 0 2px rgba(201, 154, 91, 0.4);
+  box-shadow: 0 8px 30px rgba(var(--primary-rgb), 0.25);
 }
 
 html.dark .create-icon {
-  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
 }
 
 html.dark .connect-icon {
-  box-shadow: 0 8px 25px rgba(25, 179, 198, 0.2), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
 }
 
 html.dark .signin-icon {
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2), 0 0 0 2px rgba(201, 154, 91, 0.35);
+  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
 }

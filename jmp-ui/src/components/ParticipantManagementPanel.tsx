@@ -43,10 +43,10 @@ const switchSx = {
     background: 'transparent',
     '& fieldset': { borderColor: 'var(--border)' },
     '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-    '&.Mui-focused fieldset': { borderColor: '#0B7186' },
+    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
   },
   '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#0B7186' },
+  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
   '& .MuiSelect-icon': { color: 'var(--text-muted)' },
 };
 
@@ -178,7 +178,7 @@ export default function ParticipantManagementPanel({
       sx={{
         mt: 2,
         p: 2,
-        background: 'rgba(11, 113, 134, 0.04)',
+        background: 'rgba(var(--primary-rgb), 0.04)',
         border: '1px solid var(--glass-border)',
         borderRadius: 'var(--radius-xl)',
       }}
@@ -186,7 +186,7 @@ export default function ParticipantManagementPanel({
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PersonIcon sx={{ color: '#0B7186', fontSize: 20 }} />
+          <PersonIcon sx={{ color: 'var(--primary-600)', fontSize: 20 }} />
           <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
             {t('conferences.participantManagement')}
           </Typography>
@@ -227,8 +227,8 @@ export default function ParticipantManagementPanel({
                   borderRadius: 'var(--radius-lg)',
                   '& .MuiMenuItem-root': {
                     color: 'var(--text)',
-                    '&:hover': { background: 'rgba(11, 113, 134, 0.08)' },
-                    '&.Mui-selected': { background: 'rgba(11, 113, 134, 0.12)', color: '#0B7186' },
+                    '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
+                    '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
                   },
                 },
               },
@@ -247,10 +247,10 @@ export default function ParticipantManagementPanel({
               sx={{
                 p: 1,
                 borderRadius: 'var(--radius-lg)',
-                background: newEmail.trim() ? 'rgba(11, 113, 134, 0.12)' : 'transparent',
-                color: newEmail.trim() ? '#0B7186' : 'var(--text-muted)',
+                background: newEmail.trim() ? 'rgba(var(--primary-rgb), 0.12)' : 'transparent',
+                color: newEmail.trim() ? 'var(--primary-600)' : 'var(--text-muted)',
                 border: '1px solid var(--glass-border)',
-                '&:hover': { background: 'rgba(11, 113, 134, 0.2)' },
+                '&:hover': { background: 'rgba(var(--primary-rgb), 0.2)' },
                 '&.Mui-disabled': { opacity: 0.4 },
               }}
             >
@@ -290,7 +290,7 @@ export default function ParticipantManagementPanel({
                   py: 1,
                   px: 1,
                   borderRadius: 'var(--radius-lg)',
-                  '&:hover': { background: 'rgba(11, 113, 134, 0.04)' },
+                  '&:hover': { background: 'rgba(var(--primary-rgb), 0.04)' },
                   flexWrap: 'wrap',
                 }}
               >
@@ -326,8 +326,8 @@ export default function ParticipantManagementPanel({
                           borderRadius: 'var(--radius-lg)',
                           '& .MuiMenuItem-root': {
                             color: 'var(--text)',
-                            '&:hover': { background: 'rgba(11, 113, 134, 0.08)' },
-                            '&.Mui-selected': { background: 'rgba(11, 113, 134, 0.12)', color: '#0B7186' },
+                            '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
+                            '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
                           },
                         },
                       },
@@ -388,9 +388,9 @@ export default function ParticipantManagementPanel({
             px: 2,
             fontSize: '0.8rem',
             '&:hover': {
-              background: 'rgba(11, 113, 134, 0.08)',
-              color: '#0B7186',
-              borderColor: '#0B7186',
+              background: 'rgba(var(--primary-rgb), 0.08)',
+              color: 'var(--primary-600)',
+              borderColor: 'var(--primary-600)',
             },
           }}
         >

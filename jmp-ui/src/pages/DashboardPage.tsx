@@ -94,10 +94,9 @@ const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1 }: BentoCardPr
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        transition: 'box-shadow 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
+          boxShadow: 'var(--shadow-xl)',
         },
       }}
     >
@@ -243,7 +242,7 @@ export default function DashboardPage() {
 
   const getProgressColor = (value: number): string => {
     if (value < 60) return '#22c55e';
-    if (value <= 80) return '#C99A5B';
+    if (value <= 80) return '#f59e0b';
     return '#ef4444';
   };
 
@@ -294,14 +293,14 @@ export default function DashboardPage() {
           value={stats.activeConferences}
           icon={<Video size={24} />}
           trend={computeTrend('conferences')}
-          color="#0B7186"
+          color="var(--primary-600)"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
           title={t('dashboard.upcoming')}
           value={stats.upcomingConferences}
           icon={<Calendar size={24} />}
-          color="#19B3C6"
+          color="var(--primary-500)"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
@@ -309,7 +308,7 @@ export default function DashboardPage() {
           value={stats.totalParticipants}
           icon={<Users size={24} />}
           trend={computeTrend('participants')}
-          color="#075D70"
+          color="var(--primary-700)"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
         <StatCard
@@ -317,7 +316,7 @@ export default function DashboardPage() {
           value={dashboardMetrics?.recordingsThisMonth || 0}
           icon={<HardDrive size={24} />}
           trend={computeTrend('recordings')}
-          color="#C99A5B"
+          color="var(--primary-500)"
           locale={i18n.language === 'ru' ? 'ru-RU' : 'en-US'}
         />
       </Box>
@@ -348,8 +347,8 @@ export default function DashboardPage() {
                 icon={<TrendingUp size={14} />}
                 label={t('common.live')}
                 sx={{
-                  background: 'rgba(201, 154, 91, 0.15)',
-                  color: '#C99A5B',
+                  background: 'rgba(var(--primary-rgb), 0.15)',
+                  color: 'var(--primary-600)',
                   fontWeight: 600,
                   '& .MuiChip-icon': {
                     color: 'inherit',
@@ -373,12 +372,12 @@ export default function DashboardPage() {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorConferences" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#C99A5B" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#C99A5B" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorParticipants" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0B7186" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#0B7186" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--primary-600)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--primary-600)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -399,7 +398,7 @@ export default function DashboardPage() {
                     contentStyle={{
                       background: 'var(--glass-bg)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(201, 154, 91, 0.15)',
+                      border: '1px solid rgba(var(--primary-rgb), 0.15)',
                       borderRadius: 'var(--radius-lg)',
                       boxShadow: 'var(--shadow-lg)',
                     }}
@@ -407,7 +406,7 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="conferences"
-                    stroke="#C99A5B"
+                    stroke="var(--primary-400)"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorConferences)"
@@ -416,7 +415,7 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="participants"
-                    stroke="#0B7186"
+                    stroke="var(--primary-600)"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorParticipants)"
@@ -460,7 +459,7 @@ export default function DashboardPage() {
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Cpu size={18} color="#C99A5B" />
+                      <Cpu size={18} color="var(--primary-500)" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
                         {t('dashboard.cpuUsage')}
                       </Typography>
@@ -475,7 +474,7 @@ export default function DashboardPage() {
                     sx={{
                       height: 8,
                       borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'rgba(201, 154, 91, 0.15)',
+                      backgroundColor: 'rgba(var(--primary-500-rgb), 0.2)',
                       '& .MuiLinearProgress-bar': {
                         backgroundColor: getProgressColor(systemHealth.cpuUsage),
                         borderRadius: 'var(--radius-full)',
@@ -488,7 +487,7 @@ export default function DashboardPage() {
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <MemoryStick size={18} color="#19B3C6" />
+                      <MemoryStick size={18} color="var(--primary-500)" />
                       <Typography variant="body2" sx={{ color: 'var(--text)' }}>
                         {t('dashboard.memoryUsage')}
                       </Typography>
@@ -503,7 +502,7 @@ export default function DashboardPage() {
                     sx={{
                       height: 8,
                       borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'rgba(25, 179, 198, 0.2)',
+                      backgroundColor: 'rgba(var(--primary-500-rgb), 0.2)',
                       '& .MuiLinearProgress-bar': {
                         backgroundColor: getProgressColor(systemHealth.memoryUsage),
                         borderRadius: 'var(--radius-full)',
@@ -518,14 +517,14 @@ export default function DashboardPage() {
                     sx={{
                       p: 2,
                       borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(201, 154, 91, 0.08)',
-                      border: '1px solid rgba(201, 154, 91, 0.12)',
+                      background: 'rgba(var(--primary-rgb), 0.08)',
+                      border: '1px solid rgba(var(--primary-rgb), 0.12)',
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
                       {t('dashboard.activeConnections')}
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#C99A5B' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--primary-600)' }}>
                       {systemHealth.activeConnections}
                     </Typography>
                   </Box>
@@ -533,14 +532,14 @@ export default function DashboardPage() {
                     sx={{
                       p: 2,
                       borderRadius: 'var(--radius-lg)',
-                      background: 'rgba(11, 113, 134, 0.08)',
-                      border: '1px solid rgba(11, 113, 134, 0.12)',
+                      background: 'rgba(var(--primary-rgb), 0.08)',
+                      border: '1px solid rgba(var(--primary-rgb), 0.12)',
                     }}
                   >
                     <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.5 }}>
                       {t('dashboard.avgResponse')}
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7186' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--primary-600)' }}>
                       {systemHealth.averageResponseTime}ms
                     </Typography>
                   </Box>
@@ -566,10 +565,10 @@ export default function DashboardPage() {
           }}
         >
           {[
-            { label: t('dashboard.startConference'), icon: <Video size={20} />, color: '#C99A5B', path: '/dashboard/conferences', requiresConferenceAccess: true },
-            { label: t('dashboard.viewRecordings'), icon: <HardDrive size={20} />, color: '#C99A5B', path: '/dashboard/recordings' },
-            { label: t('dashboard.manageUsers'), icon: <Users size={20} />, color: '#0B7186', path: '/dashboard/users', requiresAdmin: true },
-            { label: t('dashboard.viewReports'), icon: <TrendingUp size={20} />, color: '#19B3C6', path: '/dashboard/analytics' },
+            { label: t('dashboard.startConference'), icon: <Video size={20} />, color: 'var(--primary-600)', path: '/dashboard/conferences', requiresConferenceAccess: true },
+            { label: t('dashboard.viewRecordings'), icon: <HardDrive size={20} />, color: 'var(--primary-600)', path: '/dashboard/recordings' },
+            { label: t('dashboard.manageUsers'), icon: <Users size={20} />, color: 'var(--primary-600)', path: '/dashboard/users', requiresAdmin: true },
+            { label: t('dashboard.viewReports'), icon: <TrendingUp size={20} />, color: 'var(--primary-500)', path: '/dashboard/analytics' },
           ]
             .filter((action) => {
               if (action.requiresAdmin) return isAdmin;

@@ -186,8 +186,7 @@ export default function HomePage() {
             className="action-card"
             variants={cardVariants}
             onClick={generateRoomAndRedirect}
-            whileHover={{ y: -4, boxShadow: 'var(--shadow-xl)' }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ boxShadow: 'var(--shadow-xl)' }}
             aria-label={t('home.createHangoutAria')}
           >
             <div className="card-icon create-icon">
@@ -266,8 +265,7 @@ export default function HomePage() {
             className="action-card"
             variants={cardVariants}
             onClick={redirectToLogin}
-            whileHover={{ y: -4, boxShadow: 'var(--shadow-xl)' }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ boxShadow: 'var(--shadow-xl)' }}
             aria-label={t('home.signInAria')}
           >
             <div className="card-icon signin-icon">

@@ -10,7 +10,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sparkles, Sun, Moon } from 'lucide-react';
+import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
 import { useAuthStore } from '../store/authStore';
@@ -109,6 +109,7 @@ export default function LoginPage() {
         }}
       >
         <IconButton
+          disableRipple
           onClick={() => navigate('/')}
           aria-label={t('common.backToHome')}
           sx={{
@@ -122,8 +123,8 @@ export default function LoginPage() {
             boxShadow: 'var(--shadow-lg)',
             '&:hover': {
               background: 'var(--glass-bg)',
-              color: 'var(--text-h)',
-              transform: 'scale(1.05)',
+              color: 'var(--primary-600)',
+              boxShadow: 'var(--shadow-xl)',
             },
             transition: 'all 0.2s ease',
           }}
@@ -142,6 +143,7 @@ export default function LoginPage() {
         }}
       >
         <IconButton
+          disableRipple
           onClick={toggleTheme}
           aria-label={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
           sx={{
@@ -155,8 +157,8 @@ export default function LoginPage() {
             boxShadow: 'var(--shadow-lg)',
             '&:hover': {
               background: 'var(--glass-bg)',
-              color: 'var(--text-h)',
-              transform: 'scale(1.05)',
+              color: 'var(--primary-600)',
+              boxShadow: 'var(--shadow-xl)',
             },
             transition: 'all 0.2s ease',
           }}
@@ -181,6 +183,7 @@ export default function LoginPage() {
         }}
       >
         <IconButton
+          disableRipple
           onClick={toggleLanguage}
           aria-label={t('common.language')}
           sx={{
@@ -196,8 +199,8 @@ export default function LoginPage() {
             fontWeight: 600,
             '&:hover': {
               background: 'var(--glass-bg)',
-              color: 'var(--text-h)',
-              transform: 'scale(1.05)',
+              color: 'var(--primary-600)',
+              boxShadow: 'var(--shadow-xl)',
             },
             transition: 'all 0.2s ease',
           }}
@@ -215,7 +218,7 @@ export default function LoginPage() {
           width: 300,
           height: 300,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(11, 113, 134, 0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 70%)',
           filter: 'blur(60px)',
           animation: 'float 8s ease-in-out infinite',
         }}
@@ -228,7 +231,7 @@ export default function LoginPage() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(201, 154, 91, 0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.10) 0%, transparent 70%)',
           filter: 'blur(80px)',
           animation: 'float 10s ease-in-out infinite reverse',
         }}
@@ -246,7 +249,6 @@ export default function LoginPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-2xl)',
             boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
             p: { xs: 3, sm: 5 },
@@ -263,7 +265,7 @@ export default function LoginPage() {
               width: 200,
               height: 200,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(11, 113, 134, 0.15) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.15) 0%, transparent 70%)',
               filter: 'blur(40px)',
             }}
           />
@@ -278,32 +280,14 @@ export default function LoginPage() {
                   mx: 'auto',
                   mb: 3,
                   borderRadius: 'var(--radius-xl)',
-                  background: 'linear-gradient(135deg, #0B7186 0%, #19B3C6 50%, #075D70 100%)',
+                  background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-700) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 8px 30px rgba(11, 113, 134, 0.35), 0 0 0 2px rgba(201, 154, 91, 0.4)',
-                  position: 'relative',
+                  boxShadow: '0 8px 30px rgba(var(--primary-rgb), 0.35)',
                 }}
               >
                 <Video size={36} color="white" />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -4,
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #C99A5B, #F4EADA)',
-                    boxShadow: '0 2px 8px rgba(201, 154, 91, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Sparkles size={12} color="white" />
-                </Box>
               </Box>
               <Typography
                 variant="h4"
@@ -376,7 +360,7 @@ export default function LoginPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0B7186',
+                      borderColor: 'var(--primary-600)',
                       borderWidth: 2,
                     },
                   },
@@ -410,6 +394,7 @@ export default function LoginPage() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
+                        disableRipple
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                         sx={{ color: 'var(--text-muted)' }}
@@ -431,7 +416,7 @@ export default function LoginPage() {
                       borderColor: 'var(--border-strong)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#0B7186',
+                      borderColor: 'var(--primary-600)',
                       borderWidth: 2,
                     },
                   },
@@ -453,7 +438,7 @@ export default function LoginPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: '#0B7186',
+                    color: 'var(--primary-600)',
                     cursor: 'pointer',
                     fontWeight: 500,
                     '&:hover': {
@@ -472,21 +457,24 @@ export default function LoginPage() {
                 fullWidth
                 size="large"
                 disabled={loading}
+                disableRipple
                 endIcon={<ArrowRight size={20} />}
                 sx={{
                   py: 1.5,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                  background: 'var(--primary-600)',
                   color: 'white',
                   fontWeight: 600,
                   fontSize: '1rem',
                   textTransform: 'none',
-                  boxShadow: '0 4px 20px rgba(11, 113, 134, 0.35), 0 0 0 1px rgba(201, 154, 91, 0.15)',
-                  border: '1px solid rgba(201, 154, 91, 0.25)',
+                  boxShadow: 'none',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                    boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
-                    borderColor: 'rgba(201, 154, 91, 0.4)',
+                    background: 'var(--primary-700)',
+                    boxShadow: 'var(--shadow-xl)',
+                  },
+                  '&:active': {
+                    background: 'var(--primary-700)',
+                    boxShadow: 'var(--shadow-xl)',
                   },
                   '&:disabled': {
                     background: 'var(--border-strong)',
@@ -506,8 +494,8 @@ export default function LoginPage() {
                 mt: 4,
                 p: 2.5,
                 borderRadius: 'var(--radius-lg)',
-                background: 'rgba(11, 113, 134, 0.06)',
-                border: '1px dashed rgba(11, 113, 134, 0.25)',
+                background: 'rgba(var(--primary-rgb), 0.06)',
+                border: '1px dashed rgba(var(--primary-rgb), 0.25)',
               }}
             >
               <Typography
