@@ -26,6 +26,14 @@ public class JitsiLinkBuilder {
     /** SPA route that resolves a join link, see jmp-ui {@code JoinPage}. */
     public static final String JOIN_PATH = "/j/";
 
+    /**
+     * URL fragment disabling the Jitsi prejoin screen: «Начать»/ссылка ведёт сразу в
+     * конференцию, без промежуточного экрана (важно и для машин без камеры/микрофона).
+     * Значение — whitelisted config override, см. jitsi-meet
+     * react/features/base/config/configWhitelist.ts.
+     */
+    private static final String SKIP_PREJOIN_HASH = "#config.prejoinConfig.enabled=false";
+
     private static final String HTTP_PREFIX = "http://";
     private static final String HTTPS_PREFIX = "https://";
 
@@ -83,10 +91,12 @@ public class JitsiLinkBuilder {
     public String roomUrl(Conference conference, String jwt) {
         String base = jitsiBaseUrl(conference);
         String url = base + "/" + encodePathSegment(conference.getRoomName());
-        if (jwt == null || jwt.isBlank()) {
-            return url;
+        if (jwt != null && !jwt.isBlank()) {
+            url += "?jwt=" + jwt;
         }
-        return url + "?jwt=" + jwt;
+
+        // The hash comes last: the JWT must stay in the query so parseJWTFromURLParams finds it.
+        return url + SKIP_PREJOIN_HASH;
     }
 
     /**

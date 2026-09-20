@@ -330,9 +330,14 @@ export default function ConferencesPage() {
     }
   };
 
-  const handleStart = async (id: string) => {
+  const handleStart = async (id: string, status?: string) => {
     try {
-      await conferenceApi.startConference(id);
+      // An active conference is already running: entering it must not restart it,
+      // otherwise the start endpoint rejects the call («can only be started from
+      // scheduled or ended state») and the entry never happens.
+      if (status !== 'ACTIVE') {
+        await conferenceApi.startConference(id);
+      }
       fetchConferences();
 
       // Own entry address: the Jitsi role is derived from the access token on the server,
@@ -738,29 +743,23 @@ export default function ConferencesPage() {
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}
-                        onClick={() => handleStart(conference.id)}
-                        disabled={conference.status === 'ACTIVE'}
+                        onClick={() => handleStart(conference.id, conference.status)}
                         sx={{
                           py: 1,
                           flex: 1,
                           borderRadius: 'var(--radius-lg)',
-                          background: conference.status !== 'ACTIVE' ? 'var(--primary-600)' : 'rgba(var(--primary-rgb), 0.2)',
+                          background: 'var(--primary-600)',
                           color: 'white',
                           fontWeight: 600,
                           textTransform: 'none',
                           boxShadow: 'none',
                           '&:hover': {
-                            background: conference.status !== 'ACTIVE' ? 'var(--primary-700)' : 'rgba(var(--primary-rgb), 0.2)',
+                            background: 'var(--primary-700)',
                             boxShadow: 'none',
-                          },
-                          '&.Mui-disabled': {
-                            background: 'rgba(var(--primary-rgb), 0.12)',
-                            color: 'rgba(var(--primary-rgb), 0.4)',
-                            border: 'none',
                           },
                         }}
                       >
-                        {t('common.start')}
+                        {conference.status === 'ACTIVE' ? t('common.join') : t('common.start')}
                       </Button>
                       <Button
                         variant="contained"
@@ -1026,18 +1025,16 @@ export default function ConferencesPage() {
 
                       {/* Actions */}
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                          <Tooltip title={t('common.start')}>
+                          <Tooltip title={conference.status === 'ACTIVE' ? t('common.join') : t('common.start')}>
                             <IconButton
                               size="small"
-                              onClick={() => handleStart(conference.id)}
-                              disabled={conference.status === 'ACTIVE'}
+                              onClick={() => handleStart(conference.id, conference.status)}
                               sx={{
                                 p: 0.75,
                                 borderRadius: 'var(--radius-md)',
-                                background: conference.status !== 'ACTIVE' ? 'rgba(var(--primary-rgb), 0.1)' : 'transparent',
-                                color: conference.status !== 'ACTIVE' ? 'var(--primary-700)' : 'var(--text-muted)',
-                                opacity: conference.status !== 'ACTIVE' ? 1 : 0.35,
-                                border: conference.status !== 'ACTIVE' ? '1px solid rgba(var(--primary-rgb), 0.2)' : 'none',
+                                background: 'rgba(var(--primary-rgb), 0.1)',
+                                color: 'var(--primary-700)',
+                                border: '1px solid rgba(var(--primary-rgb), 0.2)',
                                 '&:hover': { background: 'rgba(var(--primary-rgb), 0.12)', borderColor: 'rgba(var(--primary-rgb), 0.35)' },
                               }}
                             >

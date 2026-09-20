@@ -178,33 +178,28 @@ services:
     container_name: jmp-jitsi-web
     restart: unless-stopped
     environment:
-      # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
-      ENABLE_AUTH: 1
-      ENABLE_GUESTS: 0
-      AUTH_TYPE: jwt
-      # JWT configuration
-      JWT_APP_ID: jmp-platform
-      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JWT_ACCEPTED_ISSUERS: jmp-platform
-      JWT_ACCEPTED_AUDIENCES: jitsi
-      JWT_ALLOW_EMPTY: 0
-      # XMPP configuration
+      # --- contour switches, applied to config.js / nginx.conf at container start ----
+      # Identical to the local contour on purpose: the contour differs only in the
+      # public host name (nginx-proxy) and in these two addresses being docker DNS
+      # names. Changing a contour therefore never requires an image rebuild.
       XMPP_DOMAIN: meet.jitsi
-      XMPP_AUTH_DOMAIN: auth.meet.jitsi
-      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
       XMPP_MUC_DOMAIN: muc.meet.jitsi
-      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
-      XMPP_GUEST_DOMAIN: guest.meet.jitsi
-      XMPP_MODULES: ''
-      XMPP_MUC_MODULES: ''
-      XMPP_INTERNAL_MUC_MODULES: ''
-      # Web-specific settings
-      ENABLE_LOBBY: 1
-      ENABLE_PREJOIN_PAGE: 1
-      ENABLE_WELCOME_PAGE: 0
-      ENABLE_RECORDING: 1
+      PROSODY_URL: http://jitsi-prosody:5280
+      JVB_WS_URL: http://jitsi-jvb:9090
+      # Until a TURN server is deployed, keep the media of a two-person call on the
+      # bridge; otherwise participants behind NATs see nobody and each conference looks
+      # like an empty room of its own.
+      DISABLE_P2P: "true"
+      # Leave empty: meet.slamx.ru serves Jitsi at the root. A path prefix (/jitsi)
+      # would have to be stripped by the outer nginx before BOSH/Colibri work.
+      APP_PREFIX: ""
+      # A public STUN is fine for P2P ICE, but it is not a substitute for TURN.
+      P2P_STUN_SERVERS: stun:meet-jit-si-turnrelay.jitsi.net:443
+      #
+      # Authentication (ENABLE_AUTH/AUTH_TYPE/JWT_*) belongs to Prosody, room access
+      # decisions belong to jmp-api; this container serves static files and proxies the
+      # signalling, so no credentials are configured here.
     # Port 80 exposed internally only (accessed via nginx-proxy)
     expose:
       - "80"
@@ -253,8 +248,15 @@ services:
     volumes:
       - jitsi_prosody_config:/config
       - jitsi_prosody_plugins:/prosody-plugins-custom
+    # Jicofo and JVB reach Prosody by the XMPP_SERVER host name, which the Jitsi images
+    # default to xmpp.meet.jitsi. Upstream docker-jitsi-meet publishes Prosody under that
+    # name, so the alias is what makes the two connect; without it they only log
+    # "DNS lookup exception for xmpp.meet.jitsi" and the focus IQ answers
+    # service-unavailable, which the browser reports as a failed conference request.
     networks:
-      - jmp-network
+      jmp-network:
+        aliases:
+          - xmpp.meet.jitsi
 
   # Jitsi Jicofo (Conference Focus)
   jitsi-jicofo:

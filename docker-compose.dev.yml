@@ -162,52 +162,44 @@ services:
     networks:
       - jmp-network
 
-  # Jitsi Web (Web UI) - Local Build from jitsi-meet project
-  # Build locally: docker compose build jitsi-web
-  # Push to registry: docker compose push jitsi-web
-  # On remote: docker compose pull jitsi-web && docker compose up -d jitsi-web
-  # jitsi-web:
-  #   build:
-  #     context: ./jitsi-meet
-  #     dockerfile: Dockerfile
-  #   image: jmp-jitsi-web-dev
-  #   pull_policy: never
-  #   container_name: jmp-jitsi-web-dev
-  #   restart: "no"
-  #   environment:
-  #     # General
-  #     TZ: UTC
-  #     PUBLIC_URL: http://localhost:8000
-  #     ENABLE_AUTH: 1
-  #     ENABLE_GUESTS: 0
-  #     AUTH_TYPE: jwt
-  #     # JWT configuration
-  #     JWT_APP_ID: jmp-platform
-  #     JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-  #     JWT_ACCEPTED_ISSUERS: jmp-platform
-  #     JWT_ACCEPTED_AUDIENCES: jitsi
-  #     JWT_ALLOW_EMPTY: 0
-  #     # XMPP configuration
-  #     XMPP_DOMAIN: meet.jitsi
-  #     XMPP_AUTH_DOMAIN: auth.meet.jitsi
-  #     XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
-  #     XMPP_MUC_DOMAIN: muc.meet.jitsi
-  #     XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
-  #     XMPP_GUEST_DOMAIN: guest.meet.jitsi
-  #     XMPP_MODULES: ''
-  #     XMPP_MUC_MODULES: ''
-  #     XMPP_INTERNAL_MUC_MODULES: ''
-  #     # Web-specific settings
-  #     ENABLE_LOBBY: 1
-  #     ENABLE_PREJOIN_PAGE: 1
-  #     ENABLE_WELCOME_PAGE: 0
-  #     ENABLE_RECORDING: 1
-  #   ports:
-  #     - "8000:80"
-  #   depends_on:
-  #     - jitsi-prosody
-  #   networks:
-  #     - jmp-network
+  # Jitsi meet (local build of ./jitsi-meet) — serves the UI and, what matters for the
+  # LOCAL contour, proxies the XMPP/Colibri signalling to Prosody/JVB (see
+  # jitsi-meet/nginx.conf + jitsi-meet/docker/55-jmp-config.sh). Published on 8085
+  # because `make dev` occupies 8000; the dev server is pointed here with
+  # WEBPACK_DEV_SERVER_PROXY_TARGET, so a hot-reloaded bundle and this container talk to
+  # the very same Prosody and therefore land in the very same conference.
+  #jitsi-meet:
+  #  build:
+  #    context: ./jitsi-meet
+  #    dockerfile: Dockerfile
+  #  image: jmp-jitsi-meet-dev
+  #  pull_policy: never
+  #  container_name: jmp-jitsi-meet-dev
+  #  restart: unless-stopped
+  #  environment:
+  #    TZ: UTC
+  #    # --- contour switches, applied to config.js / nginx.conf at container start ---
+  #    # Must match the Prosody virtual host and `main_muc`.
+  #    XMPP_DOMAIN: meet.jitsi
+  #    XMPP_MUC_DOMAIN: muc.meet.jitsi
+  #    PROSODY_URL: http://jitsi-prosody:5280
+  #    JVB_WS_URL: http://jitsi-jvb:9090
+  #    # No TURN server in the local contour: two-person media goes over the bridge.
+  #    DISABLE_P2P: "true"
+  #    # Set to /jitsi when the app has to live under a path prefix instead of the root.
+  #    APP_PREFIX: ""
+  #    # bosh/websocket addresses are derived from the browser origin, so nothing here
+  #    # depends on the host name the developers open the page with.
+  #    #
+  #    # Authentication, lobby and JWT acceptance are decided by Prosody (see
+  #    # jitsi-prosody below) and by the tokens issued by jmp-api; the web container
+  #    # only serves static files and proxies.
+  #  ports:
+  #    - "8085:80"
+  #  depends_on:
+  #    - jitsi-prosody
+  #  networks:
+  #    - jmp-network
 
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
@@ -252,8 +244,15 @@ services:
     volumes:
       - jitsi_prosody_config:/config
       - jitsi_prosody_plugins:/prosody-plugins-custom
+    # Jicofo and JVB reach Prosody by the XMPP_SERVER host name, which the Jitsi images
+    # default to xmpp.meet.jitsi. Upstream docker-jitsi-meet publishes Prosody under that
+    # name, so the alias is what makes the two connect; without it they only log
+    # "DNS lookup exception for xmpp.meet.jitsi" and the focus IQ answers
+    # service-unavailable, which the browser reports as a failed conference request.
     networks:
-      - jmp-network
+      jmp-network:
+        aliases:
+          - xmpp.meet.jitsi
 
   # Jitsi Jicofo (Conference Focus)
   jitsi-jicofo:
@@ -340,6 +339,10 @@ services:
       - jitsi_jvb_config:/config
     ports:
       - "10000:10000/udp"
+      # colibri-ws (bridge channel) published for the LOCAL contour so webpack-dev-server
+      # can proxy /colibri-ws straight to the JVB. Host 9090 is taken by Prometheus, so
+      # the JVB's 9090 is exposed on 9091 (loopback only).
+      - "127.0.0.1:9091:9090"
     depends_on:
       - jitsi-prosody
     networks:

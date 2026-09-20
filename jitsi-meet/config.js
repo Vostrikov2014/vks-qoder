@@ -28,6 +28,13 @@ var config = {
     // Connection
     //
 
+    // Connection settings below are the ones that differ between the local and the
+    // production contour. They are rewritten at container start by
+    // /docker-entrypoint.d/55-jmp-config.sh from XMPP_DOMAIN / XMPP_MUC_DOMAIN, so the
+    // values here are only the defaults used when the app runs outside of Docker
+    // (make dev, source package). Never hard-code a public host name in this file:
+    // `bosh` and `websocket` are derived from `location` instead, which makes one and
+    // the same bundle work on http://localhost:8085 and on https://meet.example.com.
     hosts: {
         // XMPP domain.
         domain: 'meet.jitsi',
@@ -36,20 +43,24 @@ var config = {
         // anonymousdomain: 'guest.example.com',
 
         // Domain for authenticated users. Defaults to <domain>.
-        // authdomain: 'jitsi-meet.example.com',
+        // authdomain: 'meet.jitsi',
 
         // Focus component domain. Defaults to focus.<domain>.
-        // focus: 'focus.jitsi-meet.example.com',
+        // focus: 'focus.meet.jitsi',
 
-        // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'conference.meet.jitsi',
+        // XMPP MUC domain. Has to match `main_muc` of the Prosody virtual host,
+        // the Jitsi docker images expose it as <XMPP_MUC_DOMAIN>, not as
+        // conference.<domain>.
+        muc: 'muc.meet.jitsi',
     },
 
-    // BOSH URL. FIXME: use XEP-0156 to discover it.
-    bosh: '//localhost:5280/http-bind',
+    // BOSH URL. Served by the web container, which proxies it to Prosody; kept on the
+    // same origin as the UI so that no CORS or extra port is involved.
+    bosh: '//' + location.host + subdir + 'http-bind',
 
     // Websocket URL (XMPP)
-    websocket: 'wss://jitsi-meet.example.com/' + subdir + 'xmpp-websocket',
+    websocket: (location.protocol === 'https:' ? 'wss://' : 'ws://')
+        + location.host + subdir + 'xmpp-websocket',
 
     // websocketKeepAliveUrl: 'https://jitsi-meet.example.com/' + subdir + '_unlock',
 
@@ -1091,6 +1102,10 @@ var config = {
     // Peer-To-Peer mode: used (if enabled) when there are just 2 participants.
     //
 
+    // With DISABLE_P2P=true the media of a two-person call goes over the JVB as well,
+    // which is what you want as long as the deployment has no TURN server.
+    disableP2P: false,
+
     p2p: {
         // Enables peer to peer mode. When enabled the system will try to
         // establish a direct connection when there are exactly 2 participants
@@ -1124,11 +1139,8 @@ var config = {
         // backToP2PDelay: 5,
 
         // The STUN servers that will be used in the peer to peer connections
-        stunServers: [
-
-            // { urls: 'stun:jitsi-meet.example.com:3478' },
-            { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' },
-        ],
+        // Overridden from P2P_STUN_SERVERS (comma separated) at container start.
+        stunServers: [ { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' } ],
     },
 
     analytics: {

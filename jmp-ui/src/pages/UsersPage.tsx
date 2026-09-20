@@ -212,11 +212,11 @@ export default function UsersPage() {
 
   const getAvatarGradient = (id: string) => {
     const gradients = [
-      'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%)',
-      'linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%)',
-      'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
-      'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)',
-      'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%)',
+      'var(--avatar-gradient-1)',
+      'var(--avatar-gradient-2)',
+      'var(--avatar-gradient-3)',
+      'var(--avatar-gradient-4)',
+      'var(--avatar-gradient-5)',
     ];
     const index = id.charCodeAt(0) % gradients.length;
     return gradients[index];

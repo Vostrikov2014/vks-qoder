@@ -2,18 +2,31 @@
 
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const fs = require('fs');
-const { responseInterceptor } = require('http-proxy-middleware');
 const { join, resolve } = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 /**
- * The URL of the Jitsi Meet deployment to be proxy to in the context of
- * development with webpack-dev-server.
+ * Signalling backends the dev server proxies to in the LOCAL contour.
+ *
+ * There is no jitsi-web container here: webpack-dev-server serves the UI itself (see
+ * renderSsi below) and forwards the XMPP/Colibri signalling straight to the backends that
+ * docker-compose.dev.yml publishes on the host — Prosody on :5280 (BOSH + XMPP WebSocket)
+ * and the JVB colibri-ws on :9091 (the JVB's own 9090, remapped because Prometheus owns
+ * 9090 on the host). Override either to test against another deployment, e.g.
+ * WEBPACK_DEV_SERVER_PROSODY_TARGET=https://meet.example.com:5280 make dev
  */
-const devServerProxyTarget
-    = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || 'https://alpha.jitsi.net';
+const prosodyProxyTarget
+    = process.env.WEBPACK_DEV_SERVER_PROSODY_TARGET || 'http://localhost:5280';
+const jvbProxyTarget
+    = process.env.WEBPACK_DEV_SERVER_JVB_TARGET || 'http://localhost:9091';
+
+/**
+ * Paths that carry the XMPP/Colibri signalling and therefore must reach the proxies
+ * above instead of being answered by the local SPA/static handling.
+ */
+const SIGNALING_PATHS = [ '/http-bind', '/xmpp-websocket', '/colibri-ws' ];
 
 /**
  * Build a Performance configuration object for the given size.
@@ -55,54 +68,50 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
 }
 
 /**
- * Determines whether a specific (HTTP) request is to bypass the proxy of
- * webpack-dev-server (i.e. is to be handled by the proxy target) and, if not,
- * which local file is to be served in response to the request.
+ * Minimal SSI renderer for the dev server.
  *
- * @param {Object} request - The (HTTP) request received by the proxy.
- * @returns {string|undefined} If the request is to be served by the proxy
- * target, undefined; otherwise, the path to the local file to be served.
- */
-function devServerProxyBypass({ path }) {
-    let tpath = path;
-
-    if (tpath.startsWith('/v1/_cdn/')) {
-        // The CDN is not available in the dev server, so we need to bypass it.
-        tpath = tpath.replace(/\/v1\/_cdn\/[^/]+\//, '/');
-    }
-
-    if (tpath.startsWith('/css/')
-            || tpath.startsWith('/doc/')
-            || tpath.startsWith('/fonts/')
-            || tpath.startsWith('/images/')
-            || tpath.startsWith('/lang/')
-            || tpath.startsWith('/sounds/')
-            || tpath.startsWith('/static/')
-            || tpath.endsWith('.wasm')) {
-
-        return tpath;
-    }
-
-    if (tpath.startsWith('/libs/')) {
-        if (tpath.endsWith('.min.js') && !fs.existsSync(join(process.cwd(), tpath))) {
-            return tpath.replace('.min.js', '.js');
-        }
-
-        return tpath;
-    }
-}
-
-/**
- * Reads the JITSI_WATERMARK_LINK value from the local interface_config.js.
+ * index.html and config.js ship with nginx SSI directives (`<!--#include virtual="..."
+ * -->` and `<!--# echo var="..." -->`). The production contour resolves them inside the
+ * jitsi-web container (nginx `ssi on`); the local contour has no such container, so the
+ * dev server resolves them here before serving the document.
  *
- * @returns {string|undefined} The locally configured link, undefined if the
- * option is not set or is commented out.
+ * @param {string} relPath - Path of the file to render, relative to the jitsi-meet root.
+ * @param {number} depth - Recursion guard for nested includes.
+ * @returns {string} The file contents with the SSI directives resolved.
  */
-function getLocalWatermarkLink() {
-    const interfaceConfigSource = fs.readFileSync(join(__dirname, 'interface_config.js'), 'utf8');
-    const match = interfaceConfigSource.match(/^\s*JITSI_WATERMARK_LINK:\s*'([^']*)'/m);
+function renderSsi(relPath, depth = 0) {
+    // Guard against a self-referencing include blowing the stack.
+    if (depth > 8) {
+        return '';
+    }
 
-    return match && match[1];
+    let content = fs.readFileSync(join(__dirname, relPath), 'utf8');
+
+    // Inline <!--#include virtual="PATH" --> recursively. A leading '/' is web-root
+    // relative, i.e. the jitsi-meet directory here.
+    content = content.replace(
+        /<!--#\s*include\s+virtual="([^"]+)"\s*-->/g,
+        (_match, include) => {
+            let includePath = include.split('?')[0];
+
+            if (includePath.startsWith('/')) {
+                includePath = includePath.substring(1);
+            }
+
+            try {
+                return renderSsi(includePath, depth + 1);
+            } catch {
+                // A missing optional include must not break the whole document.
+                return '';
+            }
+        });
+
+    // config.js derives bosh/websocket from `subdir`; nginx sets it to '/' at the root
+    // (an empty value would glue host and path into `//hosthttp-bind`).
+    content = content.replace(/<!--#\s*echo\s+var="subdir"[^>]*-->/g, '/');
+    content = content.replace(/<!--#\s*echo\s+var="subdomain"[^>]*-->/g, '');
+
+    return content;
 }
 
 /**
@@ -283,8 +292,6 @@ function getConfig(options = {}) {
  * @returns {Object} the dev server configuration.
  */
 function getDevServerConfig() {
-    const watermarkLink = getLocalWatermarkLink();
-
     return {
         client: {
             overlay: {
@@ -293,42 +300,110 @@ function getDevServerConfig() {
             }
         },
         allowedHosts: 'all',
-        host: 'localhost',
+
+        // Set WEBPACK_DEV_SERVER_HOST=0.0.0.0 to reach the dev server from a second
+        // machine or a phone; the room URL then has to carry the same address, e.g.
+        // JITSI_DOMAIN=192.168.1.10:8000.
+        host: process.env.WEBPACK_DEV_SERVER_HOST || 'localhost',
         hot: true,
         port: 8000,
+
+        // Signalling is proxied straight to the local backends (there is no jitsi-web
+        // container in the local contour). XMPP over WebSocket and colibri-ws are upgrade
+        // requests, hence ws: true.
         proxy: [
             {
-                context: [ '/' ],
-                bypass: devServerProxyBypass,
+                // BOSH (XMPP over HTTP long polling).
+                context: [ '/http-bind' ],
+                target: prosodyProxyTarget,
                 secure: false,
-                target: devServerProxyTarget,
-                headers: {
-                    'Host': new URL(devServerProxyTarget).host
-                },
-
-                // The proxy target serves its own interface_config.js inlined
-                // in the HTML document, overriding the local one. Replace the
-                // JITSI_WATERMARK_LINK value with the locally configured one so
-                // the watermark links to the local deployment.
-                selfHandleResponse: true,
-                onProxyRes: responseInterceptor((responseBuffer, proxyRes) => {
-                    const contentType = proxyRes.headers['content-type'] || '';
-
-                    if (watermarkLink === undefined || !contentType.includes('text/html')) {
-                        return responseBuffer;
-                    }
-
-                    return responseBuffer.toString('utf8').replace(
-                        /JITSI_WATERMARK_LINK:\s*'[^']*'/,
-                        `JITSI_WATERMARK_LINK: '${watermarkLink}'`
-                    );
-                })
+                changeOrigin: true
+            },
+            {
+                // XMPP over WebSocket.
+                context: [ '/xmpp-websocket' ],
+                target: prosodyProxyTarget,
+                ws: true,
+                secure: false,
+                changeOrigin: true
+            },
+            {
+                // Colibri WebSocket: browser <-> Videobridge media signalling.
+                context: [ '/colibri-ws' ],
+                target: jvbProxyTarget,
+                ws: true,
+                secure: false,
+                changeOrigin: true
             }
         ],
         server: 'http',
-        setupMiddlewares: (middlewares, _devServer) => middlewares.filter(
-            m => m.name !== 'cross-origin-header-check'
-        ),
+
+        // Serve the SPA entry (index.html with SSI resolved) for HTML navigation routes;
+        // let webpack/static serve real assets and the proxies above own the signalling.
+        setupMiddlewares: (middlewares, _devServer) => {
+            const served = middlewares.filter(m => m.name !== 'cross-origin-header-check');
+
+            served.unshift((req, res, next) => {
+                if (req.method !== 'GET') {
+                    return next();
+                }
+
+                const urlPath = (req.url || '/').split('?')[0];
+
+                // The proxies own the signalling paths.
+                if (SIGNALING_PATHS.some(p => urlPath.startsWith(p))) {
+                    return next();
+                }
+
+                const sendHtml = file => {
+                    try {
+                        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                        res.end(renderSsi(file));
+                    } catch {
+                        next();
+                    }
+                };
+
+                // Document root and the SPA entry itself are always rendered.
+                if (urlPath === '/' || urlPath === '/index.html') {
+                    return sendHtml('index.html');
+                }
+
+                // In dev the bundle is built to memory as /libs/<name>.js (no .min), while
+                // index.html references the .min.js name; rewrite it when the minified file
+                // is not on disk so webpack-dev-middleware serves the in-memory bundle.
+                if (urlPath.startsWith('/libs/') && urlPath.endsWith('.min.js')
+                        && !fs.existsSync(join(__dirname, urlPath))) {
+                    req.url = req.url.replace('.min.js', '.js');
+
+                    return next();
+                }
+
+                const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+
+                // A path with an extension is a real asset (css/js/images/wasm) or a
+                // concrete .html file under static/ -> let webpack/static serve it.
+                if (lastSegment.includes('.')) {
+                    if (lastSegment.endsWith('.html')
+                            && fs.existsSync(join(__dirname, urlPath.replace(/^\//, '')))) {
+                        return sendHtml(urlPath.replace(/^\//, ''));
+                    }
+
+                    return next();
+                }
+
+                // No extension: a room name / SPA route. Answer HTML navigations with the
+                // entry document; anything else (e.g. the HMR socket path) falls through.
+                if ((req.headers.accept || '').includes('text/html')) {
+                    return sendHtml('index.html');
+                }
+
+                return next();
+            });
+
+            return served;
+        },
         static: {
             directory: process.cwd(),
             watch: {

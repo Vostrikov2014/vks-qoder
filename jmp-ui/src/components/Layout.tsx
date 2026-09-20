@@ -465,7 +465,7 @@ export default function Layout() {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
+                  background: 'var(--avatar-bg)',
                   fontWeight: 600,
                   fontSize: '0.875rem',
                 }}

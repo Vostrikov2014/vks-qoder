@@ -36,6 +36,16 @@
   --sidebar-text: #ffffff;
   --sidebar-text-muted: rgba(255, 255, 255, 0.7);
   --sidebar-active-bg: rgba(255, 255, 255, 0.15);
+
+  /* Avatar Colors */
+  /* Solid avatar background follows the logo (primary-600) color of the current theme */
+  --avatar-bg: var(--primary-600);
+  /* Avatar gradients are fixed across themes (keep light theme look) */
+  --avatar-gradient-1: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  --avatar-gradient-2: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --avatar-gradient-3: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  --avatar-gradient-4: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+  --avatar-gradient-5: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
   --sidebar-active-border: rgba(255, 255, 255, 0.9);
   
   /* Glassmorphism Colors */

@@ -110,6 +110,12 @@ management:
       application: ${spring.application.name}
 
 # Jitsi Configuration
+# Local contour. The web UI runs entirely locally: `make dev` in jitsi-meet/ starts the
+# webpack dev server on localhost:8000, which serves the UI and proxies the signalling
+# straight to the containerised backends — Prosody on :5280 and the JVB colibri-ws on
+# :9091. There is no jitsi-web container in this contour (it is production-only), so every
+# participant meets in the very same conference fronted by the same Prosody.
+# Switch to production with JITSI_DOMAIN/JITSI_SCHEME only (see application.yml).
 jitsi:
   domain: ${JITSI_DOMAIN:localhost:8000}
   # The local Jitsi web container serves plain HTTP.
@@ -118,6 +124,8 @@ jitsi:
   jwt:
     app-id: ${JITSI_JWT_APP_ID:jmp-platform}
     app-secret: ${JITSI_JWT_APP_SECRET:YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==}
+    # The local Prosody gets JWT_APP_SECRET as a literal string, so sign the same way.
+    app-secret-type: ${JITSI_JWT_APP_SECRET_TYPE:raw}
     audience: ${JITSI_JWT_AUDIENCE:jitsi}
 
 # OpenAPI Configuration

@@ -51,6 +51,16 @@ COPY --from=builder /app/resources /usr/share/nginx/html/resources
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Contour switch: the entrypoint of the base nginx image runs every executable in
+# /docker-entrypoint.d/, so this script rewrites config.js and nginx.conf from the
+# environment (XMPP_DOMAIN, XMPP_MUC_DOMAIN, PROSODY_URL, ...) before nginx starts.
+# The same image therefore serves both the local and the production contour.
+COPY docker/55-jmp-config.sh /docker-entrypoint.d/55-jmp-config.sh
+RUN chmod +x /docker-entrypoint.d/55-jmp-config.sh
+
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+    CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

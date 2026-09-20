@@ -56,10 +56,21 @@ public class ConferenceService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
+        // The room name is the XMPP MUC node every participant joins, and Prosody verifies
+        // it against the lowercased `room` claim of the Jitsi token. Storing it normalised is
+        // what makes "one link — one conference" hold: two names that differ only in case or
+        // in a space would resolve to two rooms and each participant would end up alone.
+        String roomName = Conference.normalizeRoomName(request.roomName());
+        if (!Conference.isUsableRoomName(roomName)) {
+            throw new IllegalArgumentException(
+                "Room name must start with a letter or digit and may contain letters, digits, '-', '_': "
+                    + request.roomName());
+        }
+
         // Check room name uniqueness within tenant
-        conferenceRepository.findByRoomNameAndTenantId(request.roomName(), tenantId)
+        conferenceRepository.findByRoomNameAndTenantId(roomName, tenantId)
             .ifPresent(c -> {
-                throw new IllegalArgumentException("Room name already exists: " + request.roomName());
+                throw new IllegalArgumentException("Room name already exists: " + roomName);
             });
 
         // Validate conference type

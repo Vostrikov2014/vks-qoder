@@ -479,11 +479,11 @@ export default function TenantsPage() {
                             sx={{
                               py: 1,
                               borderRadius: 'var(--radius-lg)',
-                              background: '#f59e0b',
+                              background: 'var(--primary-600)',
                               color: 'white',
                               fontWeight: 600,
                               textTransform: 'none',
-                              '&:hover': { background: '#d97706' },
+                              '&:hover': { background: 'var(--primary-700)' },
                             }}
                           >
                             {t('tenants.suspendTenant')}

@@ -1,8 +1,12 @@
 package com.jmp.domain.entity;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -48,6 +52,12 @@ public class Conference {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+
+    /** Column length of {@code room_name}; a MUC node longer than this is unusable anyway. */
+    public static final int MAX_ROOM_NAME_LENGTH = 100;
+
+    /** Upper-case hex digits for percent-encoding, the shape encodeURIComponent produces. */
+    private static final char[] PERCENT_ENCODING_HEX = "0123456789ABCDEF".toCharArray();
 
     @NotNull
     @Size(max = 100)
@@ -170,6 +180,91 @@ public class Conference {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    /**
+     * The room name is not a free-form label: it becomes the node of the XMPP MUC JID that
+     * every participant joins, and the value of the {@code room} claim in the Jitsi token.
+     * Prosody compares that claim lowercased with the JID node it received and rejects the
+     * join on a mismatch, so the name has to be stored in exactly the shape the client will
+     * put into the URL — lowercase, without spaces or characters that nodeprep eats.
+     * Normalising in the setter keeps URL, token and MUC identical for everyone.
+     */
+    public void setRoomName(String roomName) {
+        this.roomName = roomName == null ? null : normalizeRoomName(roomName);
+    }
+
+    /**
+     * Bring a room name into the only form an XMPP MUC node accepts.
+     *
+     * <p>Lowercase, whitespace collapsed to a single dash, everything that is neither a
+     * letter, a digit, {@code -} nor {@code _} dropped, truncated to the column length.
+     * A name left without anything usable is returned as a trimmed lowercase original —
+     * creating such a conference is rejected by the application layer, but rows already in
+     * the database must stay loadable.
+     */
+    public static String normalizeRoomName(String value) {
+        String normalized = value.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", "-");
+        normalized = normalized.replaceAll("[^\\p{L}\\p{N}_-]", "");
+        normalized = normalized.replaceAll("-{2,}", "-").replaceAll("^[-_]+|[-_]+$", "");
+        if (normalized.length() > MAX_ROOM_NAME_LENGTH) {
+            normalized = normalized.substring(0, MAX_ROOM_NAME_LENGTH);
+        }
+        return normalized.isEmpty() ? value.trim().toLowerCase(Locale.ROOT) : normalized;
+    }
+
+    /**
+     * The room name in the shape the browser puts into the XMPP MUC JID: the
+     * percent-encoded lowercase form of the normalized name, i.e. exactly what
+     * {@code getBackendSafeRoomName} in {@code react/features/base/util/uri.ts} returns.
+     *
+     * <p>Prosody compares the {@code room} claim of the Jitsi token with the JID node the
+     * client joined and rejects the conference on a mismatch ("Room does not match the room
+     * from token"), and that JID node is the encoded form — so the token has to carry the
+     * encoded form too, while the human-readable name stays in the URL path of the join link.
+     */
+    public static String backendSafeRoomName(String value) {
+        if (value == null) {
+            return null;
+        }
+        String decoded;
+        try {
+            // decodeURIComponent on the client side; a stray '%' cannot come from
+            // normalizeRoomName, so an unparsable value is kept as is instead of failing.
+            decoded = URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            decoded = value;
+        }
+        String normalized = Normalizer.normalize(decoded, Normalizer.Form.NFKC)
+            .toLowerCase(Locale.ROOT);
+
+        // encodeURIComponent: UTF-8 bytes with the ECMAScript unreserved set kept literal.
+        StringBuilder encoded = new StringBuilder(normalized.length() * 2);
+        for (byte rawByte : normalized.getBytes(StandardCharsets.UTF_8)) {
+            int b = rawByte & 0xFF;
+            boolean unreserved = (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
+                || (b >= '0' && b <= '9')
+                || b == '-' || b == '_' || b == '.' || b == '!' || b == '~'
+                || b == '*' || b == '\'' || b == '(' || b == ')';
+            if (unreserved) {
+                encoded.append((char) b);
+            } else {
+                encoded.append('%')
+                    .append(PERCENT_ENCODING_HEX[b >> 4])
+                    .append(PERCENT_ENCODING_HEX[b & 0x0F]);
+            }
+        }
+        return encoded.toString().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Whether the name can be used as an XMPP MUC node at all.
+     */
+    public static boolean isUsableRoomName(String value) {
+        return value != null
+            && !value.isEmpty()
+            && value.length() <= MAX_ROOM_NAME_LENGTH
+            && value.matches("[\\p{L}\\p{N}][\\p{L}\\p{N}_-]*");
+    }
 
     /**
      * Start the conference (also used for restarting an ended conference).
