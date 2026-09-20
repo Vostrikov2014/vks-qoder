@@ -40,6 +40,7 @@ public class ConferenceService {
     private final ConferenceMapper conferenceMapper;
     private final ParticipantAssignmentRepository assignmentRepository;
     private final ParticipantAssignmentMapper assignmentMapper;
+    private final ParticipantPresenceService participantPresenceService;
     private final JitsiRoomService jitsiRoomService;
 
     /**
@@ -302,6 +303,9 @@ public class ConferenceService {
         conference.end();
         Conference updated = conferenceRepository.save(conference);
 
+        // The conference is over for everyone still in the room: close their presence
+        participantPresenceService.markAllLeft(conference.getId());
+
         // Destroy the Jitsi room to kick all participants
         jitsiRoomService.destroyRoom(conference.getRoomName());
 
@@ -357,6 +361,7 @@ public class ConferenceService {
             try {
                 conference.end();
                 conferenceRepository.save(conference);
+                participantPresenceService.markAllLeft(conference.getId());
                 log.info("Auto-ended conference: {}", conference.getId());
             } catch (Exception e) {
                 log.error("Failed to auto-end conference: {}", conference.getId(), e);

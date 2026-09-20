@@ -150,13 +150,17 @@ public class JwtService {
         claims.put("aud", jitsiAudience);
         claims.put("sub", jitsiXmppDomain);
         claims.put("room", Conference.backendSafeRoomName(conference.getRoomName()));
+        // The flags are nullable on the entity (a conference created through the API without
+        // them keeps nulls) and Map.of rejects null values — which used to fail the whole
+        // join flow with an NPE. Absent flags fall back to the entity defaults.
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", Boolean.TRUE.equals(conference.getEnableLiveStreaming()));
+        features.put("recording", Boolean.TRUE.equals(conference.getEnableRecording()));
+        features.put("screen-sharing", !Boolean.FALSE.equals(conference.getEnableScreenSharing()));
+
         claims.put("context", Map.of(
             "user", contextUser,
-            "features", Map.of(
-                "livestreaming", conference.getEnableLiveStreaming(),
-                "recording", conference.getEnableRecording(),
-                "screen-sharing", conference.getEnableScreenSharing()
-            )
+            "features", features
         ));
 
         return signJitsiToken(claims);
@@ -190,13 +194,15 @@ public class JwtService {
         claims.put("aud", jitsiAudience);
         claims.put("sub", jitsiXmppDomain);
         claims.put("room", Conference.backendSafeRoomName(conference.getRoomName()));
+        // Same null-safety as for a platform token; screen sharing falls back to on.
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", false);
+        features.put("recording", false);
+        features.put("screen-sharing", !Boolean.FALSE.equals(conference.getEnableScreenSharing()));
+
         claims.put("context", Map.of(
             "user", contextUser,
-            "features", Map.of(
-                "livestreaming", false,
-                "recording", false,
-                "screen-sharing", conference.getEnableScreenSharing()
-            )
+            "features", features
         ));
 
         return signJitsiToken(claims);

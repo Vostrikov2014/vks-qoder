@@ -78,29 +78,45 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// One in-flight refresh shared by all requests that got a 401, so a page firing
+// several calls at once does not request a new token per call.
+let refreshRequest: Promise<string> | null = null;
+
+const refreshAccessToken = (): Promise<string> => {
+  if (!refreshRequest) {
+    const { refreshToken } = useAuthStore.getState();
+
+    if (!refreshToken) {
+      return Promise.reject(new Error('No refresh token'));
+    }
+
+    refreshRequest = axios
+      .post(`${API_BASE_URL}/auth/refresh`, { refreshToken })
+      .then((response) => {
+        const { accessToken } = response.data;
+        useAuthStore.getState().updateAccessToken(accessToken);
+        return accessToken as string;
+      })
+      .finally(() => {
+        refreshRequest = null;
+      });
+  }
+
+  return refreshRequest;
+};
+
 // Response interceptor to handle token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
-        const refreshToken = useAuthStore.getState().refreshToken;
-        if (!refreshToken) {
-          useAuthStore.getState().clearAuth();
-          return Promise.reject(error);
-        }
-        
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken,
-        });
-        
-        const { accessToken } = response.data;
-        useAuthStore.getState().updateAccessToken(accessToken);
-        
+        const accessToken = await refreshAccessToken();
+
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
@@ -108,7 +124,7 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

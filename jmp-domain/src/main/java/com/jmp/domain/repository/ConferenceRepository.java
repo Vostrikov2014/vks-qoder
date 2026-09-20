@@ -82,14 +82,21 @@ public interface ConferenceRepository extends JpaRepository<Conference, UUID> {
     long countByTenantIdAndStatusAndDeletedAtIsNull(UUID tenantId, Conference.ConferenceStatus status);
 
     /**
-     * Find conferences scheduled to start between dates.
+     * Find conferences held during the date range.
+     *
+     * <p>The actual start is authoritative once a conference was launched (the only kind
+     * of conference a permanent room has), the scheduled start is the fallback for
+     * conferences that never ran. Overlapping the range instead of requiring the start
+     * to fall inside it keeps a still-running conference visible in today's reports.
      */
     @Query("SELECT c FROM Conference c WHERE c.tenant.id = :tenantId " +
-           "AND c.scheduledStartAt BETWEEN :start AND :end " +
-           "AND c.deletedAt IS NULL")
-    List<Conference> findScheduledBetween(@Param("tenantId") UUID tenantId,
-                                          @Param("start") Instant start,
-                                          @Param("end") Instant end);
+           "AND c.deletedAt IS NULL " +
+           "AND COALESCE(c.actualStartedAt, c.scheduledStartAt) <= :end " +
+           "AND (COALESCE(c.actualEndedAt, c.scheduledEndAt) IS NULL " +
+           "     OR COALESCE(c.actualEndedAt, c.scheduledEndAt) >= :start)")
+    List<Conference> findHeldBetween(@Param("tenantId") UUID tenantId,
+                                     @Param("start") Instant start,
+                                     @Param("end") Instant end);
 
     /**
      * Find conferences that should be auto-started.

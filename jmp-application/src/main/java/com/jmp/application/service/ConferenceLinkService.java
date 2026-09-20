@@ -46,6 +46,7 @@ public class ConferenceLinkService {
     private final ConferenceRepository conferenceRepository;
     private final UserRepository userRepository;
     private final ParticipantAssignmentService assignmentService;
+    private final ParticipantPresenceService participantPresenceService;
     private final JwtService jwtService;
     private final JitsiLinkBuilder linkBuilder;
 
@@ -144,6 +145,8 @@ public class ConferenceLinkService {
         boolean moderator = canModerate(conference, actorId, isAdmin);
         String token = jwtService.generateJitsiToken(conference, user, moderator);
 
+        participantPresenceService.recordEntry(conference, user, userDisplayName(user), moderator);
+
         log.info("Issued a personal Jitsi token for user: {} in conference: {} ({})",
             actorId, conferenceId, moderator ? "moderator" : "participant");
 
@@ -208,6 +211,8 @@ public class ConferenceLinkService {
         String token = visitor != null
             ? jwtService.generateJitsiToken(conference, visitor, moderator)
             : jwtService.generateGuestToken(conference, displayName, moderator);
+
+        participantPresenceService.recordEntry(conference, visitor, displayName, moderator);
 
         link.registerVisit();
         linkRepository.save(link);

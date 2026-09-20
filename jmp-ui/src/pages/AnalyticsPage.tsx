@@ -106,6 +106,19 @@ const formatDurationHuman = (seconds: number, t: (key: string) => string): strin
   return `${mins} ${t('analytics.minutes')}`;
 };
 
+// datetime-local shows local wall-clock time, so a UTC slice would shift the value
+const toDateTimeLocalValue = (date: Date): string => {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// datetime-local value -> ISO instant the backend can parse
+const toInstant = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
 export default function AnalyticsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -123,12 +136,18 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
-    return d.toISOString().slice(0, 16);
+    return toDateTimeLocalValue(d);
   });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 16));
+  const [endDate, setEndDate] = useState(() => toDateTimeLocalValue(new Date()));
 
   const fetchData = useCallback(async () => {
     if (!canViewAnalytics) {
+      setLoading(false);
+      return;
+    }
+    const startInstant = toInstant(startDate);
+    const endInstant = toInstant(endDate);
+    if (!startInstant || !endInstant) {
       setLoading(false);
       return;
     }
@@ -136,9 +155,9 @@ export default function AnalyticsPage() {
     try {
       const [metricsRes, usageRes, participantRes, recordingRes] = await Promise.all([
         analyticsApi.getDashboardMetrics(),
-        analyticsApi.getUsageReport(startDate, endDate),
-        analyticsApi.getParticipantAnalytics(startDate, endDate),
-        analyticsApi.getRecordingAnalytics(startDate, endDate),
+        analyticsApi.getUsageReport(startInstant, endInstant),
+        analyticsApi.getParticipantAnalytics(startInstant, endInstant),
+        analyticsApi.getRecordingAnalytics(startInstant, endInstant),
       ]);
       setMetrics(metricsRes.data);
       setUsageReport(usageRes.data);
@@ -176,8 +195,8 @@ export default function AnalyticsPage() {
         start.setMonth(now.getMonth() - 3);
         break;
     }
-    setStartDate(start.toISOString().slice(0, 16));
-    setEndDate(now.toISOString().slice(0, 16));
+    setStartDate(toDateTimeLocalValue(start));
+    setEndDate(toDateTimeLocalValue(now));
   };
 
   // Prepare chart data
@@ -516,7 +535,7 @@ export default function AnalyticsPage() {
                         outerRadius={100}
                         paddingAngle={4}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       >
                         {recordingTypeData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -573,7 +592,7 @@ export default function AnalyticsPage() {
                           border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
-                        formatter={(value: number) => [formatDurationHuman(value, t), '']}
+                        formatter={(value) => [formatDurationHuman(Number(value ?? 0), t), '']}
                       />
                       <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                         {durationData.map((_, index) => (
