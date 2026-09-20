@@ -1,11 +1,13 @@
 /**
  * HomePage Styles - VKS TV Landing Page
  *
- * Design System:
- * - Uses CSS custom properties from index.css
- * - Responsive: mobile-first approach
- * - Accessible: focus states, ARIA support
- * - Smooth transitions and animations
+ * Design: dark corporate "start screen" (2x2 action tiles + right hero),
+ * mirroring the attached mock-up. Layout:
+ * - .home-rail: fixed-width icon rail on the left
+ * - .home-main: header (brand) + body (tiles grid + hero panel)
+ *
+ * Note: the landing page keeps its own dark palette regardless of the app
+ * theme variables, so all colors here are literal.
  */
 
 /* ==========================================================================
@@ -13,391 +15,361 @@
    ========================================================================== */
 
 .home-page {
+  --lp-bg: #0d0d0f;
+  --lp-tile: #1a1a1d;
+  --lp-tile-hover: #2e2e33;
+  --lp-blue: #4b7bec;
+  --lp-blue-hover: #5d8af0;
+  --lp-text: #ffffff;
+  --lp-text-muted: #9a9aa0;
+  --lp-radius: 24px;
+
   min-height: 100vh;
   min-height: 100svh;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: var(--space-6);
+  box-sizing: border-box;
+  /* Same background as the login page in the dark theme: deep blue gradient */
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  background-attachment: fixed;
+  color: var(--lp-text);
+}
+
+.home-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-8) var(--space-8);
   box-sizing: border-box;
 }
 
-.home-content {
-  width: 100%;
-  max-width: 1200px;
+/* ==========================================================================
+   Left Icon Rail
+   ========================================================================== */
+
+.home-rail {
+  width: 88px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-12);
-  z-index: 1;
-}
-
-/* ==========================================================================
-   Theme Toggle
-   ========================================================================== */
-
-.theme-toggle {
-  position: absolute;
-  top: var(--space-6);
-  right: var(--space-6);
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-xl);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-lg);
-  transition: all var(--transition-base);
-  z-index: 10;
-}
-
-.theme-toggle:hover {
-  color: var(--primary-600);
-  box-shadow: var(--shadow-xl);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--accent-blue);
-  outline-offset: 2px;
-}
-
-/* ==========================================================================
-   Language Toggle
-   ========================================================================== */
-
-.language-toggle {
-  position: absolute;
-  top: var(--space-6);
-  right: calc(var(--space-6) + 56px);
-  height: 48px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-xl);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: var(--space-2);
+  padding: var(--space-5) 0;
+  box-sizing: border-box;
+}
+
+.rail-item {
+  width: 64px;
+  padding: var(--space-3) var(--space-1);
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--lp-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   cursor: pointer;
-  box-shadow: var(--shadow-lg);
-  transition: all var(--transition-base);
-  z-index: 10;
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
-.language-toggle:hover {
-  color: var(--primary-600);
-  box-shadow: var(--shadow-xl);
+.rail-item:hover {
+  background: var(--lp-tile);
+  color: var(--lp-text);
 }
 
-.language-toggle:focus-visible {
-  outline: 2px solid var(--accent-blue);
+.rail-item:focus-visible {
+  outline: 2px solid var(--lp-blue);
   outline-offset: 2px;
 }
 
-.language-code {
+.rail-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--lp-tile);
+  color: var(--lp-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-base);
+}
+
+.rail-item:hover .rail-icon {
+  background: var(--lp-tile-hover);
+}
+
+.rail-icon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rail-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.language-item {
+  width: 56px;
+  height: 36px;
+  padding: 0;
+  background: var(--lp-tile);
+  color: var(--lp-text);
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.language-item .rail-label {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
 }
 
-/* ==========================================================================
-   Decorative Elements
-   ========================================================================== */
-
-.decorative-blob {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(60px);
-  opacity: 0.6;
-}
-
-.blob-top-left {
-  top: 10%;
-  left: 10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 70%);
-  animation: float 8s ease-in-out infinite;
-}
-
-.blob-bottom-right {
-  bottom: 10%;
-  right: 10%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.10) 0%, transparent 70%);
-  animation: float 10s ease-in-out infinite reverse;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
+.rail-spacer {
+  flex: 1;
 }
 
 /* ==========================================================================
-   Header / Logo
+   Header (brand)
    ========================================================================== */
 
 .home-header {
-  text-align: center;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
 
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+.brand-name {
+  font-family: var(--heading);
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--lp-text);
 }
 
-.logo-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  background: var(--primary-600);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 8px 30px rgba(var(--primary-rgb), 0.35);
-}
-
-.logo-text {
-  font-size: 3rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--primary-600);
-}
-
-.tagline {
-  font-size: 1.125rem;
-  color: var(--text-muted);
-  font-weight: 400;
-  max-width: 400px;
+.brand-tagline {
+  font-size: 0.9375rem;
+  color: var(--lp-text-muted);
 }
 
 /* ==========================================================================
-   Cards Grid
+   Body: tiles grid + hero panel
+   ========================================================================== */
+
+.home-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(480px, 1.05fr) minmax(360px, 0.95fr);
+  gap: var(--space-10);
+  align-items: start;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Action Tiles
    ========================================================================== */
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-  width: 100%;
-  max-width: 1000px;
+  grid-template-columns: 1.15fr 1fr;
+  /* Two rows: the schedule tile gets more height, the connect tile less;
+     the primary tile spans both, so the columns stay aligned */
+  grid-template-rows: 1.45fr 1fr;
+  gap: var(--space-4);
+  min-height: 680px;
 }
 
-/* ==========================================================================
-   Action Cards
-   ========================================================================== */
-
-.action-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-8);
+.tile {
+  position: relative;
+  border: none;
+  border-radius: var(--lp-radius);
+  background: var(--lp-tile);
+  color: var(--lp-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-4);
-  cursor: pointer;
-  transition: box-shadow var(--transition-base);
+  align-items: flex-start;
+  padding: var(--space-6);
+  transition: background-color var(--transition-base), transform var(--transition-base);
 }
 
-.action-card:hover {
-  box-shadow: var(--shadow-xl);
+.tile:hover {
+  background: var(--lp-tile-hover);
 }
 
-.action-card:focus-visible {
-  outline: 2px solid var(--accent-blue);
+.tile:focus-visible {
+  outline: 2px solid var(--lp-blue);
   outline-offset: 2px;
 }
 
-/* Card Icon */
-.card-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin-bottom: var(--space-2);
-}
-
-.create-icon {
-  background: var(--primary-600);
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
-}
-
-.connect-icon {
-  background: var(--primary-600);
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
-}
-
-.signin-icon {
-  background: var(--primary-600);
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.3);
-}
-
-/* Card Typography */
-.card-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-h);
-  margin: 0;
-}
-
-.card-description {
-  font-size: 0.9375rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin: 0;
-  flex-grow: 1;
-}
-
-/* Card Arrow */
-.card-arrow {
-  color: var(--text-muted);
-  transition: all var(--transition-base);
-  margin-top: var(--space-2);
-}
-
-.card-arrow.rotated {
-  transform: rotate(90deg);
-}
-
-.action-card:hover .card-arrow {
-  color: var(--primary-600);
-  transform: translateX(4px);
-}
-
-.action-card:hover .card-arrow.rotated {
-  transform: rotate(90deg);
-}
-
-/* Spinner shown while the instant room is being created */
-.card-arrow .spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.card-button:disabled {
+.tile:disabled {
   opacity: 0.7;
   cursor: progress;
 }
 
-/* ==========================================================================
-   Connect Card Specific Styles
-   ========================================================================== */
-
-.connect-card {
-  padding: 0;
+/* Primary "Create meeting" tile: tall blue block on the left */
+.tile-primary {
+  grid-row: 1 / span 2;
+  background: var(--lp-blue);
+  justify-content: space-between;
+  padding: var(--space-8);
 }
 
-.card-button {
-  width: 100%;
-  padding: var(--space-8);
+.tile-primary:hover {
+  background: var(--lp-blue-hover);
+}
+
+.tile-primary .tile-title {
+  font-size: 3.6rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.tile-icon {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: var(--space-4);
-  background: transparent;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: auto;
+}
+
+.tile-primary .tile-icon {
+  width: auto;
+  height: auto;
+  margin-bottom: 0;
+}
+
+/* Camera logo on the primary tile: bigger than the regular tile icons */
+.tile-primary .tile-icon svg {
+  width: 140px;
+  height: 140px;
+}
+
+.tile-icon-accent {
+  color: #f5b043;
+}
+
+.tile-icon-arrow {
+  color: #c26bf5;
+}
+
+.tile-title {
+  font-family: var(--heading);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: var(--space-8);
+}
+
+.tile-subtitle {
+  font-size: 0.9375rem;
+  color: var(--lp-text-muted);
+  margin-top: 6px;
+}
+
+/* Connect tile: wraps the whole area, form expands inside */
+.tile-connect {
+  padding: 0;
+  background: var(--lp-tile);
+  cursor: default;
+}
+
+.tile-connect:hover {
+  background: var(--lp-tile-hover);
+}
+
+.tile-connect.expanded,
+.tile-connect.expanded:hover {
+  background: var(--lp-tile-hover);
+}
+
+.tile-button {
+  width: 100%;
+  height: 100%;
   border: none;
-  cursor: pointer;
+  background: transparent;
   color: inherit;
   font-family: inherit;
-}
-
-.card-button:focus-visible {
-  outline: 2px solid var(--accent-blue);
-  outline-offset: -2px;
-  border-radius: var(--radius-2xl);
-}
-
-.connect-form {
-  width: 100%;
-  padding: 0 var(--space-8) var(--space-8);
-  overflow: hidden;
-}
-
-.input-group {
+  text-align: left;
+  cursor: pointer;
   display: flex;
-  gap: var(--space-3);
-  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-6);
   box-sizing: border-box;
 }
 
+.tile-button:focus-visible {
+  outline: 2px solid var(--lp-blue);
+  outline-offset: -2px;
+  border-radius: var(--lp-radius);
+}
+
+/* Keep the same visual rhythm as plain tiles: icon on top, title below */
+.tile-connect .tile-title {
+  margin-top: var(--space-8);
+}
+
+.connect-form {
+  overflow: hidden;
+  padding: 0 var(--space-6) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .meeting-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--bg-elevated);
-  color: var(--text);
-  font-size: 0.9375rem;
-  font-family: var(--sans);
-  transition: all var(--transition-base);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--lp-text);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+
+.meeting-input::placeholder {
+  color: var(--lp-text-muted);
 }
 
 .meeting-input:focus {
   outline: none;
-  border-color: var(--primary-600);
-}
-
-.meeting-input::placeholder {
-  color: var(--text-muted);
+  border-color: var(--lp-blue);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .join-button {
-  flex-shrink: 0;
-  min-width: 80px;
-  padding: var(--space-3) var(--space-6);
-  background: var(--primary-600);
-  color: white;
+  align-self: flex-start;
+  padding: 12px 24px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
+  background: var(--lp-blue);
+  color: var(--lp-text);
+  font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 600;
-  font-family: var(--sans);
   cursor: pointer;
-  transition: all var(--transition-base);
-  white-space: nowrap;
+  transition: background-color var(--transition-base);
 }
 
 .join-button:hover:not(:disabled) {
-  background: var(--primary-700);
+  background: var(--lp-blue-hover);
 }
 
 .join-button:disabled {
@@ -406,288 +378,164 @@
 }
 
 .join-button:focus-visible {
-  outline: 2px solid var(--accent-blue);
+  outline: 2px solid var(--lp-text);
   outline-offset: 2px;
 }
 
-/* ==========================================================================
-   Footer
-   ========================================================================== */
-
-.home-footer {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-}
-
-.home-footer p {
+/* Error message under the tiles */
+.create-error {
+  grid-column: 1 / -1;
   margin: 0;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 0.9375rem;
 }
 
 /* ==========================================================================
-   Responsive Design
+   Right Hero Panel
    ========================================================================== */
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .home-page {
-    padding: var(--space-5);
-  }
-
-  .logo-text {
-    font-size: 2.5rem;
-  }
-
-  .cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-  }
-
-  .action-card,
-  .card-button {
-    padding: var(--space-6);
-  }
-
-  .connect-form {
-    padding: 0 var(--space-6) var(--space-6);
-  }
+.hero-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: var(--space-4);
+  min-width: 0;
 }
 
-/* Mobile Landscape / Small Tablet */
-@media (max-width: 768px) {
-  .home-page {
-    padding: var(--space-4);
-  }
+.hero-title {
+  font-family: var(--heading);
+  font-size: clamp(2rem, 3.2vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-6);
+  color: var(--lp-text);
+}
 
-  .home-content {
+.hero-title-accent {
+  display: block;
+  color: var(--lp-text-muted);
+}
+
+.hero-cta {
+  border: none;
+  border-radius: 14px;
+  background: var(--lp-text);
+  color: #17171a;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 16px 28px;
+  cursor: pointer;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.hero-cta:focus-visible {
+  outline: 2px solid var(--lp-blue);
+  outline-offset: 2px;
+}
+
+.hero-art {
+  width: 100%;
+  margin-top: var(--space-6);
+  /* Nudge the illustration toward the page center */
+  transform: translateX(-12%);
+  display: flex;
+  justify-content: center;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 1280px) {
+  .home-body {
+    grid-template-columns: 1fr;
     gap: var(--space-8);
   }
 
-  .logo-icon {
-    width: 56px;
-    height: 56px;
+  .cards-grid {
+    min-height: 560px;
   }
 
-  .logo-icon svg {
-    width: 28px;
-    height: 28px;
+  .hero-art {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-page {
+    flex-direction: column;
   }
 
-  .logo-text {
-    font-size: 2rem;
+  .home-rail {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
   }
 
-  .tagline {
-    font-size: 1rem;
+  .rail-spacer {
+    flex: 1;
+  }
+
+  .rail-item {
+    width: auto;
+    min-width: 64px;
+  }
+
+  .home-main {
+    padding: var(--space-4);
   }
 
   .cards-grid {
     grid-template-columns: 1fr;
-    max-width: 400px;
-    gap: var(--space-4);
+    grid-template-rows: auto;
+    min-height: 0;
   }
 
-  .action-card,
-  .card-button {
-    padding: var(--space-6);
-    flex-direction: row;
-    text-align: left;
-    align-items: flex-start;
+  .tile-primary {
+    grid-row: auto;
+    min-height: 360px;
   }
 
-  .card-icon {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
+  .tile-primary .tile-title {
+    font-size: 2rem;
   }
 
-  .card-icon svg {
-    width: 24px;
-    height: 24px;
+  .tile-primary .tile-icon svg {
+    width: 96px;
+    height: 96px;
   }
 
-  .card-content {
-    flex: 1;
-  }
-
-  .card-title {
-    font-size: 1.25rem;
-  }
-
-  .card-description {
-    font-size: 0.875rem;
-  }
-
-  .card-arrow {
-    margin-top: 0;
-    align-self: center;
-  }
-
-  .connect-card.expanded .card-button {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-  }
-
-  .connect-form {
-    padding: 0 var(--space-6) var(--space-6);
-  }
-
-  .input-group {
-    flex-direction: column;
-  }
-
-  .join-button {
-    width: 100%;
-  }
-
-  .decorative-blob {
-    opacity: 0.4;
-  }
-
-  .blob-top-left {
-    width: 200px;
-    height: 200px;
-  }
-
-  .blob-bottom-right {
-    width: 250px;
-    height: 250px;
-  }
-}
-
-/* Mobile Portrait */
-@media (max-width: 480px) {
-  .home-page {
-    padding: var(--space-4) var(--space-3);
-  }
-
-  .theme-toggle {
-    top: var(--space-4);
-    right: var(--space-4);
-    width: 44px;
-    height: 44px;
-  }
-
-  .language-toggle {
-    top: var(--space-4);
-    right: calc(var(--space-4) + 52px);
-    height: 44px;
-    padding: 0 var(--space-2);
-  }
-
-  .logo-container {
-    gap: var(--space-3);
-  }
-
-  .logo-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .logo-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .logo-text {
+  .hero-title {
     font-size: 1.75rem;
   }
-
-  .tagline {
-    font-size: 0.9375rem;
-    padding: 0 var(--space-4);
-  }
-
-  .action-card,
-  .card-button {
-    padding: var(--space-5);
-  }
-
-  .card-title {
-    font-size: 1.125rem;
-  }
-
-  .card-description {
-    font-size: 0.8125rem;
-  }
-
-  .home-footer {
-    font-size: 0.8125rem;
-    padding: 0 var(--space-4);
-  }
 }
 
-/* ==========================================================================
-   Reduced Motion
-   ========================================================================== */
-
 @media (prefers-reduced-motion: reduce) {
-  .decorative-blob,
-  .card-arrow {
-    animation: none;
+  .tile,
+  .hero-cta {
     transition: none;
   }
 
-  .action-card:hover .card-arrow {
+  .hero-cta:hover {
     transform: none;
   }
-}
-
-/* ==========================================================================
-   High Contrast Mode
-   ========================================================================== */
-
-@media (prefers-contrast: high) {
-  .action-card {
-    border-width: 2px;
-  }
-
-  .meeting-input {
-    border-width: 2px;
-  }
-
-  .join-button {
-    border: 2px solid currentColor;
-  }
-}
-
-/* ==========================================================================
-   Dark Mode Specific Adjustments
-   ========================================================================== */
-
-html.dark .logo-icon {
-  box-shadow: 0 8px 30px rgba(var(--primary-rgb), 0.25);
-}
-
-html.dark .create-icon {
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
-}
-
-html.dark .connect-icon {
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
-}
-
-html.dark .signin-icon {
-  box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
-}
-
-/* ==========================================================================
-   Instant Meeting Creation Feedback
-   ========================================================================== */
-
-.create-error {
-  max-width: 720px;
-  margin: 1.25rem auto 0;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: var(--radius-lg);
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-html.dark .create-error {
-  color: #f87171;
 }
