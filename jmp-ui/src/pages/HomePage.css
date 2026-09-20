@@ -300,6 +300,22 @@
   transform: rotate(90deg);
 }
 
+/* Spinner shown while the instant room is being created */
+.card-arrow .spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.card-button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
 /* ==========================================================================
    Connect Card Specific Styles
    ========================================================================== */
@@ -654,4 +670,24 @@ html.dark .connect-icon {
 
 html.dark .signin-icon {
   box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.2);
+}
+
+/* ==========================================================================
+   Instant Meeting Creation Feedback
+   ========================================================================== */
+
+.create-error {
+  max-width: 720px;
+  margin: 1.25rem auto 0;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+html.dark .create-error {
+  color: #f87171;
 }

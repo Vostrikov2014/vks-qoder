@@ -497,6 +497,12 @@ export interface IConfig {
     jaasConferenceCreatorUrl?: string;
     jaasFeedbackMetadataURL?: string;
     jaasTokenUrl?: string;
+    /**
+     * JMP: address of the platform UI to return to after the conference ends
+     * (hangup, kicked out, terminated by the moderator). Empty/absent keeps the
+     * stock Jitsi behaviour (close page / welcome page).
+     */
+    leaveRedirectUrl?: string;
     legalUrls?: {
         helpCentre: string;
         privacy: string;

@@ -65,6 +65,8 @@
     "tagline": "Professional video conferencing made simple",
     "createHangout": "Create a Hangout",
     "createHangoutDesc": "Start an instant conference. No login required.",
+    "createFailed": "Failed to create the meeting. Please try again.",
+    "yourName": "Your name",
     "connect": "Connect",
     "connectDesc": "Enter a meeting code or link to connect.",
     "enterMeetingCode": "Enter meeting code or link",

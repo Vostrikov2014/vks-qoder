@@ -194,6 +194,10 @@ services:
       # Leave empty: meet.slamx.ru serves Jitsi at the root. A path prefix (/jitsi)
       # would have to be stripped by the outer nginx before BOSH/Colibri work.
       APP_PREFIX: ""
+      # Where a participant lands once the conference is over (hangup, kicked out,
+      # meeting ended for all). The public UI address of this contour; the baked default
+      # points at the local dev server (http://localhost:5173/).
+      LEAVE_REDIRECT_URL: https://a.slamx.ru/
       # A public STUN is fine for P2P ICE, but it is not a substitute for TURN.
       P2P_STUN_SERVERS: stun:meet-jit-si-turnrelay.jitsi.net:443
       #

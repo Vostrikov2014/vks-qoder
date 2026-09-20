@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Link2, User, ArrowRight, Sun, Moon } from 'lucide-react';
+import { Video, Link2, User, ArrowRight, Sun, Moon, LoaderCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
 import { useThemeStore } from '../store/themeStore';
+import { extractApiError, joinApi } from '../services/api';
 import './HomePage.css';
 
 /**
  * HomePage - Landing/Start page for VKS TV video conferencing application
  *
  * Features:
- * - Create instant meeting (no auth required)
+ * - Create instant meeting (no name prompt, no account, nothing is stored server-side;
+ *   Jitsi's own prejoin screen asks for a name before joining)
  * - Join meeting via code/link
  * - Sign in for authenticated features
  */
@@ -53,6 +55,17 @@ const cardVariants = {
   },
 };
 
+// Base URL of the Jitsi Web instance; override via VITE_JITSI_URL in the environment
+const JITSI_BASE_URL = import.meta.env.VITE_JITSI_URL || 'http://localhost:8000';
+
+/**
+ * URL fragments for immediate entry into a conference (mirrors the backend's
+ * JitsiLinkBuilder.SKIP_PREJOIN_HASH, plus 'requireDisplayName' so anonymous guests
+ * skip the name prompt too - Jitsi assigns a random nickname). Both keys are
+ * whitelisted config overrides (jitsi-meet configWhitelist.ts).
+ */
+const JOIN_IMMEDIATE_HASH = '#config.prejoinConfig.enabled=false&config.requireDisplayName=false';
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -76,18 +89,38 @@ export default function HomePage() {
   const [isConnectExpanded, setIsConnectExpanded] = useState(false);
   const [meetingCode, setMeetingCode] = useState('');
 
-  /**
-   * Generates a unique room ID and opens Jitsi Web in a new tab
-   * This is client-side only - no authentication required
-   */
-  const generateRoomAndRedirect = () => {
-    // Generate a unique room ID with 'vks-' prefix + random alphanumeric string
-    const randomStr = Math.random().toString(36).substring(2, 10);
-    const roomId = `vks-${randomStr}`;
+  // State for the "Create a Hangout" card: in-flight request + errors
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
-    // Open Jitsi Web in a new tab
-    const jitsiUrl = `http://localhost:8000/${roomId}`;
-    window.open(jitsiUrl, '_blank');
+  /**
+   * Asks the backend for a brand-new guest room and opens it in a new tab.
+   *
+   * No account and nothing stored: the room lives only inside Jitsi while somebody is
+   * inside, and its address carries a server-signed short-lived token — Prosody runs
+   * with AUTH_TYPE=jwt and refuses an anonymous XMPP login («connection.passwordRequired»).
+   * No display name is sent: the Jitsi prejoin screen prompts for one and only then
+   * connects, so the landing page never asks for it.
+   */
+  const handleCreateInstant = async () => {
+    if (isCreating) {
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateError('');
+    try {
+      const { data } = await joinApi.createInstant();
+      if (data.roomUrl) {
+        window.open(data.roomUrl, '_blank', 'noopener');
+      } else {
+        setCreateError(t('home.createFailed'));
+      }
+    } catch (error) {
+      setCreateError(extractApiError(error, t('home.createFailed')));
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   /**
@@ -104,13 +137,14 @@ export default function HomePage() {
 
     // If it's a full URL (starts with http:// or https://), open it directly
     if (trimmedCode.startsWith('http://') || trimmedCode.startsWith('https://')) {
-      window.open(trimmedCode, '_blank');
+      window.open(trimmedCode, '_blank', 'noopener');
       return;
     }
 
-    // If it's just a room code, construct the Jitsi URL
-    const jitsiUrl = `http://localhost:8000/${trimmedCode}`;
-    window.open(jitsiUrl, '_blank');
+    // If it's just a room code, construct the Jitsi URL (full URLs are opened as-is:
+    // they may already carry their own query/hash, appending a second fragment would break them)
+    const jitsiUrl = `${JITSI_BASE_URL}/${encodeURIComponent(trimmedCode)}${JOIN_IMMEDIATE_HASH}`;
+    window.open(jitsiUrl, '_blank', 'noopener');
   };
 
   /**
@@ -181,25 +215,27 @@ export default function HomePage() {
 
         {/* Action Cards Grid */}
         <motion.div className="cards-grid" variants={itemVariants}>
-          {/* Card 1: Create a Hangout (Instant Meeting) */}
-          <motion.button
-            className="action-card"
-            variants={cardVariants}
-            onClick={generateRoomAndRedirect}
-            whileHover={{ boxShadow: 'var(--shadow-xl)' }}
-            aria-label={t('home.createHangoutAria')}
-          >
-            <div className="card-icon create-icon">
-              <Video size={28} />
-            </div>
-            <h2 className="card-title">{t('home.createHangout')}</h2>
-            <p className="card-description">
-              {t('home.createHangoutDesc')}
-            </p>
-            <div className="card-arrow">
-              <ArrowRight size={20} />
-            </div>
-          </motion.button>
+          {/* Card 1: Create a Hangout (Instant Meeting) — one click starts the room,
+              the name is entered on the Jitsi prejoin screen */}
+          <motion.div className="action-card connect-card" variants={cardVariants} layout>
+            <button
+              className="card-button"
+              onClick={handleCreateInstant}
+              disabled={isCreating}
+              aria-label={t('home.createHangoutAria')}
+            >
+              <div className="card-icon create-icon">
+                <Video size={28} />
+              </div>
+              <h2 className="card-title">{t('home.createHangout')}</h2>
+              <p className="card-description">
+                {t('home.createHangoutDesc')}
+              </p>
+              <div className="card-arrow">
+                {isCreating ? <LoaderCircle size={20} className="spinning" /> : <ArrowRight size={20} />}
+              </div>
+            </button>
+          </motion.div>
 
           {/* Card 2: Connect (Join Meeting) */}
           <motion.div
@@ -280,6 +316,21 @@ export default function HomePage() {
             </div>
           </motion.button>
         </motion.div>
+
+        {/* Backend errors of the "Create a Hangout" card */}
+        <AnimatePresence>
+          {createError && (
+            <motion.p
+              className="create-error"
+              role="alert"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              {createError}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         {/* Footer */}
         <motion.footer className="home-footer" variants={itemVariants}>

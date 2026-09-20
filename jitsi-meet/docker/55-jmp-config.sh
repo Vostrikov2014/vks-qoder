@@ -19,6 +19,8 @@
 #   APP_PREFIX        path prefix the app is served under, e.g. /jitsi   ("")
 #   DISABLE_P2P       route two-person media over the JVB (no TURN yet)  (false)
 #   P2P_STUN_SERVERS  comma separated stun: urls for the p2p ICE config  (unchanged if empty)
+#   LEAVE_REDIRECT_URL  platform UI address to return to after the conference
+#                        (explicitly empty = stock Jitsi behaviour)
 
 set -eu
 
@@ -31,6 +33,7 @@ PROSODY_URL="${PROSODY_URL:-http://jitsi-prosody:5280}"
 JVB_WS_URL="${JVB_WS_URL:-http://jitsi-jvb:9090}"
 DISABLE_P2P="${DISABLE_P2P:-false}"
 P2P_STUN_SERVERS="${P2P_STUN_SERVERS:-}"
+LEAVE_REDIRECT_URL="${LEAVE_REDIRECT_URL-http://localhost:5173/}"
 APP_PREFIX="${APP_PREFIX:-}"
 
 # replace_by_key <file> <bre> <replacement line>
@@ -78,6 +81,12 @@ if [ -n "${P2P_STUN_SERVERS}" ]; then
         "        stunServers: [${_servers} ],"
 fi
 
+# Where to send the user after the conference ends. An empty value keeps the stock Jitsi
+# behaviour, so the redirection can be disabled per contour without a rebuild.
+replace_by_key "$CONFIG_JS" \
+    "^ *leaveRedirectUrl: .*$" \
+    "    leaveRedirectUrl: '${LEAVE_REDIRECT_URL}',"
+
 # ---------------------------------------------------------------------------
 # 2. Reverse proxy of this container
 # ---------------------------------------------------------------------------
@@ -103,7 +112,7 @@ replace_by_key "$NGINX_CONF" \
     "^ *set \$subdir .*$" \
     "    set \$subdir \"${_prefix}\";"
 
-echo "jmp-config: xmpp=${XMPP_DOMAIN} muc=${XMPP_MUC_DOMAIN} prosody=${PROSODY_URL} jvb=${JVB_WS_URL} prefix='${_prefix}' p2pDisabled=${DISABLE_P2P}"
+echo "jmp-config: xmpp=${XMPP_DOMAIN} muc=${XMPP_MUC_DOMAIN} prosody=${PROSODY_URL} jvb=${JVB_WS_URL} prefix='${_prefix}' p2pDisabled=${DISABLE_P2P} leaveRedirect='${LEAVE_REDIRECT_URL}'"
 
 # A broken rewrite must not start a container that silently serves a broken conference.
 if command -v nginx >/dev/null 2>&1; then

@@ -209,6 +209,48 @@ public class JwtService {
     }
 
     /**
+     * Generate a token for a brand-new instant guest room. Such a room has no
+     * {@code Conference} entity at all — it exists only inside Jitsi while somebody is in
+     * it, so the {@code room} claim below is the only binding between token and room.
+     *
+     * <p>The requester is granted moderator rights because there is no conference owner
+     * to appoint instead — the room is created by the very person who enters it first.
+     *
+     * @param displayName nullable: when absent, the Jitsi prejoin screen prompts the guest
+     *                    for a name instead of the token dictating one
+     * @param isModerator must be decided by the server, never taken from the client
+     */
+    public String generateInstantGuestToken(String roomName, String displayName, boolean isModerator) {
+        log.debug("Generating instant guest token for room: {}", roomName);
+
+        Map<String, Object> contextUser = new HashMap<>();
+        if (displayName != null && !displayName.isBlank()) {
+            contextUser.put("name", displayName);
+        }
+        if (isModerator) {
+            contextUser.put("moderator", "true");
+        }
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", jitsiAppId);
+        claims.put("aud", jitsiAudience);
+        claims.put("sub", jitsiXmppDomain);
+        claims.put("room", Conference.backendSafeRoomName(roomName));
+
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", false);
+        features.put("recording", false);
+        features.put("screen-sharing", true);
+
+        claims.put("context", Map.of(
+            "user", contextUser,
+            "features", features
+        ));
+
+        return signJitsiToken(claims);
+    }
+
+    /**
      * Builds a Jitsi token out of the prepared claims and signs it.
      *
      * <p>The signature algorithm is pinned to HMAC-SHA256 on purpose. Prosody's

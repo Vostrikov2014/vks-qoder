@@ -1106,6 +1106,12 @@ var config = {
     // which is what you want as long as the deployment has no TURN server.
     disableP2P: false,
 
+    // Where the user is sent once the conference is over: a plain hangup, being kicked
+    // out, or the moderator ending the meeting for everybody. Replaced at container
+    // start from LEAVE_REDIRECT_URL (docker/55-jmp-config.sh); an empty value keeps the
+    // stock Jitsi behaviour (close page / welcome page).
+    leaveRedirectUrl: 'http://localhost:5173/',
+
     p2p: {
         // Enables peer to peer mode. When enabled the system will try to
         // establish a direct connection when there are exactly 2 participants

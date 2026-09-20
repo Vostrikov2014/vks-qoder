@@ -270,6 +270,10 @@ export interface JoinResult {
 export const joinApi = {
   resolve: (slug: string, displayName?: string) =>
     api.get<JoinResult>(`/join/${slug}`, { params: displayName ? { displayName } : undefined }),
+  // Open a brand-new guest room: the server invents the room and signs a token,
+  // nothing is stored and no account is needed.
+  createInstant: (displayName?: string) =>
+    api.get<JoinResult>('/join/instant', { params: displayName ? { displayName } : undefined }),
 };
 
 // Participant Assignment API

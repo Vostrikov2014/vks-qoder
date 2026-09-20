@@ -7,11 +7,9 @@ import {
   Button,
   CircularProgress,
   IconButton,
-  InputAdornment,
-  TextField,
   Typography,
 } from '@mui/material';
-import { ArrowLeft, DoorOpen, Moon, Sun, User, Video } from 'lucide-react';
+import { ArrowLeft, DoorOpen, Moon, Sun, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
 import { extractApiError, joinApi } from '../services/api';
@@ -56,19 +54,19 @@ export default function JoinPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { isDarkMode, toggleTheme } = useThemeStore();
 
-  const [displayName, setDisplayName] = useState('');
-  const [phase, setPhase] = useState<Phase>('ask');
+  const [phase, setPhase] = useState<Phase>('resolving');
   const [result, setResult] = useState<JoinResult | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const autoJoined = useRef(false);
 
-  // A signed-in visitor needs no name prompt: the backend derives it from the account.
+  // The shared link resolves straight into Jitsi: no name is collected here, the Jitsi
+  // prejoin screen prompts for it (the personal token carries no editable name).
   const enter = useCallback(async () => {
     if (!slug) return;
     try {
       setPhase('resolving');
       setFailure(null);
-      const response = await joinApi.resolve(slug, displayName.trim() || undefined);
+      const response = await joinApi.resolve(slug);
       const join = response.data;
       setResult(join);
       if (join.decision === 'REDIRECT' && join.roomUrl) {
@@ -82,7 +80,7 @@ export default function JoinPage() {
       setFailure(extractApiError(err, t('join.requestFailed')));
       setPhase('blocked');
     }
-  }, [slug, displayName, t]);
+  }, [slug, t]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -92,16 +90,12 @@ export default function JoinPage() {
     }
   }, [isDarkMode]);
 
+  // Every visitor — signed-in or anonymous — is sent to the resolution immediately.
   useEffect(() => {
-    if (!isAuthenticated || autoJoined.current) return;
+    if (autoJoined.current) return;
     autoJoined.current = true;
     enter();
-  }, [isAuthenticated, enter]);
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    enter();
-  };
+  }, [enter]);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'ru' ? 'en' : 'ru');
@@ -267,66 +261,24 @@ export default function JoinPage() {
             </motion.div>
           )}
 
-          {phase === 'ask' || phase === 'resolving' ? (
-            <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'left' }}>
-              <motion.div variants={itemVariants}>
-                <TextField
-                  fullWidth
-                  label={t('join.displayName')}
-                  placeholder={t('join.displayNamePlaceholder')}
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  autoFocus
-                  inputProps={{ maxLength: 100 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <User size={20} color="var(--text-muted)" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    mb: 2.5,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 'var(--radius-lg)',
-                      background: 'var(--bg-elevated)',
-                      color: 'var(--text-h)',
-                      '& input': { color: 'var(--text-h)' },
-                      '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
-                      '& fieldset': { borderColor: 'var(--border)' },
-                      '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                      '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)', borderWidth: 2 },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'var(--text-muted)',
-                      '&.Mui-focused': { color: 'var(--primary-600)' },
-                    },
-                  }}
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  disabled={phase === 'resolving'}
-                  startIcon={phase === 'resolving' ? <CircularProgress size={18} color="inherit" /> : <Video size={18} />}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 'var(--radius-lg)',
-                    background: 'var(--primary-600)',
-                    color: 'white',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    boxShadow: 'none',
-                    '&:hover': { background: 'var(--primary-700)', boxShadow: '0 8px 25px rgba(var(--primary-rgb), 0.3)' },
-                  }}
-                >
-                  {t('common.join')}
-                </Button>
-              </motion.div>
-            </Box>
-          ) : null}
+          {(phase === 'ask' || phase === 'resolving') && (
+            <motion.div variants={itemVariants}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  py: 2,
+                }}
+              >
+                <CircularProgress size={36} sx={{ color: 'var(--primary-600)' }} />
+                <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+                  {t('join.redirecting')}
+                </Typography>
+              </Box>
+            </motion.div>
+          )}
 
           {phase === 'blocked' && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -353,9 +305,9 @@ export default function JoinPage() {
                 onClick={() => {
                   setResult(null);
                   setFailure(null);
-                  autoJoined.current = false;
-                  setPhase(isAuthenticated ? 'resolving' : 'ask');
-                  if (isAuthenticated) enter();
+                  autoJoined.current = true;
+                  setPhase('resolving');
+                  enter();
                 }}
                 sx={{
                   borderRadius: 'var(--radius-lg)',

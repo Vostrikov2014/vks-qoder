@@ -151,7 +151,7 @@ public class ConferenceLinkService {
             actorId, conferenceId, moderator ? "moderator" : "participant");
 
         return new ConferenceDto.TokenResponse(
-            linkBuilder.roomUrl(conference, token),
+            linkBuilder.roomUrlWithPrejoin(conference, token),
             jwtService.jitsiTokenExpiration()
         );
     }
@@ -217,7 +217,7 @@ public class ConferenceLinkService {
         link.registerVisit();
         linkRepository.save(link);
 
-        String roomUrl = linkBuilder.roomUrl(conference, token);
+        String roomUrl = linkBuilder.roomUrlWithPrejoin(conference, token);
         log.info("Granted access via join link {} to conference {} ({})",
             slug, conference.getId(), moderator ? "moderator" : "participant");
 
