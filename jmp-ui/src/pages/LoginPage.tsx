@@ -97,114 +97,191 @@ export default function LoginPage() {
         background: isDarkMode ? '#000' : 'transparent',
       }}
     >
-      {/* Back to Home */}
+      {/* Left icon rail - same placement as on HomePage */}
       <Box
+        component="nav"
         sx={{
           position: 'absolute',
-          top: 24,
-          left: 24,
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: 88,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1,
+          py: 2.5,
+          boxSizing: 'border-box',
           zIndex: 10,
         }}
       >
-        <IconButton
-          disableRipple
+        <Box
+          component="button"
+          type="button"
           onClick={() => navigate('/')}
           aria-label={t('common.backToHome')}
           sx={{
-            width: 48,
-            height: 48,
-            borderRadius: '14px',
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid var(--glass-border)',
-            color: 'var(--text-muted)',
-            boxShadow: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.75,
+            width: 64,
+            p: '12px 4px',
+            boxSizing: 'border-box',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: isDarkMode ? '#9a9aa0' : 'var(--text-muted)',
+            fontFamily: 'inherit',
             '&:hover': {
-              background: 'var(--glass-bg)',
-              color: 'var(--primary-600)',
-              boxShadow: 'none',
+              color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
-            transition: 'all 0.2s ease',
+            '&:hover .rail-tile': {
+              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+            },
+            '&:focus-visible': {
+              outline: '2px solid #4b7bec',
+              outlineOffset: 2,
+            },
           }}
         >
-          <ArrowLeft size={22} />
-        </IconButton>
-      </Box>
+          <Box
+            className="rail-tile"
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: '14px',
+              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
+              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: isDarkMode ? '#ffffff' : 'inherit',
+              transition: 'background-color 0.2s ease',
+            }}
+          >
+            <ArrowLeft size={20} />
+          </Box>
+          <Box component="span" sx={{ fontSize: '0.6875rem', lineHeight: 1.2, textAlign: 'center' }}>
+            {t('common.backToHome')}
+          </Box>
+        </Box>
 
-      {/* Theme Toggle */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 24,
-          right: 24,
-          zIndex: 10,
-        }}
-      >
-        <IconButton
-          disableRipple
+        <Box
+          component="button"
+          type="button"
           onClick={toggleTheme}
           aria-label={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
           sx={{
-            width: 48,
-            height: 48,
-            borderRadius: '14px',
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid var(--glass-border)',
-            color: 'var(--text-muted)',
-            boxShadow: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.75,
+            width: 64,
+            p: '12px 4px',
+            boxSizing: 'border-box',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: isDarkMode ? '#9a9aa0' : 'var(--text-muted)',
+            fontFamily: 'inherit',
             '&:hover': {
-              background: 'var(--glass-bg)',
-              color: 'var(--primary-600)',
-              boxShadow: 'none',
+              color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
-            transition: 'all 0.2s ease',
+            '&:hover .rail-tile': {
+              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+            },
+            '&:focus-visible': {
+              outline: '2px solid #4b7bec',
+              outlineOffset: 2,
+            },
           }}
         >
-          <motion.div
-            initial={false}
-            animate={{ rotate: isDarkMode ? 360 : 0 }}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
+          <Box
+            className="rail-tile"
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: '14px',
+              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
+              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: isDarkMode ? '#ffffff' : 'inherit',
+              transition: 'background-color 0.2s ease',
+            }}
           >
-            {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
-          </motion.div>
-        </IconButton>
-      </Box>
+            <motion.div
+              initial={false}
+              animate={{ rotate: isDarkMode ? 360 : 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </motion.div>
+          </Box>
+          <Box component="span" sx={{ fontSize: '0.6875rem', lineHeight: 1.2, textAlign: 'center' }}>
+            {t('home.theme')}
+          </Box>
+        </Box>
 
-      {/* Language Toggle */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 24,
-          right: 80,
-          zIndex: 10,
-        }}
-      >
-        <IconButton
-          disableRipple
+        {/* Spacer - pins the language button to the bottom, like .rail-spacer on HomePage */}
+        <Box sx={{ flex: 1 }} />
+
+        <Box
+          component="button"
+          type="button"
           onClick={toggleLanguage}
           aria-label={t('common.language')}
           sx={{
-            width: 48,
-            height: 48,
-            borderRadius: '14px',
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid var(--glass-border)',
-            color: 'var(--text-muted)',
-            boxShadow: 'none',
-            fontSize: '0.75rem',
-            fontWeight: 600,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.75,
+            width: 64,
+            p: '12px 4px',
+            boxSizing: 'border-box',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: isDarkMode ? '#9a9aa0' : 'var(--text-muted)',
+            fontFamily: 'inherit',
             '&:hover': {
-              background: 'var(--glass-bg)',
-              color: 'var(--primary-600)',
-              boxShadow: 'none',
+              color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
-            transition: 'all 0.2s ease',
+            '&:hover .rail-tile': {
+              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+            },
+            '&:focus-visible': {
+              outline: '2px solid #4b7bec',
+              outlineOffset: 2,
+            },
           }}
         >
-          {i18n.language === 'ru' ? 'EN' : 'RU'}
-        </IconButton>
+          <Box
+            className="rail-tile"
+            sx={{
+              width: 56,
+              height: 36,
+              borderRadius: '10px',
+              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
+              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+              color: isDarkMode ? '#ffffff' : 'inherit',
+              transition: 'background-color 0.2s ease',
+            }}
+          >
+            {i18n.language === 'ru' ? 'EN' : 'RU'}
+          </Box>
+          <Box component="span" sx={{ fontSize: '0.6875rem', lineHeight: 1.2, textAlign: 'center' }}>
+            {t('common.language')}
+          </Box>
+        </Box>
       </Box>
 
       {/* Login Card */}
@@ -218,8 +295,7 @@ export default function LoginPage() {
           sx={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: 'var(--radius-2xl)',
+            borderRadius: '24px', // same corner radius as the HomePage tiles (--lp-radius)
             boxShadow: isDarkMode ? 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)' : 'none',
             p: { xs: 3, sm: 5 },
             position: 'relative',
@@ -418,25 +494,32 @@ export default function LoginPage() {
                   py: 1.5,
                   px: 3,
                   border: 'none',
+                  outline: 'none',
                   borderRadius: '14px',
-                  background: 'var(--primary-600)',
-                  color: 'white',
+                  background: '#4b7bec',
+                  color: '#ffffff',
                   fontWeight: 600,
                   fontSize: '1rem',
                   textTransform: 'none',
                   boxShadow: 'none',
                   transition: 'background-color var(--transition-base)',
                   '&:hover': {
-                    background: 'var(--primary-500)',
+                    background: '#5d8af0',
                     boxShadow: 'none',
+                    outline: 'none',
                   },
                   '&:active': {
-                    background: 'var(--primary-700)',
+                    background: '#3a6ad4',
+                    boxShadow: 'none',
+                    outline: 'none',
+                  },
+                  '&:focus': {
+                    outline: 'none',
                     boxShadow: 'none',
                   },
                   '&:focus-visible': {
-                    outline: '2px solid var(--primary-600)',
-                    outlineOffset: 2,
+                    outline: 'none',
+                    boxShadow: 'none',
                   },
                   '&:disabled': {
                     background: 'var(--border-strong)',

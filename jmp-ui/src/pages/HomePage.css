@@ -76,7 +76,8 @@
 }
 
 .rail-item:hover {
-  background: var(--lp-tile);
+  /* Only the inner tile lightens (.rail-item:hover .rail-icon),
+     no grey backdrop behind the whole button like before */
   color: var(--lp-text);
 }
 
@@ -113,20 +114,23 @@
   text-align: center;
 }
 
-.language-item {
+.language-tile {
   width: 56px;
   height: 36px;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--lp-tile);
   color: var(--lp-text);
-  justify-content: center;
   border-radius: 10px;
-}
-
-.language-item .rail-label {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
+  transition: background-color var(--transition-base);
+}
+
+.language-item:hover .language-tile {
+  background: var(--lp-tile-hover);
 }
 
 .rail-spacer {
@@ -444,17 +448,18 @@
 
 .hero-art {
   width: 100%;
-  margin-top: var(--space-6);
-  /* Nudge the illustration toward the page center */
-  transform: translateX(-12%);
+  margin-top: 0;
+  /* Align the illustration's left edge with the hero title text */
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .hero-illustration {
   width: 100%;
   max-width: 520px;
   height: auto;
+  /* Cancel the empty ~53px margin baked into the SVG viewBox (53/520) */
+  transform: translate(-10.2%, -20px);
 }
 
 /* ==========================================================================

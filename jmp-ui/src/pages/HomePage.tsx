@@ -291,7 +291,8 @@ export default function HomePage() {
           onClick={toggleLanguage}
           aria-label={t('common.language')}
         >
-          <span className="rail-label">{i18n.language === 'ru' ? 'EN' : 'RU'}</span>
+          <span className="language-tile">{i18n.language === 'ru' ? 'EN' : 'RU'}</span>
+          <span className="rail-label">{t('common.language')}</span>
         </button>
       </aside>
 
