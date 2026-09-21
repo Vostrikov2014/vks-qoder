@@ -37,6 +37,10 @@ import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
 const DRAWER_WIDTH = 280;
+// The sidebar logo block is matched to the header height,
+// so both horizontal divider lines run on the same level
+const HEADER_HEIGHT = 85;
+const MOBILE_HEADER_HEIGHT = 64;
 
 const menuItems = [
   { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
@@ -101,7 +105,8 @@ export default function Layout() {
       {/* Logo Section */}
       <Box
         sx={{
-          p: 3,
+          px: 3,
+          height: { xs: MOBILE_HEADER_HEIGHT, sm: HEADER_HEIGHT },
           display: 'flex',
           alignItems: 'center',
           gap: 2,
@@ -113,14 +118,16 @@ export default function Layout() {
             width: 44,
             height: 44,
             borderRadius: 'var(--radius-xl)',
-            background: 'var(--primary-600)',
+            // The light-theme sidebar is primary-600 blue itself, so the logo uses the
+            // darker primary (button) blue to stand out; dark theme keeps the accent blue
+            background: isDarkMode ? 'var(--primary-600)' : 'var(--primary-700)',
+            color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
           }}
         >
-          <Video size={24} color="white" />
+          <Video size={24} color="currentColor" />
         </Box>
         {!collapsed && (
           <motion.div
@@ -290,7 +297,7 @@ export default function Layout() {
           top: 0,
           left: 0,
           right: 0,
-          height: 64,
+          height: MOBILE_HEADER_HEIGHT,
           display: { xs: 'flex', sm: 'none' },
           alignItems: 'center',
           px: 2,
@@ -378,6 +385,7 @@ export default function Layout() {
             zIndex: 1100,
             px: { xs: 2, sm: 4 },
             py: 2,
+            minHeight: HEADER_HEIGHT,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -493,7 +501,6 @@ export default function Layout() {
                   backdropFilter: 'blur(20px)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: 'var(--radius-xl)',
-                  boxShadow: 'var(--shadow-xl)',
                   minWidth: 180,
                 },
               }}

@@ -12,14 +12,15 @@
     "alertRed": "#EF4444",
     "alertYellow": "#EAB308",
 
-    "disabled01": "#24365C",
+    "disabled01": "#3D3D3D",
 
     "focus01": "#3B82F6",
 
     "hover01": "#2563EB",
+    "hover01Light": "#60A5FA",
     "hover02": "#BFDBFE",
     "hover03": "#EF4444",
-    "hover05": "#24365C",
+    "hover05": "#3D3D3D",
     "hover07": "#93C5FD",
 
     "icon01": "#E9F0FB",
@@ -37,24 +38,24 @@
     "support05": "#8B5CF6",
     "support06": "#3B82F6",
 
-    "surface01": "#0B1226",
-    "surface02": "#14203E",
-    "surface03": "#1B2A4A",
-    "surface05": "#2B3F6B",
+    "surface01": "#040404",
+    "surface02": "#141414",
+    "surface03": "#292929",
+    "surface05": "#525252",
     "surface08": "#A9BEE0",
 
     "textColor01": "#E9F0FB",
     "textColor02": "#A9BEE0",
 
-    "ui01": "#1B2A4A",
-    "ui02": "#24365C",
+    "ui01": "#141414",
+    "ui02": "#3D3D3D",
     "ui03": "#7C93B8",
     "ui04": "#E9F0FB",
     "ui05": "#1E2E55",
     "ui06": "#101B36",
     "ui07": "#BFDBFE",
     "ui08": "#DBEAFE",
-    "ui09": "#24365C",
+    "ui09": "#3D3D3D",
     "ui10": "#A9BEE0",
     "ui21": "#A9BEE0",
 

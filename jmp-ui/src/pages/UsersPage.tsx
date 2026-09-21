@@ -40,6 +40,7 @@ import {
   List,
 } from 'lucide-react';
 import { userApi } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
 
 interface UserData {
   id: string;
@@ -125,8 +126,55 @@ const getRoleColor = (role: string) => {
   }
 };
 
+// The search field follows the LoginPage field look: fully frameless (no blue
+// highlight on focus), the hover tint appears only while the field is still
+// empty, and the placeholder brightens together with it.
+const createSearchFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled field keeps the
+  // exact background it had while it was still empty. The light theme uses a
+  // white surface, the dark theme keeps matching the elevated surfaces.
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
+};
+
 export default function UsersPage() {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useThemeStore();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -247,10 +295,8 @@ export default function UsersPage() {
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(var(--primary-rgb), 0.3)',
               '&:hover': {
                 background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
-                boxShadow: '0 6px 25px rgba(var(--primary-rgb), 0.4)',
               },
             }}
           >
@@ -281,10 +327,8 @@ export default function UsersPage() {
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: 'none',
                 '&:hover': {
-                  background: 'var(--primary-700)',
-                  boxShadow: 'none',
+                  background: 'var(--btn-hover-bg)',
                 },
               }}
           >
@@ -304,28 +348,7 @@ export default function UsersPage() {
             sx={{
               flex: 1,
               minWidth: 280,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-xl)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid var(--glass-border)',
-                '& fieldset': {
-                  borderColor: 'transparent',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'var(--border)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'var(--primary-600)',
-                },
-              },
-              '& .MuiOutlinedInput-input': {
-                color: 'var(--text)',
-                '&::placeholder': {
-                  color: 'var(--text-muted)',
-                  opacity: 1,
-                },
-              },
+              ...createSearchFieldSx(isDarkMode),
             }}
           />
           <Button
@@ -382,6 +405,9 @@ export default function UsersPage() {
                   color: 'var(--primary-600)',
                   borderColor: 'var(--primary-600)',
                 },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
+                },
               }}
             >
               <Tooltip title={t('common.viewCards')}>
@@ -400,6 +426,9 @@ export default function UsersPage() {
                   background: 'rgba(var(--primary-rgb), 0.12)',
                   color: 'var(--primary-600)',
                   borderColor: 'var(--primary-600)',
+                },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
                 },
               }}
             >
@@ -442,17 +471,11 @@ export default function UsersPage() {
                     sx={{
                       background: 'var(--glass-bg)',
                       backdropFilter: 'blur(20px)',
-                      border: '1px solid var(--glass-border)',
                       borderRadius: 'var(--radius-xl)',
-                      boxShadow: 'var(--shadow-lg)',
                       p: 3,
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 2.5,
-                      transition: 'box-shadow 0.2s ease',
-                      '&:hover': {
-                        boxShadow: 'var(--shadow-xl)',
-                      },
                     }}
                   >
                     {/* Header with Avatar */}
@@ -464,7 +487,6 @@ export default function UsersPage() {
                           background: getAvatarGradient(user.id),
                           fontWeight: 700,
                           fontSize: '1.25rem',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                         }}
                       >
                         {getInitials(user.firstName, user.lastName)}
@@ -574,7 +596,6 @@ export default function UsersPage() {
                           '&:hover': {
                             borderColor: 'var(--primary-600)',
                             background: 'rgba(var(--primary-rgb), 0.08)',
-                            boxShadow: '0 2px 8px rgba(var(--primary-rgb), 0.15)',
                           },
                         }}
                       >
@@ -615,7 +636,6 @@ export default function UsersPage() {
             sx={{
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               overflow: 'hidden',
             }}
@@ -805,7 +825,6 @@ export default function UsersPage() {
               px: 4,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
             }}
           >
@@ -840,7 +859,6 @@ export default function UsersPage() {
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: 'none',
               }}
             >
               {t('users.addUser')}
@@ -860,7 +878,6 @@ export default function UsersPage() {
             background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
@@ -1043,10 +1060,8 @@ export default function UsersPage() {
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
-              boxShadow: 'none',
               '&:hover': {
-                background: 'var(--primary-700)',
-                boxShadow: 'none',
+                background: 'var(--btn-hover-bg)',
               },
             }}
           >

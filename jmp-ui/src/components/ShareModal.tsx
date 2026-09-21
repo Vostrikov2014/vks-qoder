@@ -209,7 +209,6 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           p: 2,
           mb: 2,
           borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--glass-border)',
           background: 'rgba(255, 255, 255, 0.03)',
         }}
       >
@@ -493,7 +492,15 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                   onChange={(e) => setExpiresAt(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   label={t('share.expiresAt')}
-                  sx={{ ...fieldSx, mt: 1 }}
+                  sx={{
+                    ...fieldSx,
+                    mt: 1,
+                    '& .MuiOutlinedInput-root': {
+                      ...fieldSx['& .MuiOutlinedInput-root'],
+                      '& fieldset': { borderColor: 'transparent' },
+                      '&:hover fieldset': { borderColor: 'transparent' },
+                    },
+                  }}
                 />
               )}
             </Box>

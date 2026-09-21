@@ -8,7 +8,18 @@
       "Bash(docker inspect:*)",
       "Bash(docker stop postgres && docker compose -f docker-compose.dev.yml up -d postgres)",
       "Bash(docker compose -f docker-compose.dev.yml ps postgres garage --format '{{.Name}}\\\\t{{.Status}}' & docker compose -f docker-compose.dev.yml up -d garage; wait)",
-      "Bash(sleep 12; docker compose -f docker-compose.dev.yml ps postgres garage --format '{{.Name}}\\\\t{{.Status}}')"
+      "Bash(sleep 12; docker compose -f docker-compose.dev.yml ps postgres garage --format '{{.Name}}\\\\t{{.Status}}')",
+      "Bash(docker ps -a --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' 2>&1 | head -30)",
+      "Bash(cd /home/vd/Projects/vks-qoder && docker compose -f docker-compose.dev.yml pull garage 2>&1 | tail -20)",
+      "Bash(cd /home/vd/Projects/vks-qoder && docker compose -f docker-compose.dev.yml up -d garage 2>&1 | tail -20)",
+      "Bash(sleep 20; docker ps -a --filter name=garage-dev --format '{{.Names}}\\\\t{{.Status}}'; echo \"--- logs ---\"; docker logs garage-dev 2>&1 | tail -30)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3900/jmp-recordings/ ; echo \"--- cli status ---\"; docker exec garage-dev /garage -c /etc/garage.toml status 2>&1 | head -12; echo \"--- buckets ---\"; docker exec garage-dev /garage -c /etc/garage.toml bucket list 2>&1 | head -12)",
+      "Bash(which aws s3cmd mc 2>/dev/null; echo \"exit:$?\")",
+      "Bash(cd /home/vd/Projects/vks-qoder && grep -n -i \"minio\" docker-compose.yml docker-compose.dev.yml .env .env.example 2>/dev/null | head -40)",
+      "Bash(docker inspect jmp-minio --format '{{json .Mounts}}' 2>&1; echo \"--- container ---\"; docker ps -a --filter name=minio --format '{{.Names}}\\\\t{{.Status}}\\\\t{{.Image}}')",
+      "Bash(docker ps -a --filter ancestor=minio/minio:latest --format '{{.Names}}'; echo \"--- volume ---\"; docker volume ls --filter name=minio)",
+      "Bash(docker rm -f jmp-minio && echo \"контейнер удалён\"; docker rmi minio/minio:latest)",
+      "Bash(docker images | grep -i -E \"minio|garage\" ; echo \"--- ps ---\"; docker ps --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' | grep -E \"minio|garage\" || echo \"minio: нет запущенных контейнеров\")"
     ]
   }
 }

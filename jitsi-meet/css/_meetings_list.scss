@@ -65,7 +65,7 @@
     }
 
     .item {
-        background: #14203E;
+        background: #141414;
         box-sizing: border-box;
         border-radius: 6px;
         display: inline-flex;
@@ -129,7 +129,7 @@
 
         &.with-click-handler:hover,
         &.with-click-handler:focus {
-            background-color: #1B2A4A;
+            background-color: #292929;
         }
 
         .add-button {

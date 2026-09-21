@@ -11,17 +11,17 @@
         &.disabled, .disabled & {
             cursor: initial;
             color: #7C93B8;
-            background-color: #24365C;
+            background-color: #36383C;
 
             &:hover {
-                background-color: #24365C;
+                background-color: #36383C;
             }
         }
     }
 }
 
 .settings-button-small-icon {
-    background: #1B2A4A;
+    background: #36383C;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
     border-radius: 6px;
     cursor: pointer;
@@ -31,7 +31,7 @@
     top: -3px;
 
     &:hover {
-        background: #24365C;
+        background: #36383C;
         box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.1);
 
         & svg {
@@ -39,7 +39,7 @@
         }
 
         &.settings-button-small-icon--disabled {
-            background: #24365C;
+            background: #36383C;
 
             & svg {
                 fill: #57718E;
@@ -52,7 +52,7 @@
     }
 
     &--disabled {
-        background-color: #24365C;
+        background-color: #36383C;
         cursor: default;
 
         & svg {

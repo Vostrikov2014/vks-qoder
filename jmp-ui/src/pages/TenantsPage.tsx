@@ -35,6 +35,7 @@ import {
   Pause,
 } from 'lucide-react';
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -98,8 +99,55 @@ const fieldSx = {
   '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
 };
 
+// The search field follows the LoginPage field look: fully frameless (no blue
+// highlight on focus), the hover tint appears only while the field is still
+// empty, and the placeholder brightens together with it.
+const createSearchFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled field keeps the
+  // exact background it had while it was still empty. The light theme uses a
+  // white surface, the dark theme keeps matching the elevated surfaces.
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
+};
+
 export default function TenantsPage() {
   const { t } = useTranslation();
+  const { isDarkMode } = useThemeStore();
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -253,10 +301,8 @@ export default function TenantsPage() {
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: 'none',
               '&:hover': {
-                background: 'var(--primary-700)',
-                boxShadow: 'none',
+                background: 'var(--btn-hover-bg)',
               },
             }}
           >
@@ -276,19 +322,7 @@ export default function TenantsPage() {
             sx={{
               flex: 1,
               minWidth: 280,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-xl)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid var(--glass-border)',
-                '& fieldset': { borderColor: 'transparent' },
-                '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-              },
-              '& .MuiOutlinedInput-input': {
-                color: 'var(--text)',
-                '&::placeholder': { color: 'var(--text-muted)', opacity: 1 },
-              },
+              ...createSearchFieldSx(isDarkMode),
             }}
           />
           <ToggleButtonGroup
@@ -330,6 +364,9 @@ export default function TenantsPage() {
                   color: 'var(--primary-600)',
                   borderColor: 'var(--primary-600)',
                 },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
+                },
               }}
             >
               <Tooltip title={t('common.viewCards')}>
@@ -346,6 +383,9 @@ export default function TenantsPage() {
                   background: 'rgba(var(--primary-rgb), 0.12)',
                   color: 'var(--primary-600)',
                   borderColor: 'var(--primary-600)',
+                },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
                 },
               }}
             >
@@ -389,17 +429,11 @@ export default function TenantsPage() {
                       sx={{
                         background: 'var(--glass-bg)',
                         backdropFilter: 'blur(20px)',
-                        border: '1px solid var(--glass-border)',
                         borderRadius: 'var(--radius-xl)',
-                        boxShadow: 'var(--shadow-lg)',
                         p: 3,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 2,
-                        transition: 'box-shadow 0.2s ease',
-                        '&:hover': {
-                          boxShadow: 'var(--shadow-xl)',
-                        },
                         position: 'relative',
                         overflow: 'hidden',
                       }}
@@ -483,7 +517,7 @@ export default function TenantsPage() {
                               color: 'white',
                               fontWeight: 600,
                               textTransform: 'none',
-                              '&:hover': { background: 'var(--primary-700)' },
+                              '&:hover': { background: 'var(--btn-hover-bg)' },
                             }}
                           >
                             {t('tenants.suspendTenant')}
@@ -557,7 +591,6 @@ export default function TenantsPage() {
             sx={{
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               overflow: 'hidden',
             }}
@@ -781,7 +814,6 @@ export default function TenantsPage() {
               px: 4,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
             }}
           >
@@ -816,7 +848,6 @@ export default function TenantsPage() {
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: 'none',
               }}
             >
               {t('tenants.addTenant')}
@@ -836,7 +867,6 @@ export default function TenantsPage() {
             background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
@@ -967,10 +997,8 @@ export default function TenantsPage() {
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
-              boxShadow: 'none',
               '&:hover': {
-                background: 'var(--primary-700)',
-                boxShadow: 'none',
+                background: 'var(--btn-hover-bg)',
               },
             }}
           >
@@ -990,7 +1018,6 @@ export default function TenantsPage() {
             background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-xl)',
           },
         }}
       >

@@ -32,7 +32,7 @@ body {
     font-weight: 400;
     overflow: hidden;
     color: #E9F0FB;
-    background: #0B1226; // should match DEFAULT_BACKGROUND from interface_config
+    background: #040404; // should match DEFAULT_BACKGROUND from interface_config
 }
 
 /**
@@ -167,7 +167,7 @@ form {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #2B3F6B;
+    background: #3D3D3D;
     border-radius: 4px;
 }
 

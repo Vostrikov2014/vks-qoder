@@ -40,6 +40,59 @@ const itemVariants = {
   },
 };
 
+// Shared styles for the email/password fields: no frame at all, the hint stays
+// inside the field while it is empty, and hover uses the neutral grey tint of
+// the HomePage tiles instead of a bluish one.
+const createAuthFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; the autofill fill below
+  // reuses it so a filled field keeps the exact background it had while empty
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#f0f0f2';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      // Light theme gets a minimal grey tint so the fields do not blend into the
+      // white card; a filled field keeps it, just like the dark theme keeps its
+      // own surface colour
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Grey hover tint only while the field is still empty (hint visible),
+      // same as --lp-tile-hover on HomePage
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : '#e4e4e7',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+      // The global autofill rule in index.css repaints autofilled inputs with
+      // --bg-elevated (plain white in the light theme); pin the fill to the
+      // field surface so autofilled credentials never change the background
+      '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active': {
+        '-webkit-box-shadow': `0 0 0 1000px ${fieldSurface} inset !important`,
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
+};
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -50,6 +103,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const authFieldSx = createAuthFieldSx(isDarkMode);
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -296,7 +350,6 @@ export default function LoginPage() {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
             borderRadius: '24px', // same corner radius as the HomePage tiles (--lp-radius)
-            boxShadow: isDarkMode ? 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)' : 'none',
             p: { xs: 3, sm: 5 },
             position: 'relative',
             overflow: 'hidden',
@@ -324,14 +377,10 @@ export default function LoginPage() {
                 variant="h4"
                 sx={{
                   fontWeight: 800,
-                  mb: 1,
                   color: 'var(--text-h)',
                 }}
               >
                 {t('login.welcomeBack')}
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-                {t('login.signInToManage')}
               </Typography>
             </Box>
           </motion.div>
@@ -366,12 +415,13 @@ export default function LoginPage() {
             <motion.div variants={itemVariants}>
               <TextField
                 fullWidth
-                label={t('login.email')}
+                placeholder={t('login.email')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
+                inputProps={{ 'aria-label': t('login.email') }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -379,43 +429,19 @@ export default function LoginPage() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  mb: 2.5,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 'var(--radius-lg)',
-                    background: 'var(--bg-elevated)',
-                    '& fieldset': {
-                      borderColor: 'var(--border)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'var(--border-strong)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'var(--primary-600)',
-                      borderWidth: 2,
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'var(--text-muted)',
-                    '&.Mui-focused': {
-                      color: 'var(--text-h)',
-                    },
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    color: 'var(--text-h)',
-                  },
-                }}
+                sx={{ ...authFieldSx, mb: 2.5 }}
               />
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <TextField
                 fullWidth
-                label={t('login.password')}
+                placeholder={t('login.password')}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                inputProps={{ 'aria-label': t('login.password') }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -435,32 +461,7 @@ export default function LoginPage() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  mb: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 'var(--radius-lg)',
-                    background: 'var(--bg-elevated)',
-                    '& fieldset': {
-                      borderColor: 'var(--border)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'var(--border-strong)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'var(--primary-600)',
-                      borderWidth: 2,
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'var(--text-muted)',
-                    '&.Mui-focused': {
-                      color: 'var(--text-h)',
-                    },
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    color: 'var(--text-h)',
-                  },
-                }}
+                sx={{ ...authFieldSx, mb: 1 }}
               />
             </motion.div>
 
@@ -495,31 +496,24 @@ export default function LoginPage() {
                   px: 3,
                   border: 'none',
                   outline: 'none',
-                  borderRadius: '14px',
-                  background: '#4b7bec',
-                  color: '#ffffff',
+                  // Match the corner radius of the email/password fields
+                  borderRadius: 'var(--radius-lg)',
+                  // Standard filled-button colours, same as the conferences page
+                  background: 'var(--primary-600)',
+                  color: 'white',
                   fontWeight: 600,
                   fontSize: '1rem',
                   textTransform: 'none',
-                  boxShadow: 'none',
                   transition: 'background-color var(--transition-base)',
                   '&:hover': {
-                    background: '#5d8af0',
-                    boxShadow: 'none',
-                    outline: 'none',
-                  },
-                  '&:active': {
-                    background: '#3a6ad4',
-                    boxShadow: 'none',
+                    background: 'var(--btn-hover-bg)',
                     outline: 'none',
                   },
                   '&:focus': {
                     outline: 'none',
-                    boxShadow: 'none',
                   },
                   '&:focus-visible': {
                     outline: 'none',
-                    boxShadow: 'none',
                   },
                   '&:disabled': {
                     background: 'var(--border-strong)',

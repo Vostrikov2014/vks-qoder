@@ -86,18 +86,12 @@ const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1 }: BentoCardPr
         height: '100%',
         background: gradient || 'var(--glass-bg)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid var(--glass-border)',
         borderRadius: 'var(--radius-xl)',
-        boxShadow: 'var(--shadow-lg)',
         p: 3,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'box-shadow 0.2s ease',
-        '&:hover': {
-          boxShadow: 'var(--shadow-xl)',
-        },
       }}
     >
       {children}
@@ -400,7 +394,6 @@ export default function DashboardPage() {
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(var(--primary-rgb), 0.15)',
                       borderRadius: 'var(--radius-lg)',
-                      boxShadow: 'var(--shadow-lg)',
                     }}
                   />
                   <Area

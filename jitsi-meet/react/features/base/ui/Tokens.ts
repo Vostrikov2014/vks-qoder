@@ -155,7 +155,7 @@ export const colorMap = {
     preMeetingBackground: 'surface02',  // Pre-meeting screen container background
     preMeetingPreview: 'ui01',          // Video preview in pre-meeting
     prejoinDialogBackground: 'uiBackground', // Prejoin dialog background
-    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#0B1226)
+    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#040404)
     prejoinDialogDelimiter: 'ui03',     // Prejoin dialog delimiter line
     prejoinDialogDelimiterText: 'text01', // Prejoin dialog delimiter text
     prejoinTitleText: 'text01',         // Prejoin title text color
@@ -164,7 +164,7 @@ export const colorMap = {
     prejoinWarningText: 'text04',       // Warning banner text
     prejoinRecordingWarningText: 'text03', // Recording warning text
     prejoinActionButtonPrimary: 'action01', // Primary action button
-    prejoinActionButtonPrimaryHover: 'action01Hover', // Primary button hover
+    prejoinActionButtonPrimaryHover: 'hover01Light', // Primary button hover (a lighter step of action01)
     prejoinActionButtonPrimaryText: 'text01', // Primary button text
     prejoinActionButtonSecondary: 'action02', // Secondary action button
     prejoinActionButtonSecondaryHover: 'action02Hover', // Secondary button hover
@@ -355,7 +355,7 @@ export const colorMap = {
     dialInSecondaryText: 'text02',           // Dial-in summary secondary text
 
     // Reactions
-    reactionsMenuBackground: '#14203E', // Reactions menu background
+    reactionsMenuBackground: '#141414', // Reactions menu background
     reactionsMenuBorder: 'ui02',             // Reactions menu border
     reactionsMenuButtonToggled: 'surface01', // Reactions menu button toggled state background
     reactionsMenuBoxShadow1: 'ui09',         // Reactions menu box shadow primary
@@ -412,7 +412,7 @@ export const colorMap = {
     fileSharingItemBorder: 'ui02',           // File sharing item hover/border
 
     // Gifs
-    gifsBackground: '#14203E',                  // GIFs panel background
+    gifsBackground: '#141414',                  // GIFs panel background
     gifsText: 'text01',                      // GIFs panel text
 
     // Whiteboard

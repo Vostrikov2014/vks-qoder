@@ -5,7 +5,7 @@ body.welcome-page {
 
 .welcome {
     background-image: $welcomePageBackground;
-    background-color: #0B1226;
+    background-color: #040404;
     display: flex;
     flex-direction: column;
     font-family: $welcomePageFontFamily;
@@ -19,7 +19,7 @@ body.welcome-page {
         background-repeat: $welcomePageHeaderBackgroundRepeat;
         background-size: $welcomePageHeaderBackgroundSize;
         padding: $welcomePageHeaderPadding;
-        background-color: #0B1226;
+        background-color: #131519;
         overflow: hidden;
         position: relative;
 
@@ -129,7 +129,7 @@ body.welcome-page {
                 margin: $welcomePageEnterRoomMargin;
                 padding: $welcomePageEnterRoomPadding;
                 border-radius: 6px;
-                background-color: #14203E;
+                background-color: #141414;
                 border: 1px solid rgba(59, 130, 246, 0.28);
                 display: flex;
                 width: 100%;
@@ -190,7 +190,7 @@ body.welcome-page {
         }
 
         .tab-buttons {
-            background-color: #1B2A4A;
+            background-color: #292929;
             border-radius: 6px;
             color: #A9BEE0;
             font-size: 0.875rem;
@@ -238,7 +238,7 @@ body.welcome-page {
     }
 
     .welcome-page-settings {
-        background: rgba(20, 32, 62, 0.72);
+        background: rgba(0, 0, 0, 0.4);
         border-radius: 6px;
         color: $welcomePageDescriptionColor;
         padding: 4px;
@@ -306,7 +306,7 @@ body.welcome-page {
         border-radius: 8px;
 
         &--dark {
-            background: #14203E;
+            background: #141414;
             color: #E9F0FB;
         }
 
@@ -315,12 +315,12 @@ body.welcome-page {
         }
 
         &--grey {
-            background: #1B2A4A;
+            background: #292929;
         }
     }
 
     .welcome-footer {
-        background: #14203E;
+        background: #131519;
         color: #E9F0FB;
         margin-top: 40px;
         position: relative;

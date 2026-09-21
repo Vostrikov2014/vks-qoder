@@ -12,6 +12,9 @@
   --primary-700: #1D4ED8;
   --primary-800: #1E40AF;
   --primary-900: #1E3A8A;
+
+  /* Filled blue buttons: one step darker on hover in the light theme */
+  --btn-hover-bg: var(--primary-700);
   
   /* Primary RGB triplets for alpha-composited colors */
   --primary-rgb: 37, 99, 235;
@@ -51,7 +54,6 @@
   /* Glassmorphism Colors */
   --glass-bg: rgba(255, 255, 255, 0.88);
   --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   
   /* Text Colors */
   --text: #1E3A5F;
@@ -68,13 +70,6 @@
   /* Border & Divider */
   --border: rgba(var(--primary-rgb), 0.10);
   --border-strong: rgba(var(--primary-rgb), 0.18);
-  
-  /* Shadows - Modern Elevation */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 40px rgba(0, 0, 0, 0.08);
   
   /* Typography */
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -145,16 +140,9 @@ html.dark body {
   
   --glass-bg: rgba(26, 26, 26, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   
   --border: rgba(255, 255, 255, 0.10);
   --border-strong: rgba(255, 255, 255, 0.16);
-  
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.55);
-  --shadow-glow: 0 0 40px rgba(var(--primary-rgb), 0.18);
   
   --accent-blue: #3B82F6;
   --accent-blue-light: #60A5FA;
@@ -173,6 +161,9 @@ html.dark body {
   --primary-700: #2563EB;
   --primary-800: #1D4ED8;
   --primary-900: #1E40AF;
+
+  /* Filled blue buttons: lighten one step on hover against dark surfaces */
+  --btn-hover-bg: var(--primary-500);
   --primary-rgb: 59, 130, 246;
   --primary-500-rgb: 96, 165, 250;
   --primary-700-rgb: 37, 99, 235;
@@ -257,9 +248,7 @@ body {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--glass-shadow);
 }
 
 /* Gradient Text - Blue */
@@ -268,23 +257,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Glow Effects - Monochrome */
-.glow-primary {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
-}
-
-.glow-success {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
-}
-
-.glow-warning {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-}
-
-.glow-error {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
 /* Modern Scrollbar */

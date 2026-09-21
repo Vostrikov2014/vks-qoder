@@ -39,6 +39,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { recordingApi } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
 import type { RecordingSummary } from '../types';
 
 const containerVariants = {
@@ -58,14 +59,70 @@ const itemVariants = {
   },
 };
 
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    '& fieldset': { borderColor: 'var(--border)' },
-    '&:hover fieldset': { borderColor: 'var(--border)' },
-    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
+// The type/status selects follow the search field look: a frameless surface
+// that stays white in the light theme and elevated in the dark theme, with a
+// soft hover tint (pale blue in the light theme) shown only while no value is
+// selected yet.
+const createFilterSelectSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled select keeps the
+  // exact background it had while it was still empty
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    // Hover tint only while the select is still empty (label not floated yet),
+    // matching the search field
+    '&:has(.MuiInputLabel-root:not(.MuiInputLabel-shrink)) .MuiOutlinedInput-root:hover': {
+      background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+    },
+    // Label acts as the in-field hint while empty and floats once a value is picked
+    '& .MuiInputLabel-root': {
+      color: 'var(--text-muted)',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: 'var(--primary-600)',
+    },
+    // Hint brightens together with the hover tint
+    '&:hover .MuiInputLabel-root:not(.MuiInputLabel-shrink)': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+    '& .MuiSelect-select': {
+      color: 'var(--text-h)',
+    },
+    '& .MuiSelect-icon': {
+      color: 'var(--text-muted)',
+    },
+  };
+};
+
+// Dropdown menu of the type/status filters: the app menu colours instead of
+// the default white Paper, which would stay white in the dark theme as well
+const filterMenuProps = {
+  PaperProps: {
+    sx: {
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--glass-border)',
+      '& .MuiMenuItem-root': {
+        color: 'var(--text-h)',
+        '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
+        '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
+      },
+    },
   },
-  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
 };
 
 const getStatusConfig = (status: string) => {
@@ -125,8 +182,55 @@ interface StorageStats {
   recordingsThisMonth: number;
 }
 
+// The search field follows the LoginPage field look: fully frameless (no blue
+// highlight on focus), the hover tint appears only while the field is still
+// empty, and the placeholder brightens together with it.
+const createSearchFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled field keeps the
+  // exact background it had while it was still empty. The light theme uses a
+  // white surface, the dark theme keeps matching the elevated surfaces.
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
+};
+
 export default function RecordingsPage() {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useThemeStore();
   const [recordings, setRecordings] = useState<RecordingSummary[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
@@ -254,13 +358,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
-              transition: 'box-shadow 0.2s ease',
-              '&:hover': {
-                boxShadow: 'var(--shadow-xl)',
-              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -295,13 +393,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
-              transition: 'box-shadow 0.2s ease',
-              '&:hover': {
-                boxShadow: 'var(--shadow-xl)',
-              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -336,13 +428,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
-              transition: 'box-shadow 0.2s ease',
-              '&:hover': {
-                boxShadow: 'var(--shadow-xl)',
-              },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -400,20 +486,10 @@ export default function RecordingsPage() {
             }}
             sx={{
               minWidth: 260,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--glass-bg)',
-                '& fieldset': { borderColor: 'var(--border)' },
-                '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-              },
-              '& .MuiOutlinedInput-input': {
-                color: 'var(--text)',
-                '&::placeholder': { color: 'var(--text-muted)', opacity: 1 },
-              },
+              ...createSearchFieldSx(isDarkMode),
             }}
           />
-          <FormControl size="small" sx={{ ...fieldSx, minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...createFilterSelectSx(isDarkMode), minWidth: 140 }}>
             <InputLabel>{t('recordings.type')}</InputLabel>
             <Select
               value={typeFilter}
@@ -422,7 +498,7 @@ export default function RecordingsPage() {
                 setTypeFilter(e.target.value);
                 setPage(0);
               }}
-              sx={{ borderRadius: 'var(--radius-lg)', background: 'var(--glass-bg)' }}
+              MenuProps={filterMenuProps}
             >
               <MenuItem value="">{t('recordings.allTypes')}</MenuItem>
               <MenuItem value="VIDEO">{t('recordings.VIDEO')}</MenuItem>
@@ -430,7 +506,7 @@ export default function RecordingsPage() {
               <MenuItem value="TRANSCRIPT">{t('recordings.TRANSCRIPT')}</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ ...fieldSx, minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...createFilterSelectSx(isDarkMode), minWidth: 140 }}>
             <InputLabel>{t('recordings.status')}</InputLabel>
             <Select
               value={statusFilter}
@@ -439,7 +515,7 @@ export default function RecordingsPage() {
                 setStatusFilter(e.target.value);
                 setPage(0);
               }}
-              sx={{ borderRadius: 'var(--radius-lg)', background: 'var(--glass-bg)' }}
+              MenuProps={filterMenuProps}
             >
               <MenuItem value="">{t('recordings.allStatuses')}</MenuItem>
               <MenuItem value="READY">{t('recordings.READY')}</MenuItem>
@@ -457,9 +533,7 @@ export default function RecordingsPage() {
           sx={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-xl)',
-            boxShadow: 'var(--shadow-lg)',
             overflow: 'hidden',
           }}
         >

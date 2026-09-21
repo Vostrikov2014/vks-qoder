@@ -151,7 +151,7 @@ const useStyles = makeStyles()(theme => {
             width: 36,
 
             '&:hover': {
-                backgroundColor: '#2563EB'
+                backgroundColor: '#60A5FA'
             },
 
             '& svg': {

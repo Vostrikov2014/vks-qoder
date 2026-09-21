@@ -189,9 +189,7 @@ export default function JoinPage() {
           sx={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-2xl)',
-            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
             p: { xs: 3, sm: 5 },
             textAlign: 'center',
           }}
@@ -208,7 +206,6 @@ export default function JoinPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 30px rgba(var(--primary-rgb), 0.35)',
               }}
             >
               {phase === 'blocked' ? <DoorOpen size={36} color="white" /> : <Video size={36} color="white" />}
@@ -293,8 +290,7 @@ export default function JoinPage() {
                     color: 'white',
                     fontWeight: 600,
                     textTransform: 'none',
-                    boxShadow: 'none',
-                    '&:hover': { background: 'var(--primary-700)', boxShadow: '0 8px 25px rgba(var(--primary-rgb), 0.3)' },
+                    '&:hover': { background: 'var(--btn-hover-bg)' },
                   }}
                 >
                   {t('common.signIn')}

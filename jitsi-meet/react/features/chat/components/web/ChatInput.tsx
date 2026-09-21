@@ -21,7 +21,7 @@ const styles = (_theme: Theme, { _chatWidth }: IProps) => {
         smileysPanel: {
             bottom: '100%',
             boxSizing: 'border-box' as const,
-            backgroundColor: 'rgba(11, 18, 38, .9) !important',
+            backgroundColor: 'rgba(0, 0, 0, .6) !important',
             height: 'auto',
             display: 'flex' as const,
             overflow: 'hidden',
@@ -32,7 +32,7 @@ const styles = (_theme: Theme, { _chatWidth }: IProps) => {
             transition: 'max-height 0.3s',
 
             '& #smileysContainer': {
-                backgroundColor: '#14203E',
+                backgroundColor: '#131519',
                 borderTop: '1px solid rgba(59, 130, 246, 0.28)'
             }
         },

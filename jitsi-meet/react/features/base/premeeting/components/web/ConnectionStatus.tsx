@@ -37,7 +37,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status-header': {
-                backgroundColor: 'rgba(11, 18, 38, 0.9)',
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
                 alignItems: 'center',
                 display: 'flex',
                 padding: '12px 16px',
@@ -89,7 +89,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .con-status-details': {
-                backgroundColor: 'rgba(11, 18, 38, 0.9)',
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
                 borderTop: '1px solid rgba(59, 130, 246, 0.16)',
                 padding: theme.spacing(3),
                 transition: 'opacity 0.16s ease-out'

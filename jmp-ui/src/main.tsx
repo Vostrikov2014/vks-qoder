@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
+import { ThemeProvider, createTheme, type Shadows } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { BrowserRouter } from 'react-router-dom'
 import './i18n/config'
@@ -18,6 +18,8 @@ const theme = createTheme({
   shape: {
     borderRadius: 2,
   },
+  // Disable all Material elevation shadows
+  shadows: Array(25).fill('none') as Shadows,
   palette: {
     mode: 'light',
     primary: {

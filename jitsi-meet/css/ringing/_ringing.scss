@@ -6,10 +6,10 @@
     height: 100%;
     position: fixed;
     z-index: 300;
-    @include transparentBg(#0B1226, 0.95);
+    @include transparentBg(#040404, 0.95);
 
     &.solidBG {
-        background: #0B1226;
+        background: #040404;
     }
 
     &__content {

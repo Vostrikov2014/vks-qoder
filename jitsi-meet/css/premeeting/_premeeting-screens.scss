@@ -20,7 +20,7 @@
         }
 
         &.secondary {
-            background: #1B2A4A;
+            background: #3D3D3D;
             border: 1px solid rgba(59, 130, 246, 0.28);
         }
 
@@ -32,8 +32,8 @@
         }
 
         &.disabled {
-            background: #24365C;
-            border: 1px solid #24365C;
+            background: #5E6D7A;
+            border: 1px solid #5E6D7A;
             color: #7C93B8;
             cursor: initial;
 
@@ -106,7 +106,7 @@
 }
 
 #preview {
-    background: var(--prejoin-preview-background, #0B1226);
+    background: var(--prejoin-preview-background, #040404);
     display: flex;
     align-items: center;
     justify-content: center;

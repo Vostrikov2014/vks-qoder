@@ -65,18 +65,12 @@ const BentoCard = ({ children, colSpan = 1 }: { children: React.ReactNode; colSp
         height: '100%',
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid var(--glass-border)',
         borderRadius: 'var(--radius-xl)',
-        boxShadow: 'var(--shadow-lg)',
         p: 3,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'box-shadow 0.2s ease',
-        '&:hover': {
-          boxShadow: 'var(--shadow-xl)',
-        },
       }}
     >
       {children}
@@ -266,9 +260,9 @@ export default function AnalyticsPage() {
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--glass-bg)',
                 color: 'var(--text-h)',
-                '& fieldset': { borderColor: 'var(--border)' },
-                '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
+                '& fieldset': { borderColor: 'transparent' },
+                '&:hover fieldset': { borderColor: 'transparent' },
+                '&.Mui-focused fieldset': { borderColor: 'transparent' },
               },
               '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
               '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
@@ -286,9 +280,9 @@ export default function AnalyticsPage() {
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--glass-bg)',
                 color: 'var(--text-h)',
-                '& fieldset': { borderColor: 'var(--border)' },
-                '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
+                '& fieldset': { borderColor: 'transparent' },
+                '&:hover fieldset': { borderColor: 'transparent' },
+                '&.Mui-focused fieldset': { borderColor: 'transparent' },
               },
               '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
               '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
@@ -300,10 +294,9 @@ export default function AnalyticsPage() {
             sx={{
               borderRadius: 'var(--radius-lg)',
               background: 'var(--primary-600)',
-              boxShadow: 'none',
               textTransform: 'none',
               fontWeight: 600,
-              '&:hover': { background: 'var(--primary-700)', boxShadow: 'none' },
+              '&:hover': { background: 'var(--btn-hover-bg)' },
             }}
           >
             {t('common.apply')}
@@ -567,9 +560,7 @@ export default function AnalyticsPage() {
               sx={{
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid var(--glass-border)',
                 borderRadius: 'var(--radius-xl)',
-                boxShadow: 'var(--shadow-lg)',
                 p: 3,
               }}
             >

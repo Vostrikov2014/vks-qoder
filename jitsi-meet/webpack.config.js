@@ -29,6 +29,68 @@ const jvbProxyTarget
 const SIGNALING_PATHS = [ '/http-bind', '/xmpp-websocket', '/colibri-ws' ];
 
 /**
+ * Socket teardown codes seen when one side of a proxied signalling session disappears
+ * mid-write: the browser tab closes (or live-reloads) around the moment the upstream XMPP/
+ * Colibri session ends, so the remaining socket writes into the void.
+ */
+const SOCKET_TEARDOWN_CODES = [ 'EPIPE', 'ECONNRESET', 'ERR_STREAM_WRITE_AFTER_END' ];
+
+/**
+ * Log lines http-proxy(-middleware) prints for such teardowns, which cannot be turned off
+ * per proxy: the HPM logger is a process-wide singleton and `logError` subscribes to the
+ * proxy `error` event unconditionally.
+ *
+ *   [HPM] Error occurred while proxying request localhost:8000/xmpp-websocket?... [EPIPE]
+ *   [HPM] WebSocket error: Error [ERR_STREAM_WRITE_AFTER_END]: write after end
+ *   [HPM] ECONNRESET: Error: read ECONNRESET
+ *
+ * The session is already gone at that point, so exactly those lines are dropped from the
+ * dev server output; proxy creation info and unrelated failures stay visible.
+ */
+const SOCKET_TEARDOWN_LOG_PATTERN
+    = new RegExp(`\\[HPM\\][^\\n]*(?:\\[(?:${SOCKET_TEARDOWN_CODES.join('|')})\\]|ECONNRESET:)`);
+
+/**
+ * Log provider for the signalling proxies: forwards everything to the default console
+ * provider except the teardown noise matched above.
+ */
+const quietHpmLogProvider = defaultProvider => {
+    return {
+        ...defaultProvider,
+        error: (...args) => {
+            if (!SOCKET_TEARDOWN_LOG_PATTERN.test(String(args[0]))) {
+                defaultProvider.error(...args);
+            }
+        }
+    };
+};
+
+/**
+ * Error handler for the signalling WebSocket proxies.
+ *
+ * Errors that slip past the provider filter must not be answered the way the default
+ * http-proxy-middleware handler does: it tries to write an HTTP response onto the upgraded
+ * socket (`res.end`), which only produces a second, bogus ERR_STREAM_WRITE_AFTER_END and
+ * ends up as garbage bytes in the WebSocket stream. Keep unexpected codes loud instead and
+ * close the dead session socket. (The "to undefined" target in HPM's diagnostics is by
+ * design: it passes no target on the ws error path, see logError.)
+ *
+ * @param {Error} err - The error reported by http-proxy for the proxied socket.
+ * @param {Object} _req - The upgrade request that opened the session.
+ * @param {Duplex} socket - The browser-side socket of the failed session.
+ */
+function onSignallingProxyError(err, _req, socket) {
+    if (!SOCKET_TEARDOWN_CODES.includes(err.code)) {
+        console.warn(`[webpack-dev-server] signalling proxy error: ${err.message}`);
+    }
+
+    // The handshake can never complete now; do not leave the browser waiting for it.
+    if (socket?.destroy && !socket.destroyed) {
+        socket.destroy();
+    }
+}
+
+/**
  * Build a Performance configuration object for the given size.
  * See: https://webpack.js.org/configuration/performance/
  *
@@ -310,14 +372,18 @@ function getDevServerConfig() {
 
         // Signalling is proxied straight to the local backends (there is no jitsi-web
         // container in the local contour). XMPP over WebSocket and colibri-ws are upgrade
-        // requests, hence ws: true.
+        // requests, hence ws: true; their session teardown races are handled by
+        // quietHpmLogProvider and onSignallingProxyError above. The provider is set on all
+        // three proxies for determinism: HPM applies it to its process-wide singleton, so
+        // whichever proxy is created last would otherwise win with webpack-dev-server's own.
         proxy: [
             {
                 // BOSH (XMPP over HTTP long polling).
                 context: [ '/http-bind' ],
                 target: prosodyProxyTarget,
                 secure: false,
-                changeOrigin: true
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider
             },
             {
                 // XMPP over WebSocket.
@@ -325,7 +391,9 @@ function getDevServerConfig() {
                 target: prosodyProxyTarget,
                 ws: true,
                 secure: false,
-                changeOrigin: true
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider,
+                on: { error: onSignallingProxyError }
             },
             {
                 // Colibri WebSocket: browser <-> Videobridge media signalling.
@@ -333,7 +401,9 @@ function getDevServerConfig() {
                 target: jvbProxyTarget,
                 ws: true,
                 secure: false,
-                changeOrigin: true
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider,
+                on: { error: onSignallingProxyError }
             }
         ],
         server: 'http',
