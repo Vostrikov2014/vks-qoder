@@ -31,9 +31,8 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  /* Same background as the login page in the dark theme: deep blue gradient */
-  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-  background-attachment: fixed;
+  /* Dark corporate "start screen" background */
+  background: var(--lp-bg);
   color: var(--lp-text);
 }
 
@@ -431,12 +430,11 @@
   font-weight: 600;
   padding: 16px 28px;
   cursor: pointer;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition: transform var(--transition-base);
 }
 
 .hero-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
 
 .hero-cta:focus-visible {

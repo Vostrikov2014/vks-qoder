@@ -94,11 +94,9 @@ export default function LoginPage() {
         position: 'relative',
         overflow: 'hidden',
         p: 2,
+        background: isDarkMode ? '#000' : 'transparent',
       }}
     >
-      {/* Aurora Background */}
-      <div className="aurora-bg" />
-
       {/* Back to Home */}
       <Box
         sx={{
@@ -115,16 +113,16 @@ export default function LoginPage() {
           sx={{
             width: 48,
             height: 48,
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: '14px',
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            boxShadow: 'var(--shadow-lg)',
+            boxShadow: 'none',
             '&:hover': {
               background: 'var(--glass-bg)',
               color: 'var(--primary-600)',
-              boxShadow: 'var(--shadow-xl)',
+              boxShadow: 'none',
             },
             transition: 'all 0.2s ease',
           }}
@@ -149,16 +147,16 @@ export default function LoginPage() {
           sx={{
             width: 48,
             height: 48,
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: '14px',
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            boxShadow: 'var(--shadow-lg)',
+            boxShadow: 'none',
             '&:hover': {
               background: 'var(--glass-bg)',
               color: 'var(--primary-600)',
-              boxShadow: 'var(--shadow-xl)',
+              boxShadow: 'none',
             },
             transition: 'all 0.2s ease',
           }}
@@ -189,18 +187,18 @@ export default function LoginPage() {
           sx={{
             width: 48,
             height: 48,
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: '14px',
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            boxShadow: 'var(--shadow-lg)',
+            boxShadow: 'none',
             fontSize: '0.75rem',
             fontWeight: 600,
             '&:hover': {
               background: 'var(--glass-bg)',
               color: 'var(--primary-600)',
-              boxShadow: 'var(--shadow-xl)',
+              boxShadow: 'none',
             },
             transition: 'all 0.2s ease',
           }}
@@ -208,34 +206,6 @@ export default function LoginPage() {
           {i18n.language === 'ru' ? 'EN' : 'RU'}
         </IconButton>
       </Box>
-
-      {/* Decorative Elements */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '10%',
-          left: '10%',
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          animation: 'float 8s ease-in-out infinite',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '10%',
-          right: '10%',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.10) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-          animation: 'float 10s ease-in-out infinite reverse',
-        }}
-      />
 
       {/* Login Card */}
       <motion.div
@@ -256,20 +226,6 @@ export default function LoginPage() {
             overflow: 'hidden',
           }}
         >
-          {/* Glow Effect */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: -100,
-              left: -100,
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(var(--primary-rgb), 0.15) 0%, transparent 70%)',
-              filter: 'blur(40px)',
-            }}
-          />
-
           {/* Logo & Header */}
           <motion.div variants={itemVariants}>
             <Box sx={{ textAlign: 'center', mb: 4, position: 'relative' }}>
@@ -284,7 +240,6 @@ export default function LoginPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 8px 30px rgba(var(--primary-rgb), 0.35)',
                 }}
               >
                 <Video size={36} color="white" />
@@ -461,24 +416,32 @@ export default function LoginPage() {
                 endIcon={<ArrowRight size={20} />}
                 sx={{
                   py: 1.5,
-                  borderRadius: 'var(--radius-lg)',
+                  px: 3,
+                  border: 'none',
+                  borderRadius: '14px',
                   background: 'var(--primary-600)',
                   color: 'white',
                   fontWeight: 600,
                   fontSize: '1rem',
                   textTransform: 'none',
                   boxShadow: 'none',
+                  transition: 'background-color var(--transition-base)',
                   '&:hover': {
-                    background: 'var(--primary-700)',
-                    boxShadow: 'var(--shadow-xl)',
+                    background: 'var(--primary-500)',
+                    boxShadow: 'none',
                   },
                   '&:active': {
                     background: 'var(--primary-700)',
-                    boxShadow: 'var(--shadow-xl)',
+                    boxShadow: 'none',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid var(--primary-600)',
+                    outlineOffset: 2,
                   },
                   '&:disabled': {
                     background: 'var(--border-strong)',
                     color: 'var(--text-muted)',
+                    opacity: 0.5,
                   },
                 }}
               >

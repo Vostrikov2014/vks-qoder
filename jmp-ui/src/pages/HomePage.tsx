@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Clock, ArrowRight, LogIn, Sun, Moon, LoaderCircle } from 'lucide-react';
+import { Video, Clock, ArrowRight, LogIn, LoaderCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
-import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
 import { extractApiError, joinApi } from '../services/api';
 import './HomePage.css';
@@ -12,8 +11,9 @@ import './HomePage.css';
 /**
  * HomePage - Landing/Start page for VKS TV video conferencing application
  *
- * Layout mirrors the corporate "start screen" design:
- * - left icon rail (sign in / meetings / theme / language)
+ * Layout mirrors the corporate "start screen" design (dark-only palette,
+ * see HomePage.css - no theme toggle on this page):
+ * - left icon rail (sign in / meetings / language)
  * - 2x2 action grid: big blue "create meeting" tile, "schedule" tile,
  *   "connect by code" tile (expands inline), "sign in" tile
  * - right hero: call-to-action for authenticated users + decorative line-art SVG
@@ -165,22 +165,12 @@ const HeroIllustration = () => (
 export default function HomePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isDarkMode, toggleTheme } = useThemeStore();
   const { isAuthenticated } = useAuthStore();
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'ru' ? 'en' : 'ru';
     i18n.changeLanguage(newLang);
   };
-
-  // Apply dark mode class to document
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   // State for the "Connect" tile - controls visibility of the meeting code input
   const [isConnectExpanded, setIsConnectExpanded] = useState(false);
@@ -292,24 +282,6 @@ export default function HomePage() {
             <Video size={20} />
           </span>
           <span className="rail-label">{t('home.meetings')}</span>
-        </button>
-
-        <button
-          className="rail-item"
-          onClick={toggleTheme}
-          aria-label={isDarkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
-        >
-          <span className="rail-icon">
-            <motion.span
-              className="rail-icon-inner"
-              initial={false}
-              animate={{ rotate: isDarkMode ? 360 : 0 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
-            >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </motion.span>
-          </span>
-          <span className="rail-label">{t('home.theme')}</span>
         </button>
 
         <div className="rail-spacer" />
