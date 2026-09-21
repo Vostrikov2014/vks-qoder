@@ -220,7 +220,7 @@ export default function LoginPage() {
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-2xl)',
-            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
+            boxShadow: isDarkMode ? 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)' : 'none',
             p: { xs: 3, sm: 5 },
             position: 'relative',
             overflow: 'hidden',
