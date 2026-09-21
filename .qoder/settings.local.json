@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(*)"
+      "WebFetch(*)",
+      "Bash(timeout 300 docker pull jitsi/prosody:stable 2>&1 | tail -1)",
+      "Bash(docker compose:*)",
+      "Bash(ss -tlnp 2>/dev/null | grep :5432; docker ps --format '{{.Names}}\\\\t{{.Ports}}' | grep 5432)",
+      "Bash(docker inspect:*)",
+      "Bash(docker stop postgres && docker compose -f docker-compose.dev.yml up -d postgres)",
+      "Bash(docker compose -f docker-compose.dev.yml ps postgres garage --format '{{.Name}}\\\\t{{.Status}}' & docker compose -f docker-compose.dev.yml up -d garage; wait)",
+      "Bash(sleep 12; docker compose -f docker-compose.dev.yml ps postgres garage --format '{{.Name}}\\\\t{{.Status}}')"
     ]
   }
 }

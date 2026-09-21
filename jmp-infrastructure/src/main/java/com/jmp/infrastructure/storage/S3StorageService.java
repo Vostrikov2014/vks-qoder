@@ -12,6 +12,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -49,10 +50,16 @@ public class S3StorageService implements StorageService {
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(credentials));
 
-        // Configure for MinIO or other S3-compatible storage
+        // Configure for Garage or another self-hosted S3-compatible storage: custom
+        // endpoint and path-style addressing (virtual-host style would need wildcard DNS
+        // for <bucket>.<host>).
         if (endpoint != null && !endpoint.isEmpty()) {
-            s3Builder.endpointOverride(java.net.URI.create(endpoint));
-            presignerBuilder.endpointOverride(java.net.URI.create(endpoint));
+            var endpointUri = java.net.URI.create(endpoint);
+            var pathStyleConfiguration = S3Configuration.builder()
+                .pathStyleAccessEnabled(true)
+                .build();
+            s3Builder.endpointOverride(endpointUri).serviceConfiguration(pathStyleConfiguration);
+            presignerBuilder.endpointOverride(endpointUri).serviceConfiguration(pathStyleConfiguration);
         }
 
         this.s3Client = s3Builder.build();

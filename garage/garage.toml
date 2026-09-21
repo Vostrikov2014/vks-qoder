@@ -1,0 +1,27 @@
+# Garage (https://garagehq.deuxfleurs.fr) — S3-compatible object storage that keeps
+# JMP recordings, the MinIO replacement. Mounted read-only at /etc/garage.toml; the same
+# file is read by the CLI inside the container:
+#   docker exec garage /garage -c /etc/garage.toml status
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+# sqlite survives unclean container shutdowns better than the LMDB default; recordings
+# volumes are small, so its lower throughput does not matter here.
+db_engine = "sqlite"
+
+# Single node: no redundancy. Both directories live in the garage_data volume.
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+# 32-byte hex secret shared between cluster nodes (openssl rand -hex 32). Single node here.
+rpc_secret = "b6e9d3a7c1f4e8b2d5a9c3f7e0b4d8a2c6e1f5b9d3a7c0e4f8b2d6a9c1f5e8b3"
+
+[s3_api]
+# Garage rejects SigV4 requests signed for another region, so this must stay equal to
+# JMP_STORAGE_S3_REGION of jmp-api (docker-compose.yml).
+s3_region = "us-east-1"
+api_bind_addr = "[::]:3900"
+
+[admin]
+# Used by the CLI and by the container healthcheck; not published on the host.
+api_bind_addr = "[::]:3903"
