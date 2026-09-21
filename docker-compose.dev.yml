@@ -5,7 +5,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: jmp-postgres
+    container_name: postgres-dev
     restart: unless-stopped
     environment:
       POSTGRES_DB: jmp
@@ -26,7 +26,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: jmp-redis
+    container_name: redis-dev
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -107,7 +107,7 @@ services:
   # Prometheus (Metrics)
   prometheus:
     image: prom/prometheus:latest
-    container_name: jmp-prometheus
+    container_name: prometheus-dev
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -125,7 +125,7 @@ services:
   # Grafana (Dashboards)
   grafana:
     image: grafana/grafana:latest
-    container_name: jmp-grafana
+    container_name: grafana-dev
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -143,7 +143,7 @@ services:
   # MinIO (S3-compatible Object Storage)
   minio:
     image: minio/minio:latest
-    container_name: jmp-minio
+    container_name: minio-dev
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: test-access-key
@@ -204,7 +204,7 @@ services:
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
     image: jitsi/prosody:stable
-    container_name: jmp-jitsi-prosody
+    container_name: jitsi-prosody-dev
     restart: unless-stopped
     environment:
       # General
@@ -257,7 +257,7 @@ services:
   # Jitsi Jicofo (Conference Focus)
   jitsi-jicofo:
     image: jitsi/jicofo:stable
-    container_name: jmp-jitsi-jicofo
+    container_name: jitsi-jicofo-dev
     restart: unless-stopped
     environment:
       # General
@@ -299,7 +299,7 @@ services:
   # Jitsi JVB (Video Bridge)
   jitsi-jvb:
     image: jitsi/jvb:stable
-    container_name: jmp-jitsi-jvb
+    container_name: jitsi-jvb-dev
     restart: unless-stopped
     environment:
       # General

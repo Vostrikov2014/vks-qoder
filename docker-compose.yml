@@ -5,7 +5,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: jmp-postgres
+    container_name: postgres
     restart: unless-stopped
     env_file:
       - .env
@@ -28,7 +28,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: jmp-redis
+    container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -113,7 +113,7 @@ services:
   # Prometheus (Metrics)
   prometheus:
     image: prom/prometheus:latest
-    container_name: jmp-prometheus
+    container_name: prometheus
     restart: unless-stopped
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -129,7 +129,7 @@ services:
   # Grafana (Dashboards)
   grafana:
     image: grafana/grafana:latest
-    container_name: jmp-grafana
+    container_name: grafana
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -147,7 +147,7 @@ services:
   # MinIO (S3-compatible Object Storage)
   minio:
     image: minio/minio:latest
-    container_name: jmp-minio
+    container_name: minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: test-access-key
@@ -174,8 +174,8 @@ services:
     build:
       context: ./jitsi-meet
       dockerfile: Dockerfile
-    image: vostrlog/jmp-jitsi-web
-    container_name: jmp-jitsi-web
+    image: vostrlog/jmp-jitsi-meet
+    container_name: jitsi-meet
     restart: unless-stopped
     environment:
       TZ: UTC
@@ -215,7 +215,7 @@ services:
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
     image: jitsi/prosody:stable
-    container_name: jmp-jitsi-prosody
+    container_name: jitsi-prosody
     restart: unless-stopped
     environment:
       # General
@@ -265,7 +265,7 @@ services:
   # Jitsi Jicofo (Conference Focus)
   jitsi-jicofo:
     image: jitsi/jicofo:stable
-    container_name: jmp-jitsi-jicofo
+    container_name: jitsi-jicofo
     restart: unless-stopped
     environment:
       # General
@@ -307,7 +307,7 @@ services:
   # Jitsi JVB (Video Bridge)
   jitsi-jvb:
     image: jitsi/jvb:stable
-    container_name: jmp-jitsi-jvb
+    container_name: jitsi-jvb
     restart: unless-stopped
     environment:
       # General
@@ -366,7 +366,7 @@ services:
   # inspects every `server_name` to request certificates for those hosts.
   nginx-proxy:
     image: nginxproxy/nginx-proxy:alpine
-    container_name: jmp-nginx-proxy
+    container_name: nginx-proxy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -388,7 +388,7 @@ services:
 
   acme-companion:
     image: nginxproxy/acme-companion
-    container_name: jmp-letsencrypt
+    container_name: letsencrypt
     restart: unless-stopped
     environment:
       NGINX_PROXY_CONTAINER: jmp-nginx-proxy
