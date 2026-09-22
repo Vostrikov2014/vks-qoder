@@ -46,13 +46,14 @@
     "quarter": "Квартал"
   },
   "login": {
-    "welcomeBack": "С возвращением",
-    "signInToManage": "Войдите для управления видеоконференциями",
+    "welcomeBack": "Данные для входа",
+    "credentialsHint": "Введите логин и пароль от вашего аккаунта",
     "email": "Эл. почта",
     "password": "Пароль",
-    "forgotPassword": "Забыли пароль?",
+    "forgotPassword": "Восстановить пароль",
     "signingIn": "Вход...",
     "signInButton": "Войти",
+    "signInWithSso": "Войдите с помощью SSO",
     "invalidCredentials": "Неверный адрес эл. почты или пароль",
     "demoCredentials": "Демо-доступ",
     "superAdmin": "Суперадминистратор",

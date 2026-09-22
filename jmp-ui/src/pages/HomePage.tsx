@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, Clock, ArrowRight, LogIn, LoaderCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,10 @@ const itemVariants = {
     },
   },
 };
+
+// Router Link wrapped with framer-motion, so the hero CTA is a real anchor
+// pointing to the login page while keeping the staggered entrance animation.
+const MotionLink = motion.create(Link);
 
 // Base URL of the Jitsi Web instance; override via VITE_JITSI_URL in the environment
 const JITSI_BASE_URL = import.meta.env.VITE_JITSI_URL || 'http://localhost:8000';
@@ -432,15 +436,14 @@ export default function HomePage() {
               {t('home.heroTitleSuffix')}
             </motion.h1>
 
-            <motion.button
-              type="button"
+            <MotionLink
+              to="/login"
               className="hero-cta"
               variants={itemVariants}
-              onClick={redirectToLogin}
               aria-label={t('home.signInAria')}
             >
               {t('home.signInAsEmployee')}
-            </motion.button>
+            </MotionLink>
 
             <motion.div className="hero-art" variants={itemVariants}>
               <HeroIllustration />

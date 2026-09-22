@@ -10,7 +10,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { Video, Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
 import { useAuthStore } from '../store/authStore';
@@ -40,20 +40,25 @@ const itemVariants = {
   },
 };
 
-// Shared styles for the email/password fields: no frame at all, the hint stays
-// inside the field while it is empty, and hover uses the neutral grey tint of
-// the HomePage tiles instead of a bluish one.
+// Corner radius shared by the email/password fields and the submit button,
+// matching the tile rounding used across the app.
+const AUTH_CONTROL_RADIUS = '16px';
+
+// Shared styles for the email/password fields: fully frameless (no blue
+// highlight on focus), the hint stays inside the field while it is empty, and
+// hover follows the blue theme colour like the search field on ConferencesPage.
 const createAuthFieldSx = (isDarkMode: boolean) => {
   // Single source of truth for the field surface; the autofill fill below
-  // reuses it so a filled field keeps the exact background it had while empty
-  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#f0f0f2';
+  // reuses it so a filled field keeps the exact background it had while empty.
+  // The light theme uses a white surface, the dark theme keeps matching the
+  // elevated surfaces
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
 
   return {
     '& .MuiOutlinedInput-root': {
-      borderRadius: 'var(--radius-lg)',
-      // Light theme gets a minimal grey tint so the fields do not blend into the
-      // white card; a filled field keeps it, just like the dark theme keeps its
-      // own surface colour
+      borderRadius: AUTH_CONTROL_RADIUS,
+      // A filled field keeps the same surface it had while empty, just like
+      // the dark theme keeps its own colour
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
       '& fieldset': {
@@ -62,10 +67,11 @@ const createAuthFieldSx = (isDarkMode: boolean) => {
       '&:hover fieldset': {
         border: 'none',
       },
-      // Grey hover tint only while the field is still empty (hint visible),
-      // same as --lp-tile-hover on HomePage
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
       '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
-        background: isDarkMode ? '#2e2e33' : '#e4e4e7',
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
       },
       // No blue highlight on focus
       '&.Mui-focused fieldset': {
@@ -338,239 +344,196 @@ export default function LoginPage() {
         </Box>
       </Box>
 
-      {/* Login Card */}
+      {/* Login Content */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         style={{ width: '100%', maxWidth: 420, zIndex: 1 }}
       >
-        <Box
-          sx={{
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px', // same corner radius as the HomePage tiles (--lp-radius)
-            p: { xs: 3, sm: 5 },
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Logo & Header */}
-          <motion.div variants={itemVariants}>
-            <Box sx={{ textAlign: 'center', mb: 4, position: 'relative' }}>
-              <Box
-                sx={{
-                  width: 72,
-                  height: 72,
-                  mx: 'auto',
-                  mb: 3,
-                  borderRadius: 'var(--radius-xl)',
-                  background: 'var(--primary-600)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Video size={36} color="white" />
-              </Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  color: 'var(--text-h)',
-                }}
-              >
-                {t('login.welcomeBack')}
-              </Typography>
-            </Box>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-            >
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 3,
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(239, 68, 68, 0.06)',
-                  border: '1px solid rgba(239, 68, 68, 0.15)',
-                  color: '#dc2626',
-                  '& .MuiAlert-icon': {
-                    color: '#ef4444',
-                  },
-                }}
-              >
-                {error}
-              </Alert>
-            </motion.div>
-          )}
-
-          {/* Form */}
-          <Box component="form" onSubmit={handleSubmit}>
-            <motion.div variants={itemVariants}>
-              <TextField
-                fullWidth
-                placeholder={t('login.email')}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-                inputProps={{ 'aria-label': t('login.email') }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Mail size={20} color="var(--text-muted)" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ ...authFieldSx, mb: 2.5 }}
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <TextField
-                fullWidth
-                placeholder={t('login.password')}
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                inputProps={{ 'aria-label': t('login.password') }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock size={20} color="var(--text-muted)" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        disableRipple
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        sx={{ color: 'var(--text-muted)' }}
-                      >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ ...authFieldSx, mb: 1 }}
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'var(--primary-600)',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  {t('login.forgotPassword')}
-                </Typography>
-              </Box>
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <Button
-                type="submit"
-                fullWidth
-                size="large"
-                disabled={loading}
-                disableRipple
-                endIcon={<ArrowRight size={20} />}
-                sx={{
-                  py: 1.5,
-                  px: 3,
-                  border: 'none',
-                  outline: 'none',
-                  // Match the corner radius of the email/password fields
-                  borderRadius: 'var(--radius-lg)',
-                  // Standard filled-button colours, same as the conferences page
-                  background: 'var(--primary-600)',
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  textTransform: 'none',
-                  transition: 'background-color var(--transition-base)',
-                  '&:hover': {
-                    background: 'var(--btn-hover-bg)',
-                    outline: 'none',
-                  },
-                  '&:focus': {
-                    outline: 'none',
-                  },
-                  '&:focus-visible': {
-                    outline: 'none',
-                  },
-                  '&:disabled': {
-                    background: 'var(--border-strong)',
-                    color: 'var(--text-muted)',
-                    opacity: 0.5,
-                  },
-                }}
-              >
-                {loading ? t('login.signingIn') : t('login.signInButton')}
-              </Button>
-            </motion.div>
-          </Box>
-
-          {/* Demo Credentials */}
-          <motion.div variants={itemVariants}>
-            <Box
+        {/* Header */}
+        <motion.div variants={itemVariants}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography
+              variant="h4"
               sx={{
-                mt: 4,
-                p: 2.5,
-                borderRadius: 'var(--radius-lg)',
-                background: 'rgba(var(--primary-rgb), 0.06)',
-                border: '1px dashed rgba(var(--primary-rgb), 0.25)',
+                fontWeight: 800,
+                mb: 1,
+                color: 'var(--text-h)',
+                fontSize: { sm: '2.5rem' },
               }}
             >
+              {t('login.welcomeBack')}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-muted)', fontSize: { xs: '0.95rem', sm: '1.12rem' } }}
+            >
+              {t('login.credentialsHint')}
+            </Typography>
+          </Box>
+        </motion.div>
+
+        {/* Error Alert */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Alert
+              severity="error"
+              sx={{
+                mb: 3,
+                borderRadius: 'var(--radius-lg)',
+                background: 'rgba(239, 68, 68, 0.06)',
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+                color: '#dc2626',
+                '& .MuiAlert-icon': {
+                  color: '#ef4444',
+                },
+              }}
+            >
+              {error}
+            </Alert>
+          </motion.div>
+        )}
+
+        {/* Form */}
+        <Box component="form" onSubmit={handleSubmit}>
+          <motion.div variants={itemVariants}>
+            <TextField
+              fullWidth
+              placeholder={t('login.email')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+              inputProps={{ 'aria-label': t('login.email') }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Mail size={20} color="var(--text-muted)" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ ...authFieldSx, mb: 2.5 }}
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <TextField
+              fullWidth
+              placeholder={t('login.password')}
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              inputProps={{ 'aria-label': t('login.password') }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock size={20} color="var(--text-muted)" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      disableRipple
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: 'var(--text-muted)' }}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ ...authFieldSx, mb: 1 }}
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
               <Typography
-                variant="caption"
+                variant="body2"
                 sx={{
-                  display: 'block',
-                  mb: 1.5,
-                  color: 'var(--text-muted)',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  color: 'var(--primary-600)',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
                 }}
               >
-                {t('login.demoCredentials')}
+                {t('login.forgotPassword')}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>{t('roles.SUPER_ADMIN')}:</strong> admin@jmp.local / admin123
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>{t('roles.TENANT_ADMIN')}:</strong> tenant@jmp.local / tenant123
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>{t('roles.MODERATOR')}:</strong> moderator@jmp.local / moderator123
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>{t('roles.PARTICIPANT')}:</strong> participant@jmp.local / participant123
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'var(--text)', fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-                  <strong>{t('roles.AUDITOR')}:</strong> auditor@jmp.local / auditor123
-                </Typography>
-              </Box>
             </Box>
           </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Button
+              type="submit"
+              fullWidth
+              size="large"
+              disabled={loading}
+              disableRipple
+              endIcon={<ArrowRight size={20} />}
+              sx={{
+                py: 1.5,
+                px: 3,
+                border: 'none',
+                outline: 'none',
+                // Match the corner radius of the email/password fields
+                borderRadius: AUTH_CONTROL_RADIUS,
+                // Standard filled-button colours, same as the conferences page
+                background: 'var(--primary-600)',
+                color: 'white',
+                fontWeight: 600,
+                fontSize: '1rem',
+                textTransform: 'none',
+                transition: 'background-color var(--transition-base)',
+                '&:hover': {
+                  background: 'var(--btn-hover-bg)',
+                  outline: 'none',
+                },
+                '&:focus': {
+                  outline: 'none',
+                },
+                '&:focus-visible': {
+                  outline: 'none',
+                },
+                '&:disabled': {
+                  background: 'var(--border-strong)',
+                  color: 'var(--text-muted)',
+                  opacity: 0.5,
+                },
+              }}
+            >
+              {loading ? t('login.signingIn') : t('login.signInButton')}
+            </Button>
+          </motion.div>
         </Box>
+
+        {/* SSO link placeholder, functionality to be added later */}
+        <motion.div variants={itemVariants}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'var(--primary-600)',
+                cursor: 'pointer',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              {t('login.signInWithSso')}
+            </Typography>
+          </Box>
+        </motion.div>
       </motion.div>
     </Box>
   );

@@ -46,13 +46,14 @@
     "quarter": "Quarter"
   },
   "login": {
-    "welcomeBack": "Welcome Back",
-    "signInToManage": "Sign in to manage your video conferences",
+    "welcomeBack": "Login credentials",
+    "credentialsHint": "Enter your account username and password",
     "email": "Email",
     "password": "Password",
-    "forgotPassword": "Forgot password?",
+    "forgotPassword": "Reset password",
     "signingIn": "Signing in...",
     "signInButton": "Sign In",
+    "signInWithSso": "Sign in with SSO",
     "invalidCredentials": "Invalid email or password",
     "demoCredentials": "Demo Credentials",
     "superAdmin": "Super Admin",

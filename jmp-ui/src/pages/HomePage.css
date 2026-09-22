@@ -425,6 +425,7 @@
 }
 
 .hero-cta {
+  display: inline-block;
   border: none;
   border-radius: 14px;
   background: var(--lp-text);
@@ -433,6 +434,7 @@
   font-size: 1rem;
   font-weight: 600;
   padding: 16px 28px;
+  text-decoration: none;
   cursor: pointer;
   transition: transform var(--transition-base);
 }
