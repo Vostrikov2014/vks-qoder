@@ -67,7 +67,7 @@ const styles = (theme: Theme) => {
         },
         highlightNotification: {
             backgroundColor: theme.palette.recordingHighlightButton,
-            borderRadius: '6px',
+            borderRadius: '12px',
             boxShadow: '0px 6px 20px rgba(0, 0, 0, 0.25)',
             boxSizing: 'border-box' as const,
             color: theme.palette.recordingNotificationText,

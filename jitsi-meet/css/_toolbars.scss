@@ -84,7 +84,7 @@
     margin: 0 auto;
     max-width: 100%;
     pointer-events: all;
-    border-radius: 6px;
+    border-radius: 16px;
 
     .toolbox-content-items {
         @include ltr;
@@ -98,7 +98,7 @@
 }
 
 .overflow-menu-hr {
-    border-top: 1px solid rgba(59, 130, 246, 0.16);
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
     border-bottom: 0;
     margin: 8px 0;
 }
@@ -167,7 +167,7 @@ div.hangup-menu-button {
         background: none;
 
         &:hover {
-            background: rgba(59, 130, 246, 0.28);
+            background: rgba(255, 255, 255, 0.10);
         }
     }
 

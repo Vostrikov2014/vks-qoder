@@ -105,6 +105,7 @@ const useStyles = makeStyles()(theme => {
 
             '&.secondary': {
                 background: theme.palette.prejoinActionButtonSecondary,
+                border: '1px solid rgba(255, 255, 255, 0.16)',
                 color: theme.palette.prejoinActionButtonSecondaryText,
 
                 '&:hover': {
@@ -121,13 +122,13 @@ const useStyles = makeStyles()(theme => {
 
             '&.disabled': {
                 background: theme.palette.prejoinActionButtonDisabled,
-                border: '1px solid rgba(59, 130, 246, 0.28)',
-                color: '#7C93B8',
+                border: '1px solid rgba(255, 255, 255, 0.16)',
+                color: '#8A8A8A',
                 cursor: 'initial',
 
                 '.icon': {
                     '& > svg': {
-                        fill: '#7C93B8'
+                        fill: '#8A8A8A'
                     }
                 }
             },

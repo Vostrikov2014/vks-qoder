@@ -13,7 +13,7 @@ $thumbnailsBorder: 2px;
 /**
  * Toolbar
  */
-$newToolbarBackgroundColor: #131519;
+$newToolbarBackgroundColor: #1a1a1d;
 $newToolbarSize: 48px;
 $newToolbarSizeMobile: 60px;
 $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
@@ -21,12 +21,12 @@ $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
 /**
  * Chat
  */
-$chatBackgroundColor: #131519;
+$chatBackgroundColor: #1a1a1d;
 
 /**
  * Misc.
  */
-$borderRadius: 6px;
+$borderRadius: 12px;
 $scrollHeight: 7px;
 
 /**
@@ -47,12 +47,12 @@ $filmstripVideosZ: $toolbarZ + 1;
  * Unsupported browser
  */
 $primaryUnsupportedBrowserButtonBgColor: #2563EB;
-$unsupportedBrowserButtonBgColor: rgba(59, 130, 246, 0.12);
-$unsupportedBrowserTextColor: #A9BEE0;
+$unsupportedBrowserButtonBgColor: rgba(255, 255, 255, 0.08);
+$unsupportedBrowserTextColor: #B3B3B3;
 $unsupportedBrowserTextSmallFontSize: 1rem;
-$unsupportedBrowserTitleColor: #E9F0FB;
+$unsupportedBrowserTitleColor: #F5F5F5;
 $unsupportedBrowserTitleFontSize: 1.5rem;
-$unsupportedDesktopBrowserTextColor: rgba(233, 240, 251, 0.7);
+$unsupportedDesktopBrowserTextColor: rgba(245, 245, 245, 0.7);
 $unsupportedDesktopBrowserTextFontSize: 1.25rem;
 
 /**
@@ -67,10 +67,10 @@ $welcomePageWatermarkHeight: 32px;
 /**
  * Welcome page variables.
  */
-$welcomePageDescriptionColor: #A9BEE0;
+$welcomePageDescriptionColor: #B3B3B3;
 $welcomePageFontFamily: inherit;
 $welcomePageBackground: none;
-$welcomePageTitleColor: #E9F0FB;
+$welcomePageTitleColor: #F5F5F5;
 
 $welcomePageHeaderBackground: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('../images/welcome-background.png');
 $welcomePageHeaderBackgroundPosition: center;
@@ -80,7 +80,7 @@ $welcomePageHeaderPadding: 1rem;
 $welcomePageHeaderTitleMaxWidth: initial;
 $welcomePageHeaderTextAlign: center;
 $welcomePageButtonBg: #3B82F6;
-$welcomePageButtonHoverBg: #2563EB;
+$welcomePageButtonHoverBg: #60A5FA;
 $welcomePageButtonFocusOutline: #60A5FA;
 
 $welcomePageHeaderContainerMarginTop: 104px;
@@ -108,7 +108,7 @@ $welcomePageTabDisplay: block;
  */
 $deepLinkingMobileLogoHeight: 40px;
 
-$deepLinkingMobileHeaderBackground: #141414;
+$deepLinkingMobileHeaderBackground: #1a1a1d;
 
 $deepLinkingMobileLinkColor: inherit;
 $deepLinkingMobileTextFontSize: inherit;

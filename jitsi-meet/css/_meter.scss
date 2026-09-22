@@ -3,14 +3,14 @@
         display: inline-block;
 
         & > svg {
-            fill: #525252;
+            fill: #3a3a42;
             width: 38px;
         }
     }
 
     &.metr--disabled {
         & > svg {
-            fill: #525252;
+            fill: #3a3a42;
         }
     }
 }

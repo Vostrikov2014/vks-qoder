@@ -103,7 +103,7 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: theme.palette.breakoutRoomArrowBackground,
             width: '24px',
             height: '24px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             marginRight: '16px',
             display: 'flex',
             alignItems: 'center',

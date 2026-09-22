@@ -155,7 +155,7 @@ export const colorMap = {
     preMeetingBackground: 'surface02',  // Pre-meeting screen container background
     preMeetingPreview: 'ui01',          // Video preview in pre-meeting
     prejoinDialogBackground: 'uiBackground', // Prejoin dialog background
-    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#040404)
+    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#0D0D0F)
     prejoinDialogDelimiter: 'ui03',     // Prejoin dialog delimiter line
     prejoinDialogDelimiterText: 'text01', // Prejoin dialog delimiter text
     prejoinTitleText: 'text01',         // Prejoin title text color
@@ -168,7 +168,7 @@ export const colorMap = {
     prejoinActionButtonPrimaryText: 'text01', // Primary button text
     prejoinActionButtonSecondary: 'action02', // Secondary action button
     prejoinActionButtonSecondaryHover: 'action02Hover', // Secondary button hover
-    prejoinActionButtonSecondaryText: 'text04', // Secondary button text
+    prejoinActionButtonSecondaryText: 'text01', // Secondary button text (light on dark surface)
     prejoinActionButtonDanger: 'actionDanger', // Danger button (leave)
     prejoinActionButtonDisabled: 'disabled01', // Disabled button
     prejoinCountryPickerBackground: 'ui01', // Country picker background
@@ -181,16 +181,16 @@ export const colorMap = {
     prejoinDeviceStatusText: 'uiBackground', // Device status text
 
     // Notifications
-    notificationBackground: 'ui04',     // Notification background
+    notificationBackground: 'surface02',  // Notification background (dark toast surface)
     notificationNormalIcon: 'action01', // Normal notification icon
     notificationError: 'iconError',     // Error notification icon
     notificationSuccess: 'success01',   // Success notification icon
     notificationWarning: 'warning01',   // Warning notification icon
-    notificationText: 'text04',         // Notification text
-    notificationActionText: 'action01', // Notification action text
+    notificationText: 'text01',           // Notification text
+    notificationActionText: 'link01',     // Notification action text (light link on dark)
     notificationErrorText: 'textError', // Error notification text
     notificationActionFocus: 'action01', // Notification action focus outline
-    notificationCloseIcon: 'icon04',    // Notification close icon
+    notificationCloseIcon: 'icon01',      // Notification close icon
 
     // Forms/Inputs
     inputBackground: 'field01',         // Input field background
@@ -355,7 +355,7 @@ export const colorMap = {
     dialInSecondaryText: 'text02',           // Dial-in summary secondary text
 
     // Reactions
-    reactionsMenuBackground: '#141414', // Reactions menu background
+    reactionsMenuBackground: '#1A1A1D', // Reactions menu background
     reactionsMenuBorder: 'ui02',             // Reactions menu border
     reactionsMenuButtonToggled: 'surface01', // Reactions menu button toggled state background
     reactionsMenuBoxShadow1: 'ui09',         // Reactions menu box shadow primary
@@ -412,7 +412,7 @@ export const colorMap = {
     fileSharingItemBorder: 'ui02',           // File sharing item hover/border
 
     // Gifs
-    gifsBackground: '#141414',                  // GIFs panel background
+    gifsBackground: '#1A1A1D',                  // GIFs panel background
     gifsText: 'text01',                      // GIFs panel text
 
     // Whiteboard
@@ -433,7 +433,7 @@ export const colorMap = {
     securityDialogBorder: 'ui07',            // Security dialog border color
 
     // Deep Linking
-    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#1e1e1e)
+    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#0D0D0F)
     deepLinkingBorder: 'ui03',               // Deep linking page content pane border
     deepLinkingText: 'text01',               // Deep linking page text
     deepLinkingSeparator: 'ui03',            // Deep linking separator line
@@ -552,7 +552,7 @@ export const font = {
 };
 
 export const shape = {
-    borderRadius: 6,
+    borderRadius: 12,
     circleRadius: 50,
     boxShadow: 'inset 0px -1px 0px rgba(255, 255, 255, 0.15)'
 };

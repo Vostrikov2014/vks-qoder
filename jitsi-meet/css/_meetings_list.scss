@@ -1,6 +1,6 @@
 .meetings-list {
     font-size: 0.875rem;
-    color: #E9F0FB;
+    color: #F5F5F5;
     line-height: 1.25rem;
     text-align: left;
     text-overflow: ellipsis;
@@ -19,7 +19,7 @@
         flex-direction: column;
 
         .description {
-            color: #A9BEE0;
+            color: #B3B3B3;
             font-size: 0.875rem;
             line-height: 1.125rem;
             margin-bottom: 16px;
@@ -49,7 +49,7 @@
 
     .button {
         background: #3B82F6;
-        border-radius: 6px;
+        border-radius: 12px;
         color: #FFFFFF;
         display: flex;
         justify-content: center;
@@ -65,9 +65,9 @@
     }
 
     .item {
-        background: #141414;
+        background: #1a1a1d;
         box-sizing: border-box;
-        border-radius: 6px;
+        border-radius: 12px;
         display: inline-flex;
         margin: 4px 4px 0 4px;
         min-height: 60px;
@@ -108,7 +108,7 @@
         }
 
         .subtitle {
-            color: #7C93B8;
+            color: #8A8A8A;
             font-weight: normal;
             font-size: 0.75rem;
             line-height: 1rem;
@@ -129,7 +129,7 @@
 
         &.with-click-handler:hover,
         &.with-click-handler:focus {
-            background-color: #292929;
+            background-color: #2e2e33;
         }
 
         .add-button {
@@ -170,7 +170,7 @@
 
         .delete-meeting:hover {
             &>svg {
-                fill: #2563EB;
+                fill: #60A5FA;
             }
         }
     }

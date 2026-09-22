@@ -9,7 +9,7 @@ const useStyles = makeStyles()(theme => {
     return {
         limitContainer: {
             backgroundColor: theme.palette.warning01,
-            borderRadius: '6px',
+            borderRadius: '8px',
             padding: '8px 16px'
         },
         limitInfo: {

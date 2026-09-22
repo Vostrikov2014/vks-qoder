@@ -5,7 +5,7 @@ body.welcome-page {
 
 .welcome {
     background-image: $welcomePageBackground;
-    background-color: #040404;
+    background-color: #0d0d0f;
     display: flex;
     flex-direction: column;
     font-family: $welcomePageFontFamily;
@@ -19,7 +19,7 @@ body.welcome-page {
         background-repeat: $welcomePageHeaderBackgroundRepeat;
         background-size: $welcomePageHeaderBackgroundSize;
         padding: $welcomePageHeaderPadding;
-        background-color: #131519;
+        background-color: #1a1a1d;
         overflow: hidden;
         position: relative;
 
@@ -52,7 +52,7 @@ body.welcome-page {
         }
 
         .header-text-subtitle {
-            color: #A9BEE0;
+            color: #B3B3B3;
             font-size: 1.25rem;
             font-weight: 600;
             line-height: 1.625rem;
@@ -68,7 +68,7 @@ body.welcome-page {
             font-weight: 600;
             margin: 10px 0px 5px 0px;
             text-align: $welcomePageHeaderTextAlign;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 5px;
             .not-allow-title-character-text {
                 float: right;
@@ -114,7 +114,7 @@ body.welcome-page {
         }
 
         ::placeholder {
-            color: #7C93B8;
+            color: #8A8A8A;
         }
 
         #enter_room {
@@ -128,13 +128,13 @@ body.welcome-page {
             .join-meeting-container {
                 margin: $welcomePageEnterRoomMargin;
                 padding: $welcomePageEnterRoomPadding;
-                border-radius: 6px;
-                background-color: #141414;
-                border: 1px solid rgba(59, 130, 246, 0.28);
+                border-radius: 16px;
+                background-color: #1a1a1d;
+                border: 1px solid rgba(255, 255, 255, 0.10);
                 display: flex;
                 width: 100%;
                 text-align: left;
-                color: #E9F0FB;
+                color: #F5F5F5;
             }
 
             .enter-room-input-container {
@@ -142,13 +142,13 @@ body.welcome-page {
                 padding-right: 4px;
 
                 .enter-room-input {
-                    border-radius: 6px;
+                    border-radius: 12px;
                     border: 0;
                     background: transparent;
                     display: inline-block;
                     height: 50px;
                     width: 100%;
-                    color: #E9F0FB;
+                    color: #F5F5F5;
                     font-size: 0.875rem;
                     padding-left: 10px;
 
@@ -190,9 +190,9 @@ body.welcome-page {
         }
 
         .tab-buttons {
-            background-color: #292929;
-            border-radius: 6px;
-            color: #A9BEE0;
+            background-color: #1a1a1d;
+            border-radius: 16px;
+            color: #B3B3B3;
             font-size: 0.875rem;
             line-height: 1.125rem;
             margin: 4px;
@@ -200,7 +200,7 @@ body.welcome-page {
 
             [role="tab"] {
                 background-color: transparent;
-                border-radius: 7px;
+                border-radius: 12px;
                 cursor: pointer;
                 display: $welcomePageTabDisplay;
                 flex-grow: 1;
@@ -223,7 +223,7 @@ body.welcome-page {
         border: 0;
         font-size: 0.875rem;
         background: $welcomePageButtonBg;
-        border-radius: 6px;
+        border-radius: 12px;
         color: #FFFFFF;
         cursor: pointer;
         padding: 16px 20px;
@@ -239,7 +239,7 @@ body.welcome-page {
 
     .welcome-page-settings {
         background: rgba(0, 0, 0, 0.4);
-        border-radius: 6px;
+        border-radius: 12px;
         color: $welcomePageDescriptionColor;
         padding: 4px;
         position: absolute;
@@ -280,7 +280,7 @@ body.welcome-page {
     }
 
     .welcome-cards-container {
-        color:#E9F0FB;
+        color:#F5F5F5;
         padding-top: 40px;
     }
 
@@ -303,11 +303,11 @@ body.welcome-page {
 
     .welcome-card {
         width: 100%;
-        border-radius: 8px;
+        border-radius: 16px;
 
         &--dark {
-            background: #141414;
-            color: #E9F0FB;
+            background: #1a1a1d;
+            color: #F5F5F5;
         }
 
         &--blue {
@@ -315,13 +315,13 @@ body.welcome-page {
         }
 
         &--grey {
-            background: #292929;
+            background: #2e2e33;
         }
     }
 
     .welcome-footer {
-        background: #131519;
-        color: #E9F0FB;
+        background: #1a1a1d;
+        color: #F5F5F5;
         margin-top: 40px;
         position: relative;
     }
@@ -339,7 +339,7 @@ body.welcome-page {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid rgba(59, 130, 246, 0.16);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
 
         &:last-child {
             border-bottom: none;

@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => {
             boxSizing: 'border-box',
             border: '3px solid',
             borderColor: theme.palette.dialogText,
-            borderRadius: '6px'
+            borderRadius: '8px'
         },
         laptopStand: {
             width: '40px',

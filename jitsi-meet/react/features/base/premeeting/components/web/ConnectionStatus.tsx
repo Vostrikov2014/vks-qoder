@@ -14,7 +14,7 @@ import { getConnectionData } from '../../functions';
 const useStyles = makeStyles()(theme => {
     return {
         connectionStatus: {
-            color: '#E9F0FB',
+            color: '#F5F5F5',
             ...theme.typography.bodyShortRegular,
             position: 'absolute',
             width: '100%',

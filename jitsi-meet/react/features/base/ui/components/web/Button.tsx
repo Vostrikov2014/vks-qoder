@@ -82,7 +82,8 @@ const useStyles = makeStyles()(theme => {
 
         secondary: {
             backgroundColor: theme.palette.action02,
-            color: theme.palette.text04,
+            border: '1px solid rgba(255, 255, 255, 0.16)',
+            color: theme.palette.text01,
 
             '&:hover': {
                 backgroundColor: theme.palette.action02Hover
@@ -93,7 +94,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& div > svg': {
-                fill: theme.palette.icon04
+                fill: theme.palette.icon01
             }
         },
 

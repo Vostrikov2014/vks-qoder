@@ -4,7 +4,7 @@ import BaseTheme from '../../../ui/components/BaseTheme.native';
 /**
  * The default color of the {@code Label} and {@code ExpandedLabel}.
  */
-export const DEFAULT_COLOR = '#36383C';
+export const DEFAULT_COLOR = '#3A3A42';
 
 /**
  * Margin of the {@Label} - to be reused when rendering the

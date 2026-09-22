@@ -313,7 +313,9 @@ const defaultStyles = (theme: Theme) => {
             width: '100%',
             height: '100%',
             zIndex: 9,
-            borderRadius: '4px',
+
+            // use the theme radius so the outline follows the thumbnail's rounded corners
+            borderRadius: `${theme.shape.borderRadius}px`,
             pointerEvents: 'none' as const
         },
 

@@ -27,7 +27,7 @@
     }
 
     .recording-header-line {
-        border-top: 1px solid rgba(59, 130, 246, 0.16);
+        border-top: 1px solid rgba(255, 255, 255, 0.10);
         padding-top: 16px;
         margin-top: 16px;
     }
@@ -40,12 +40,12 @@
         padding: 8px 16px;
 
         &.text {
-            color: #E9F0FB;
-            background-color: #3D3D3D;
+            color: #F5F5F5;
+            background-color: #2e2e33;
         }
 
         &.notification {
-            color: #040404;
+            color: #0d0d0f;
             background-color: #EAB308;
         }
     }
@@ -56,16 +56,16 @@
     }
 
     .file-sharing-icon-container {
-        background-color: #525252;
-        border-radius: 4px;
+        background-color: #3a3a42;
+        border-radius: 8px;
         height: 40px;
         justify-content: center;
         width: 42px;
     }
 
     .cloud-content-recording-icon-container {
-        background-color: #E9F0FB;
-        border-radius: 4px;
+        background-color: #F5F5F5;
+        border-radius: 8px;
         height: 40px;
         justify-content: center;
         width: 40px;
@@ -76,15 +76,15 @@
     }
 
     .jitsi-content-recording-icon-container-with-switch {
-        background-color: #E9F0FB;
-        border-radius: 4px;
+        background-color: #F5F5F5;
+        border-radius: 8px;
         height: 40px;
         width: 40px;
     }
 
     .jitsi-content-recording-icon-container-without-switch {
-        background-color: #E9F0FB;
-        border-radius: 4px;
+        background-color: #F5F5F5;
+        border-radius: 8px;
         height: 40px;
         width: 46px;
     }
@@ -110,7 +110,7 @@
 
     .recording-info{
         background-color: #EAB308;
-        color: #040404;
+        color: #0d0d0f;
         display: inline-flex;
         margin: 32px 0;
         width: 100%;

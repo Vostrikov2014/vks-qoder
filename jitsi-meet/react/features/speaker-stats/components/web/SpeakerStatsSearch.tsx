@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => {
         speakerStatsSearch: {
             backgroundColor: theme.palette.speakerStatsSearchBackground,
             border: '1px solid',
-            borderRadius: 6,
+            borderRadius: 12,
             borderColor: theme.palette.speakerStatsSearchBorder,
             color: theme.palette.speakerStatsSearchText,
             padding: '10px 16px',
