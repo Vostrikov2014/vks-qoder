@@ -26,6 +26,23 @@ public class JitsiLinkBuilder {
     /** SPA route that resolves a join link, see jmp-ui {@code JoinPage}. */
     public static final String JOIN_PATH = "/j/";
 
+    /**
+     * URL fragment disabling the Jitsi prejoin screen: «Начать»/ссылка ведёт сразу в
+     * конференцию, без промежуточного экрана (важно и для машин без камеры/микрофона).
+     * Значение — whitelisted config override, см. jitsi-meet
+     * react/features/base/config/configWhitelist.ts.
+     */
+    private static final String SKIP_PREJOIN_HASH = "#config.prejoinConfig.enabled=false";
+
+    /**
+     * URL fragment for instant guest rooms: shows the prejoin screen explicitly and forces
+     * a display name there — the token carries no name, so Jitsi itself prompts the guest
+     * to enter one before joining. Both keys are whitelisted config overrides, см.
+     * jitsi-meet react/features/base/config/configWhitelist.ts.
+     */
+    private static final String FORCE_PREJOIN_HASH =
+        "#config.prejoinConfig.enabled=true&config.requireDisplayName=true";
+
     private static final String HTTP_PREFIX = "http://";
     private static final String HTTPS_PREFIX = "https://";
 
@@ -53,12 +70,27 @@ public class JitsiLinkBuilder {
      */
     public String jitsiBaseUrl(Conference conference) {
         String tenantDomain = conference.getTenant().getJitsiDomain();
-        String configured = (tenantDomain == null || tenantDomain.isBlank())
+        return normalizeBase((tenantDomain == null || tenantDomain.isBlank())
             ? defaultDomain
-            : tenantDomain;
+            : tenantDomain);
+    }
 
+    /**
+     * Absolute base address of the default Jitsi deployment, without a tenant in scope —
+     * used by instant guest rooms, which have no {@code Conference} entity.
+     *
+     * @throws IllegalStateException when {@code jitsi.domain} is not configured
+     */
+    public String jitsiBaseUrl() {
+        return normalizeBase(defaultDomain);
+    }
+
+    /**
+     * @throws IllegalStateException when the configured value is blank
+     */
+    private String normalizeBase(String configured) {
         if (configured == null || configured.isBlank()) {
-            throw new IllegalStateException("Jitsi domain not configured for tenant");
+            throw new IllegalStateException("Jitsi domain not configured");
         }
 
         String value = configured.trim();
@@ -81,12 +113,43 @@ public class JitsiLinkBuilder {
      * @param jwt pre-signed Jitsi token; {@code null} to omit the token entirely
      */
     public String roomUrl(Conference conference, String jwt) {
-        String base = jitsiBaseUrl(conference);
-        String url = base + "/" + encodePathSegment(conference.getRoomName());
-        if (jwt == null || jwt.isBlank()) {
-            return url;
+        return buildRoomUrl(jitsiBaseUrl(conference), conference.getRoomName(), jwt, SKIP_PREJOIN_HASH);
+    }
+
+    /**
+     * Full Jitsi address for a conference that keeps the prejoin screen enabled: instead
+     * of entering immediately, the caller first sees Jitsi's name prompt (the display name
+     * carried by the JWT is prefilled and can be edited) and only then joins. Mirrors the
+     * «Создать встречу» flow.
+     *
+     * @param jwt pre-signed Jitsi token; {@code null} to omit the token entirely
+     */
+    public String roomUrlWithPrejoin(Conference conference, String jwt) {
+        return buildRoomUrl(jitsiBaseUrl(conference), conference.getRoomName(), jwt, FORCE_PREJOIN_HASH);
+    }
+
+    /**
+     * Full Jitsi address for a bare room name, including the short-lived JWT. Used by
+     * instant guest rooms: they live only inside Jitsi and have no {@code Conference}.
+     *
+     * <p>Unlike a conference join link, the prejoin screen stays enabled here: the token
+     * carries no display name on purpose, so Jitsi itself prompts the guest to enter one
+     * and join the meeting.
+     *
+     * @param jwt pre-signed Jitsi token; {@code null} to omit the token entirely
+     */
+    public String roomUrl(String roomName, String jwt) {
+        return buildRoomUrl(jitsiBaseUrl(), roomName, jwt, FORCE_PREJOIN_HASH);
+    }
+
+    private static String buildRoomUrl(String base, String roomName, String jwt, String configHash) {
+        String url = base + "/" + encodePathSegment(roomName);
+        if (jwt != null && !jwt.isBlank()) {
+            url += "?jwt=" + jwt;
         }
-        return url + "?jwt=" + jwt;
+
+        // The hash comes last: the JWT must stay in the query so parseJWTFromURLParams finds it.
+        return url + configHash;
     }
 
     /**

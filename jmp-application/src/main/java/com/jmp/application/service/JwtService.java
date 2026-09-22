@@ -6,6 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -43,6 +44,7 @@ public class JwtService {
             @Value("${jmp.security.jwt.refresh-token-expiration-days:7}") long refreshTokenExpirationDays,
             @Value("${jitsi.jwt.app-id:}") String jitsiAppId,
             @Value("${jitsi.jwt.app-secret:}") String jitsiAppSecret,
+            @Value("${jitsi.jwt.app-secret-type:raw}") String jitsiAppSecretType,
             @Value("${jitsi.jwt.audience:jitsi}") String jitsiAudience,
             @Value("${jitsi.xmpp-domain:meet.jitsi}") String jitsiXmppDomain,
             @Value("${jitsi.jwt.token-ttl-minutes:240}") long jitsiTokenTtlMinutes) {
@@ -52,11 +54,32 @@ public class JwtService {
         this.refreshTokenExpirationDays = refreshTokenExpirationDays;
         this.jitsiAppKey = jitsiAppSecret.isBlank()
             ? this.accessTokenKey
-            : Keys.hmacShaKeyFor(Decoders.BASE64.decode(jitsiAppSecret));
+            : Keys.hmacShaKeyFor(jitsiSecretBytes(jitsiAppSecret, jitsiAppSecretType));
         this.jitsiAppId = jitsiAppId;
         this.jitsiAudience = jitsiAudience;
         this.jitsiXmppDomain = jitsiXmppDomain;
         this.jitsiTokenTtlMinutes = jitsiTokenTtlMinutes;
+    }
+
+    /**
+     * Bytes the Jitsi token is signed with.
+     *
+     * <p>Prosody's token module takes {@code app_secret} as a literal string and feeds it
+     * to HMAC-SHA256 as is ({@code token/util.lib.lua}: {@code key = self.appSecret}), so
+     * the platform has to sign with the raw UTF-8 bytes of the very same value — that is
+     * the {@code raw} mode and what the Jitsi docker images expect. {@code base64} is kept
+     * for deployments where Prosody was configured with the decoded key instead; choosing
+     * the wrong one shows up as an authentication failure on joining any room, never as a
+     * partially working conference.
+     */
+    private static byte[] jitsiSecretBytes(String secret, String type) {
+        if ("base64".equalsIgnoreCase(type.trim())) {
+            return Decoders.BASE64.decode(secret);
+        }
+        if (!"raw".equalsIgnoreCase(type.trim())) {
+            log.warn("Unknown jitsi.jwt.app-secret-type '{}' — falling back to 'raw'", type);
+        }
+        return secret.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
@@ -114,8 +137,6 @@ public class JwtService {
         log.debug("Generating Jitsi token for conference: {}, user: {}",
             conference.getId(), user.getId());
 
-        Instant expiration = jitsiTokenExpiration();
-
         Map<String, Object> contextUser = new HashMap<>();
         contextUser.put("id", user.getId().toString());
         contextUser.put("name", user.getFirstName() + " " + user.getLastName());
@@ -128,23 +149,21 @@ public class JwtService {
         claims.put("iss", jitsiAppId);
         claims.put("aud", jitsiAudience);
         claims.put("sub", jitsiXmppDomain);
-        claims.put("room", conference.getRoomName());
+        claims.put("room", Conference.backendSafeRoomName(conference.getRoomName()));
+        // The flags are nullable on the entity (a conference created through the API without
+        // them keeps nulls) and Map.of rejects null values — which used to fail the whole
+        // join flow with an NPE. Absent flags fall back to the entity defaults.
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", Boolean.TRUE.equals(conference.getEnableLiveStreaming()));
+        features.put("recording", Boolean.TRUE.equals(conference.getEnableRecording()));
+        features.put("screen-sharing", !Boolean.FALSE.equals(conference.getEnableScreenSharing()));
+
         claims.put("context", Map.of(
             "user", contextUser,
-            "features", Map.of(
-                "livestreaming", conference.getEnableLiveStreaming(),
-                "recording", conference.getEnableRecording(),
-                "screen-sharing", conference.getEnableScreenSharing()
-            )
+            "features", features
         ));
 
-        return Jwts.builder()
-            .claims(claims)
-            .subject(jitsiXmppDomain)
-            .issuedAt(Date.from(Instant.now()))
-            .expiration(Date.from(expiration))
-            .signWith(jitsiAppKey)
-            .compact();
+        return signJitsiToken(claims);
     }
 
     /**
@@ -164,8 +183,6 @@ public class JwtService {
     public String generateGuestToken(Conference conference, String displayName, boolean isModerator) {
         log.debug("Generating guest token for conference: {}", conference.getId());
 
-        Instant expiration = jitsiTokenExpiration();
-
         Map<String, Object> contextUser = new HashMap<>();
         contextUser.put("name", displayName);
         if (isModerator) {
@@ -176,22 +193,83 @@ public class JwtService {
         claims.put("iss", jitsiAppId);
         claims.put("aud", jitsiAudience);
         claims.put("sub", jitsiXmppDomain);
-        claims.put("room", conference.getRoomName());
+        claims.put("room", Conference.backendSafeRoomName(conference.getRoomName()));
+        // Same null-safety as for a platform token; screen sharing falls back to on.
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", false);
+        features.put("recording", false);
+        features.put("screen-sharing", !Boolean.FALSE.equals(conference.getEnableScreenSharing()));
+
         claims.put("context", Map.of(
             "user", contextUser,
-            "features", Map.of(
-                "livestreaming", false,
-                "recording", false,
-                "screen-sharing", conference.getEnableScreenSharing()
-            )
+            "features", features
         ));
 
+        return signJitsiToken(claims);
+    }
+
+    /**
+     * Generate a token for a brand-new instant guest room. Such a room has no
+     * {@code Conference} entity at all — it exists only inside Jitsi while somebody is in
+     * it, so the {@code room} claim below is the only binding between token and room.
+     *
+     * <p>The requester is granted moderator rights because there is no conference owner
+     * to appoint instead — the room is created by the very person who enters it first.
+     *
+     * @param displayName nullable: when absent, the Jitsi prejoin screen prompts the guest
+     *                    for a name instead of the token dictating one
+     * @param isModerator must be decided by the server, never taken from the client
+     */
+    public String generateInstantGuestToken(String roomName, String displayName, boolean isModerator) {
+        log.debug("Generating instant guest token for room: {}", roomName);
+
+        Map<String, Object> contextUser = new HashMap<>();
+        if (displayName != null && !displayName.isBlank()) {
+            contextUser.put("name", displayName);
+        }
+        if (isModerator) {
+            contextUser.put("moderator", "true");
+        }
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", jitsiAppId);
+        claims.put("aud", jitsiAudience);
+        claims.put("sub", jitsiXmppDomain);
+        claims.put("room", Conference.backendSafeRoomName(roomName));
+
+        Map<String, Object> features = new HashMap<>();
+        features.put("livestreaming", false);
+        features.put("recording", false);
+        features.put("screen-sharing", true);
+
+        claims.put("context", Map.of(
+            "user", contextUser,
+            "features", features
+        ));
+
+        return signJitsiToken(claims);
+    }
+
+    /**
+     * Builds a Jitsi token out of the prepared claims and signs it.
+     *
+     * <p>The signature algorithm is pinned to HMAC-SHA256 on purpose. Prosody's
+     * {@code token_verification} module verifies with exactly one algorithm and the Jitsi
+     * docker images leave it at the default {@code HS256}, while jjwt derives the strongest
+     * MAC the key allows — so this very secret used to yield an {@code HS384} token that
+     * Prosody rejected with "Invalid or incorrect alg". The rejection is only visible in the
+     * browser console, the participant simply never reaches the conference.
+     *
+     * @param claims claims shared by platform and guest tokens (iss, aud, sub, room, context)
+     */
+    private String signJitsiToken(Map<String, Object> claims) {
         return Jwts.builder()
+            .header().type("JWT").and()
             .claims(claims)
             .subject(jitsiXmppDomain)
             .issuedAt(Date.from(Instant.now()))
-            .expiration(Date.from(expiration))
-            .signWith(jitsiAppKey)
+            .expiration(Date.from(jitsiTokenExpiration()))
+            .signWith(jitsiAppKey, Jwts.SIG.HS256)
             .compact();
     }
 

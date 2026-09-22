@@ -15,6 +15,13 @@ public interface ConferenceParticipantRepository extends JpaRepository<Conferenc
 
     Optional<ConferenceParticipant> findByConferenceIdAndExternalId(UUID conferenceId, String externalId);
 
+    /** Latest row of a signed-in participant — a re-entry refreshes it instead of adding a new one. */
+    Optional<ConferenceParticipant> findFirstByConferenceIdAndUserIdOrderByCreatedAtDesc(UUID conferenceId, UUID userId);
+
+    /** Latest row of a named anonymous participant — guests have no account to key on. */
+    Optional<ConferenceParticipant> findFirstByConferenceIdAndUserIdIsNullAndDisplayNameOrderByCreatedAtDesc(
+        UUID conferenceId, String displayName);
+
     List<ConferenceParticipant> findByConferenceIdAndStatus(UUID conferenceId, ConferenceParticipant.ParticipantStatus status);
 
     long countByConferenceIdAndStatus(UUID conferenceId, ConferenceParticipant.ParticipantStatus status);

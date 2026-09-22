@@ -1,6 +1,7 @@
 package com.jmp.api.controller;
 
 import com.jmp.application.service.ConferenceService;
+import com.jmp.application.service.ParticipantPresenceService;
 import com.jmp.application.service.RecordingService;
 import com.jmp.domain.entity.Conference;
 import com.jmp.domain.entity.ConferenceParticipant;
@@ -42,6 +43,7 @@ public class JitsiWebhookController {
     private final ConferenceParticipantRepository participantRepository;
     private final RecordingRepository recordingRepository;
     private final RecordingService recordingService;
+    private final ParticipantPresenceService participantPresenceService;
 
     @PostMapping
     @Operation(summary = "Receive Jitsi webhook events")
@@ -102,6 +104,7 @@ public class JitsiWebhookController {
         if (conference.getStatus() == Conference.ConferenceStatus.ACTIVE) {
             conference.end();
             conferenceRepository.save(conference);
+            participantPresenceService.markAllLeft(conference.getId());
             log.info("Conference {} ended via Jitsi webhook", conference.getId());
         }
     }

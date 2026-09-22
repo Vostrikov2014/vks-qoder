@@ -49,7 +49,7 @@ public interface StorageService {
         S3,
         AZURE_BLOB,
         GCP_STORAGE,
-        MINIO,
+        GARAGE,
         LOCAL
     }
 }

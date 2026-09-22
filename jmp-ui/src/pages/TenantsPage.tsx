@@ -35,6 +35,8 @@ import {
   Pause,
 } from 'lucide-react';
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx } from '../styles/dialogFields';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -85,21 +87,55 @@ const emptyForm: FormData = {
   allowedFeatures: 'chat,screen_share,recording,live_streaming',
 };
 
-// Shared field styling matching ConferencesPage
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 'var(--radius-lg)',
-    color: 'var(--text)',
-    '& fieldset': { borderColor: 'var(--border)' },
-    '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-    '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
-  },
-  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#C99A5B' },
+// The search field follows the LoginPage field look: fully frameless (no blue
+// highlight on focus), the hover tint appears only while the field is still
+// empty, and the placeholder brightens together with it.
+const createSearchFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled field keeps the
+  // exact background it had while it was still empty. The light theme uses a
+  // white surface, the dark theme keeps matching the elevated surfaces.
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
 };
 
 export default function TenantsPage() {
   const { t } = useTranslation();
+  const { isDarkMode } = useThemeStore();
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -110,6 +146,8 @@ export default function TenantsPage() {
   const [suspendReason, setSuspendReason] = useState('');
   const [formData, setFormData] = useState<FormData>(emptyForm);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Create/edit dialog fields follow the Recordings (Entries) page look
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
   const fetchTenants = async () => {
     try {
@@ -249,16 +287,12 @@ export default function TenantsPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+              background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
-              border: '1px solid rgba(201, 154, 91, 0.25)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                boxShadow: '0 6px 25px rgba(11, 113, 134, 0.4), 0 2px 12px rgba(201, 154, 91, 0.3)',
-                borderColor: 'rgba(201, 154, 91, 0.4)',
+                background: 'var(--btn-hover-bg)',
               },
             }}
           >
@@ -278,15 +312,7 @@ export default function TenantsPage() {
             sx={{
               flex: 1,
               minWidth: 280,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-xl)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid var(--glass-border)',
-                '& fieldset': { borderColor: 'transparent' },
-                '&:hover fieldset': { borderColor: 'var(--border)' },
-                '&.Mui-focused fieldset': { borderColor: '#C99A5B' },
-              },
+              ...createSearchFieldSx(isDarkMode),
             }}
           />
           <ToggleButtonGroup
@@ -311,6 +337,9 @@ export default function TenantsPage() {
                 '&:not(:last-of-type)': {
                   borderRadius: 'var(--radius-lg)',
                 },
+                '&.Mui-selected': {
+                  borderLeft: '1px solid var(--primary-600) !important',
+                },
               },
             }}
           >
@@ -319,12 +348,15 @@ export default function TenantsPage() {
               sx={{
                 p: 1,
                 color: 'var(--text-muted)',
+                '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
                 '&.Mui-selected': {
-                  background: 'rgba(201, 154, 91, 0.12)',
-                  color: '#C99A5B',
-                  borderColor: '#C99A5B',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
+                  color: 'var(--primary-600)',
+                  borderColor: 'var(--primary-600)',
                 },
-                '&:hover': { background: 'var(--glass-bg)' },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
+                },
               }}
             >
               <Tooltip title={t('common.viewCards')}>
@@ -336,12 +368,15 @@ export default function TenantsPage() {
               sx={{
                 p: 1,
                 color: 'var(--text-muted)',
+                '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
                 '&.Mui-selected': {
-                  background: 'rgba(201, 154, 91, 0.12)',
-                  color: '#C99A5B',
-                  borderColor: '#C99A5B',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
+                  color: 'var(--primary-600)',
+                  borderColor: 'var(--primary-600)',
                 },
-                '&:hover': { background: 'var(--glass-bg)' },
+                '&.Mui-selected:hover': {
+                  background: 'rgba(var(--primary-rgb), 0.2)',
+                },
               }}
             >
               <Tooltip title={t('common.viewList')}>
@@ -384,34 +419,15 @@ export default function TenantsPage() {
                       sx={{
                         background: 'var(--glass-bg)',
                         backdropFilter: 'blur(20px)',
-                        border: '1px solid var(--glass-border)',
                         borderRadius: 'var(--radius-xl)',
-                        boxShadow: 'var(--shadow-lg)',
                         p: 3,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 2,
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
-                        },
                         position: 'relative',
                         overflow: 'hidden',
                       }}
                     >
-                      {/* Status Indicator */}
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 4,
-                          background: statusConfig.color,
-                        }}
-                      />
-
                       {/* Header */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pt: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -420,14 +436,13 @@ export default function TenantsPage() {
                               width: 44,
                               height: 44,
                               borderRadius: 'var(--radius-lg)',
-                              background: `linear-gradient(135deg, ${statusConfig.color}20 0%, ${statusConfig.color}10 100%)`,
+                              background: `${statusConfig.color}18`,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               color: statusConfig.color,
                               fontWeight: 700,
                               fontSize: '0.9rem',
-                              boxShadow: '0 0 0 2px rgba(201, 154, 91, 0.3)',
                             }}
                           >
                             {initials}
@@ -478,7 +493,7 @@ export default function TenantsPage() {
                       )}
 
                       {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+                      <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
                         {tenant.status === 'ACTIVE' && (
                           <Button
                             fullWidth
@@ -488,11 +503,11 @@ export default function TenantsPage() {
                             sx={{
                               py: 1,
                               borderRadius: 'var(--radius-lg)',
-                              background: '#f59e0b',
+                              background: 'var(--primary-600)',
                               color: 'white',
                               fontWeight: 600,
                               textTransform: 'none',
-                              '&:hover': { background: '#d97706' },
+                              '&:hover': { background: 'var(--btn-hover-bg)' },
                             }}
                           >
                             {t('tenants.suspendTenant')}
@@ -525,8 +540,8 @@ export default function TenantsPage() {
                               borderRadius: 'var(--radius-lg)',
                               color: 'var(--text-muted)',
                               '&:hover': {
-                                background: 'rgba(201, 154, 91, 0.12)',
-                                color: '#C99A5B',
+                                background: 'rgba(var(--primary-rgb), 0.12)',
+                                color: 'var(--primary-600)',
                               },
                             }}
                           >
@@ -566,7 +581,6 @@ export default function TenantsPage() {
             sx={{
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
               overflow: 'hidden',
             }}
@@ -583,7 +597,7 @@ export default function TenantsPage() {
                 gap: 2,
                 p: 2,
                 borderBottom: '1px solid var(--border)',
-                background: 'rgba(11, 113, 134, 0.04)',
+                background: 'rgba(var(--primary-rgb), 0.04)',
               }}
             >
               <Box />
@@ -633,7 +647,7 @@ export default function TenantsPage() {
                         alignItems: 'center',
                         borderBottom: '1px solid var(--border)',
                         transition: 'background 0.15s ease',
-                        '&:hover': { background: 'rgba(11, 113, 134, 0.04)' },
+                        '&:hover': { background: 'rgba(var(--primary-rgb), 0.04)' },
                         '&:last-child': { borderBottom: 'none' },
                       }}
                     >
@@ -644,7 +658,7 @@ export default function TenantsPage() {
                             width: 32,
                             height: 32,
                             borderRadius: 'var(--radius-md)',
-                            background: `linear-gradient(135deg, ${statusConfig.color}20 0%, ${statusConfig.color}10 100%)`,
+                            background: `${statusConfig.color}18`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -752,7 +766,7 @@ export default function TenantsPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(tenant)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#C99A5B' } }}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
                           >
                             <Edit2 size={14} />
                           </IconButton>
@@ -790,7 +804,6 @@ export default function TenantsPage() {
               px: 4,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
             }}
           >
@@ -801,13 +814,13 @@ export default function TenantsPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.02) 100%)',
+                background: 'rgba(0, 0, 0, 0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Building2 size={40} color="#0B7186" />
+              <Building2 size={40} color="var(--primary-600)" />
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1 }}>
               {t('tenants.noTenants')}
@@ -821,12 +834,10 @@ export default function TenantsPage() {
               onClick={handleCreate}
               sx={{
                 borderRadius: 'var(--radius-lg)',
-                background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                background: 'var(--primary-600)',
                 color: 'white',
                 fontWeight: 600,
                 textTransform: 'none',
-                border: '1px solid rgba(201, 154, 91, 0.25)',
-                boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
               }}
             >
               {t('tenants.addTenant')}
@@ -843,16 +854,13 @@ export default function TenantsPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingTenant ? t('tenants.editTenant') : t('tenants.addTenant')}
           </Typography>
@@ -864,7 +872,7 @@ export default function TenantsPage() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             margin="normal"
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -875,7 +883,7 @@ export default function TenantsPage() {
             disabled={!!editingTenant}
             helperText={editingTenant ? undefined : t('tenants.slugHelp')}
             FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -885,26 +893,26 @@ export default function TenantsPage() {
             margin="normal"
             multiline
             rows={2}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
               label={t('tenants.domain')}
               value={formData.domain}
               onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-              sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+              sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
             />
             <TextField
               label={t('tenants.jitsiDomain')}
               value={formData.jitsiDomain}
               onChange={(e) => setFormData({ ...formData, jitsiDomain: e.target.value })}
-              sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+              sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
             />
           </Box>
 
           {/* Quotas Section */}
           <Box sx={{ mt: 3 }}>
-            <Divider sx={{ borderColor: 'rgba(201, 154, 91, 0.15)', mb: 2 }} />
+            <Divider sx={{ borderColor: 'rgba(var(--primary-rgb), 0.15)', mb: 2 }} />
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
               {t('tenants.quotas')}
             </Typography>
@@ -915,14 +923,14 @@ export default function TenantsPage() {
                   type="number"
                   value={formData.maxConcurrentConferences}
                   onChange={(e) => setFormData({ ...formData, maxConcurrentConferences: e.target.value })}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
                 <TextField
                   label={t('tenants.maxParticipants')}
                   type="number"
                   value={formData.maxParticipantsPerConference}
                   onChange={(e) => setFormData({ ...formData, maxParticipantsPerConference: e.target.value })}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -933,7 +941,7 @@ export default function TenantsPage() {
                   onChange={(e) => setFormData({ ...formData, maxRecordingStorageMb: e.target.value })}
                   helperText="MB"
                   FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
                 <TextField
                   label={t('tenants.maxDuration')}
@@ -942,7 +950,7 @@ export default function TenantsPage() {
                   onChange={(e) => setFormData({ ...formData, maxConferenceDurationMinutes: e.target.value })}
                   helperText={t('tenants.minutes')}
                   FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
               <TextField
@@ -952,12 +960,12 @@ export default function TenantsPage() {
                 fullWidth
                 helperText={t('tenants.allowedFeaturesHelp')}
                 FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                sx={fieldSx}
+                sx={dialogFieldSx}
               />
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(201, 154, 91, 0.12)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
@@ -974,17 +982,13 @@ export default function TenantsPage() {
             variant="contained"
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+              background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
-              border: '1px solid rgba(201, 154, 91, 0.25)',
-              boxShadow: '0 4px 15px rgba(11, 113, 134, 0.3), 0 0 0 1px rgba(201, 154, 91, 0.15)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)',
-                boxShadow: '0 6px 20px rgba(11, 113, 134, 0.4), 0 2px 10px rgba(201, 154, 91, 0.3)',
-                borderColor: 'rgba(201, 154, 91, 0.4)',
+                background: 'var(--btn-hover-bg)',
               },
             }}
           >
@@ -1001,16 +1005,13 @@ export default function TenantsPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-xl)',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(201, 154, 91, 0.15)' }}>
+        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {t('tenants.suspendTenant')}
           </Typography>
@@ -1026,7 +1027,7 @@ export default function TenantsPage() {
             fullWidth
             multiline
             rows={2}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -1046,11 +1047,14 @@ export default function TenantsPage() {
             onClick={handleSuspendConfirm}
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              background: '#f59e0b',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               px: 3,
+              '&:hover': {
+                background: '#d97706',
+              },
             }}
           >
             {t('tenants.suspendTenant')}

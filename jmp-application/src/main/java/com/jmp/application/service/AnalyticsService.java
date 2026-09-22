@@ -85,8 +85,8 @@ public class AnalyticsService {
     public UsageReport getUsageReport(UUID tenantId, Instant startDate, Instant endDate) {
         log.info("Generating usage report for tenant {} from {} to {}", tenantId, startDate, endDate);
 
-        // Get conferences scheduled within the date range
-        List<Conference> conferencesInRange = conferenceRepository.findScheduledBetween(
+        // Get conferences held within the date range
+        List<Conference> conferencesInRange = conferenceRepository.findHeldBetween(
             tenantId, startDate, endDate
         );
         int totalConferences = conferencesInRange.size();
@@ -125,8 +125,8 @@ public class AnalyticsService {
      * Get participant analytics.
      */
     public ParticipantAnalytics getParticipantAnalytics(UUID tenantId, Instant startDate, Instant endDate) {
-        // Get conferences in the date range
-        List<Conference> conferences = conferenceRepository.findScheduledBetween(
+        // Get conferences held within the date range
+        List<Conference> conferences = conferenceRepository.findHeldBetween(
             tenantId, startDate, endDate
         );
 
@@ -176,10 +176,10 @@ public class AnalyticsService {
 
             long participantsOnDay = conferences.stream()
                 .filter(c -> {
-                    Instant scheduledStart = c.getScheduledStartAt();
-                    return scheduledStart != null &&
-                           !scheduledStart.isBefore(dayStart) &&
-                           scheduledStart.isBefore(dayEnd);
+                    Instant startedAt = effectiveStart(c);
+                    return startedAt != null &&
+                           !startedAt.isBefore(dayStart) &&
+                           startedAt.isBefore(dayEnd);
                 })
                 .mapToLong(c -> c.getParticipants() != null ? c.getParticipants().size() : 0)
                 .sum();
@@ -285,7 +285,7 @@ public class AnalyticsService {
 
     private ConferenceDurationStats calculateDurationStats(UUID tenantId, Instant start, Instant end) {
         // Get conferences that ended in the period
-        List<Conference> conferences = conferenceRepository.findScheduledBetween(tenantId, start, end);
+        List<Conference> conferences = conferenceRepository.findHeldBetween(tenantId, start, end);
 
         List<Long> durations = conferences.stream()
             .map(this::calculateConferenceDuration)
@@ -310,8 +310,11 @@ public class AnalyticsService {
     }
 
     private long calculateConferenceDuration(Conference conference) {
-        if (conference.getActualStartedAt() != null && conference.getActualEndedAt() != null) {
-            return Duration.between(conference.getActualStartedAt(), conference.getActualEndedAt()).getSeconds();
+        if (conference.getActualStartedAt() != null) {
+            // A conference still running counts up to now, otherwise its duration would
+            // stay zero until it ends.
+            Instant end = conference.getActualEndedAt() != null ? conference.getActualEndedAt() : Instant.now();
+            return Duration.between(conference.getActualStartedAt(), end).getSeconds();
         }
         if (conference.getScheduledStartAt() != null && conference.getScheduledEndAt() != null) {
             return Duration.between(conference.getScheduledStartAt(), conference.getScheduledEndAt()).getSeconds();
@@ -319,18 +322,28 @@ public class AnalyticsService {
         return 0L;
     }
 
+    /**
+     * The moment a conference is reported under: the actual start once it was launched,
+     * the scheduled start otherwise.
+     */
+    private Instant effectiveStart(Conference conference) {
+        return conference.getActualStartedAt() != null
+            ? conference.getActualStartedAt()
+            : conference.getScheduledStartAt();
+    }
+
     private List<DailyUsage> calculateWeeklyUsage(UUID tenantId, Instant start, Instant end) {
         List<DailyUsage> usage = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // Get conferences in the date range
-        List<Conference> conferences = conferenceRepository.findScheduledBetween(tenantId, start, end);
+        List<Conference> conferences = conferenceRepository.findHeldBetween(tenantId, start, end);
 
-        // Group conferences by date
+        // Group conferences by the day they were held on
         Map<String, List<Conference>> conferencesByDate = conferences.stream()
-            .filter(c -> c.getScheduledStartAt() != null)
+            .filter(c -> effectiveStart(c) != null)
             .collect(Collectors.groupingBy(
-                c -> LocalDate.ofInstant(c.getScheduledStartAt(), ZoneId.systemDefault()).format(formatter)
+                c -> LocalDate.ofInstant(effectiveStart(c), ZoneId.systemDefault()).format(formatter)
             ));
 
         // Generate entries for the last 7 days

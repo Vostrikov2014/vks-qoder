@@ -8,11 +8,87 @@ const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 /**
- * The URL of the Jitsi Meet deployment to be proxy to in the context of
- * development with webpack-dev-server.
+ * Signalling backends the dev server proxies to in the LOCAL contour.
+ *
+ * There is no jitsi-web container here: webpack-dev-server serves the UI itself (see
+ * renderSsi below) and forwards the XMPP/Colibri signalling straight to the backends that
+ * docker-compose.dev.yml publishes on the host — Prosody on :5280 (BOSH + XMPP WebSocket)
+ * and the JVB colibri-ws on :9091 (the JVB's own 9090, remapped because Prometheus owns
+ * 9090 on the host). Override either to test against another deployment, e.g.
+ * WEBPACK_DEV_SERVER_PROSODY_TARGET=https://meet.example.com:5280 make dev
  */
-const devServerProxyTarget
-    = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || 'https://alpha.jitsi.net';
+const prosodyProxyTarget
+    = process.env.WEBPACK_DEV_SERVER_PROSODY_TARGET || 'http://localhost:5280';
+const jvbProxyTarget
+    = process.env.WEBPACK_DEV_SERVER_JVB_TARGET || 'http://localhost:9091';
+
+/**
+ * Paths that carry the XMPP/Colibri signalling and therefore must reach the proxies
+ * above instead of being answered by the local SPA/static handling.
+ */
+const SIGNALING_PATHS = [ '/http-bind', '/xmpp-websocket', '/colibri-ws' ];
+
+/**
+ * Socket teardown codes seen when one side of a proxied signalling session disappears
+ * mid-write: the browser tab closes (or live-reloads) around the moment the upstream XMPP/
+ * Colibri session ends, so the remaining socket writes into the void.
+ */
+const SOCKET_TEARDOWN_CODES = [ 'EPIPE', 'ECONNRESET', 'ERR_STREAM_WRITE_AFTER_END' ];
+
+/**
+ * Log lines http-proxy(-middleware) prints for such teardowns, which cannot be turned off
+ * per proxy: the HPM logger is a process-wide singleton and `logError` subscribes to the
+ * proxy `error` event unconditionally.
+ *
+ *   [HPM] Error occurred while proxying request localhost:8000/xmpp-websocket?... [EPIPE]
+ *   [HPM] WebSocket error: Error [ERR_STREAM_WRITE_AFTER_END]: write after end
+ *   [HPM] ECONNRESET: Error: read ECONNRESET
+ *
+ * The session is already gone at that point, so exactly those lines are dropped from the
+ * dev server output; proxy creation info and unrelated failures stay visible.
+ */
+const SOCKET_TEARDOWN_LOG_PATTERN
+    = new RegExp(`\\[HPM\\][^\\n]*(?:\\[(?:${SOCKET_TEARDOWN_CODES.join('|')})\\]|ECONNRESET:)`);
+
+/**
+ * Log provider for the signalling proxies: forwards everything to the default console
+ * provider except the teardown noise matched above.
+ */
+const quietHpmLogProvider = defaultProvider => {
+    return {
+        ...defaultProvider,
+        error: (...args) => {
+            if (!SOCKET_TEARDOWN_LOG_PATTERN.test(String(args[0]))) {
+                defaultProvider.error(...args);
+            }
+        }
+    };
+};
+
+/**
+ * Error handler for the signalling WebSocket proxies.
+ *
+ * Errors that slip past the provider filter must not be answered the way the default
+ * http-proxy-middleware handler does: it tries to write an HTTP response onto the upgraded
+ * socket (`res.end`), which only produces a second, bogus ERR_STREAM_WRITE_AFTER_END and
+ * ends up as garbage bytes in the WebSocket stream. Keep unexpected codes loud instead and
+ * close the dead session socket. (The "to undefined" target in HPM's diagnostics is by
+ * design: it passes no target on the ws error path, see logError.)
+ *
+ * @param {Error} err - The error reported by http-proxy for the proxied socket.
+ * @param {Object} _req - The upgrade request that opened the session.
+ * @param {Duplex} socket - The browser-side socket of the failed session.
+ */
+function onSignallingProxyError(err, _req, socket) {
+    if (!SOCKET_TEARDOWN_CODES.includes(err.code)) {
+        console.warn(`[webpack-dev-server] signalling proxy error: ${err.message}`);
+    }
+
+    // The handshake can never complete now; do not leave the browser waiting for it.
+    if (socket?.destroy && !socket.destroyed) {
+        socket.destroy();
+    }
+}
 
 /**
  * Build a Performance configuration object for the given size.
@@ -54,41 +130,50 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
 }
 
 /**
- * Determines whether a specific (HTTP) request is to bypass the proxy of
- * webpack-dev-server (i.e. is to be handled by the proxy target) and, if not,
- * which local file is to be served in response to the request.
+ * Minimal SSI renderer for the dev server.
  *
- * @param {Object} request - The (HTTP) request received by the proxy.
- * @returns {string|undefined} If the request is to be served by the proxy
- * target, undefined; otherwise, the path to the local file to be served.
+ * index.html and config.js ship with nginx SSI directives (`<!--#include virtual="..."
+ * -->` and `<!--# echo var="..." -->`). The production contour resolves them inside the
+ * jitsi-web container (nginx `ssi on`); the local contour has no such container, so the
+ * dev server resolves them here before serving the document.
+ *
+ * @param {string} relPath - Path of the file to render, relative to the jitsi-meet root.
+ * @param {number} depth - Recursion guard for nested includes.
+ * @returns {string} The file contents with the SSI directives resolved.
  */
-function devServerProxyBypass({ path }) {
-    let tpath = path;
-
-    if (tpath.startsWith('/v1/_cdn/')) {
-        // The CDN is not available in the dev server, so we need to bypass it.
-        tpath = tpath.replace(/\/v1\/_cdn\/[^/]+\//, '/');
+function renderSsi(relPath, depth = 0) {
+    // Guard against a self-referencing include blowing the stack.
+    if (depth > 8) {
+        return '';
     }
 
-    if (tpath.startsWith('/css/')
-            || tpath.startsWith('/doc/')
-            || tpath.startsWith('/fonts/')
-            || tpath.startsWith('/images/')
-            || tpath.startsWith('/lang/')
-            || tpath.startsWith('/sounds/')
-            || tpath.startsWith('/static/')
-            || tpath.endsWith('.wasm')) {
+    let content = fs.readFileSync(join(__dirname, relPath), 'utf8');
 
-        return tpath;
-    }
+    // Inline <!--#include virtual="PATH" --> recursively. A leading '/' is web-root
+    // relative, i.e. the jitsi-meet directory here.
+    content = content.replace(
+        /<!--#\s*include\s+virtual="([^"]+)"\s*-->/g,
+        (_match, include) => {
+            let includePath = include.split('?')[0];
 
-    if (tpath.startsWith('/libs/')) {
-        if (tpath.endsWith('.min.js') && !fs.existsSync(join(process.cwd(), tpath))) {
-            return tpath.replace('.min.js', '.js');
-        }
+            if (includePath.startsWith('/')) {
+                includePath = includePath.substring(1);
+            }
 
-        return tpath;
-    }
+            try {
+                return renderSsi(includePath, depth + 1);
+            } catch {
+                // A missing optional include must not break the whole document.
+                return '';
+            }
+        });
+
+    // config.js derives bosh/websocket from `subdir`; nginx sets it to '/' at the root
+    // (an empty value would glue host and path into `//hosthttp-bind`).
+    content = content.replace(/<!--#\s*echo\s+var="subdir"[^>]*-->/g, '/');
+    content = content.replace(/<!--#\s*echo\s+var="subdomain"[^>]*-->/g, '');
+
+    return content;
 }
 
 /**
@@ -277,24 +362,118 @@ function getDevServerConfig() {
             }
         },
         allowedHosts: 'all',
-        host: 'localhost',
+
+        // Set WEBPACK_DEV_SERVER_HOST=0.0.0.0 to reach the dev server from a second
+        // machine or a phone; the room URL then has to carry the same address, e.g.
+        // JITSI_DOMAIN=192.168.1.10:8000.
+        host: process.env.WEBPACK_DEV_SERVER_HOST || 'localhost',
         hot: true,
         port: 8000,
+
+        // Signalling is proxied straight to the local backends (there is no jitsi-web
+        // container in the local contour). XMPP over WebSocket and colibri-ws are upgrade
+        // requests, hence ws: true; their session teardown races are handled by
+        // quietHpmLogProvider and onSignallingProxyError above. The provider is set on all
+        // three proxies for determinism: HPM applies it to its process-wide singleton, so
+        // whichever proxy is created last would otherwise win with webpack-dev-server's own.
         proxy: [
             {
-                context: [ '/' ],
-                bypass: devServerProxyBypass,
+                // BOSH (XMPP over HTTP long polling).
+                context: [ '/http-bind' ],
+                target: prosodyProxyTarget,
                 secure: false,
-                target: devServerProxyTarget,
-                headers: {
-                    'Host': new URL(devServerProxyTarget).host
-                }
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider
+            },
+            {
+                // XMPP over WebSocket.
+                context: [ '/xmpp-websocket' ],
+                target: prosodyProxyTarget,
+                ws: true,
+                secure: false,
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider,
+                on: { error: onSignallingProxyError }
+            },
+            {
+                // Colibri WebSocket: browser <-> Videobridge media signalling.
+                context: [ '/colibri-ws' ],
+                target: jvbProxyTarget,
+                ws: true,
+                secure: false,
+                changeOrigin: true,
+                logProvider: quietHpmLogProvider,
+                on: { error: onSignallingProxyError }
             }
         ],
         server: 'http',
-        setupMiddlewares: (middlewares, _devServer) => middlewares.filter(
-            m => m.name !== 'cross-origin-header-check'
-        ),
+
+        // Serve the SPA entry (index.html with SSI resolved) for HTML navigation routes;
+        // let webpack/static serve real assets and the proxies above own the signalling.
+        setupMiddlewares: (middlewares, _devServer) => {
+            const served = middlewares.filter(m => m.name !== 'cross-origin-header-check');
+
+            served.unshift((req, res, next) => {
+                if (req.method !== 'GET') {
+                    return next();
+                }
+
+                const urlPath = (req.url || '/').split('?')[0];
+
+                // The proxies own the signalling paths.
+                if (SIGNALING_PATHS.some(p => urlPath.startsWith(p))) {
+                    return next();
+                }
+
+                const sendHtml = file => {
+                    try {
+                        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                        res.end(renderSsi(file));
+                    } catch {
+                        next();
+                    }
+                };
+
+                // Document root and the SPA entry itself are always rendered.
+                if (urlPath === '/' || urlPath === '/index.html') {
+                    return sendHtml('index.html');
+                }
+
+                // In dev the bundle is built to memory as /libs/<name>.js (no .min), while
+                // index.html references the .min.js name; rewrite it when the minified file
+                // is not on disk so webpack-dev-middleware serves the in-memory bundle.
+                if (urlPath.startsWith('/libs/') && urlPath.endsWith('.min.js')
+                        && !fs.existsSync(join(__dirname, urlPath))) {
+                    req.url = req.url.replace('.min.js', '.js');
+
+                    return next();
+                }
+
+                const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+
+                // A path with an extension is a real asset (css/js/images/wasm) or a
+                // concrete .html file under static/ -> let webpack/static serve it.
+                if (lastSegment.includes('.')) {
+                    if (lastSegment.endsWith('.html')
+                            && fs.existsSync(join(__dirname, urlPath.replace(/^\//, '')))) {
+                        return sendHtml(urlPath.replace(/^\//, ''));
+                    }
+
+                    return next();
+                }
+
+                // No extension: a room name / SPA route. Answer HTML navigations with the
+                // entry document; anything else (e.g. the HMR socket path) falls through.
+                if ((req.headers.accept || '').includes('text/html')) {
+                    return sendHtml('index.html');
+                }
+
+                return next();
+            });
+
+            return served;
+        },
         static: {
             directory: process.cwd(),
             watch: {

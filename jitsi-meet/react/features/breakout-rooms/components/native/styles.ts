@@ -25,7 +25,7 @@ export default {
         backgroundColor: BaseTheme.palette.ui03,
         height: BaseTheme.spacing[5],
         width: BaseTheme.spacing[5],
-        borderRadius: 6,
+        borderRadius: 8,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'

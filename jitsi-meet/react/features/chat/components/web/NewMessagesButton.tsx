@@ -53,7 +53,7 @@ const useStyles = makeStyles()(theme => {
 
         textContainer: {
             ...theme.typography.bodyShortRegular,
-            color: theme.palette.text04,
+            color: theme.palette.text01,
             paddingLeft: '8px'
         }
     };
@@ -77,7 +77,7 @@ function NewMessagesButton({ onGoToFirstUnreadMessage, t }: INewMessagesButtonPr
                 type = 'button'>
                 <Icon
                     className = { styles.arrowDownIconContainer }
-                    color = { BaseTheme.palette.icon04 }
+                    color = { BaseTheme.palette.icon01 }
                     size = { 14 }
                     src = { IconArrowDown } />
                 <div className = { styles.textContainer }> { t('chat.newMessages') }</div>

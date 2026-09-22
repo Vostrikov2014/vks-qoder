@@ -39,6 +39,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { recordingApi } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
 import type { RecordingSummary } from '../types';
 
 const containerVariants = {
@@ -55,6 +56,72 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const },
+  },
+};
+
+// The type/status selects follow the search field look: a frameless surface
+// that stays white in the light theme and elevated in the dark theme, with a
+// soft hover tint (pale blue in the light theme) shown only while no value is
+// selected yet.
+const createFilterSelectSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled select keeps the
+  // exact background it had while it was still empty
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    // Hover tint only while the select is still empty (label not floated yet),
+    // matching the search field
+    '&:has(.MuiInputLabel-root:not(.MuiInputLabel-shrink)) .MuiOutlinedInput-root:hover': {
+      background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+    },
+    // Label acts as the in-field hint while empty and floats once a value is picked
+    '& .MuiInputLabel-root': {
+      color: 'var(--text-muted)',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: 'var(--primary-600)',
+    },
+    // Hint brightens together with the hover tint
+    '&:hover .MuiInputLabel-root:not(.MuiInputLabel-shrink)': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+    '& .MuiSelect-select': {
+      color: 'var(--text-h)',
+    },
+    '& .MuiSelect-icon': {
+      color: 'var(--text-muted)',
+    },
+  };
+};
+
+// Dropdown menu of the type/status filters: the app menu colours instead of
+// the default white Paper, which would stay white in the dark theme as well
+const filterMenuProps = {
+  PaperProps: {
+    sx: {
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--glass-border)',
+      '& .MuiMenuItem-root': {
+        color: 'var(--text-h)',
+        '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
+        '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
+      },
+    },
   },
 };
 
@@ -115,8 +182,55 @@ interface StorageStats {
   recordingsThisMonth: number;
 }
 
+// The search field follows the LoginPage field look: fully frameless (no blue
+// highlight on focus), the hover tint appears only while the field is still
+// empty, and the placeholder brightens together with it.
+const createSearchFieldSx = (isDarkMode: boolean) => {
+  // Single source of truth for the field surface; a filled field keeps the
+  // exact background it had while it was still empty. The light theme uses a
+  // white surface, the dark theme keeps matching the elevated surfaces.
+  const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 'var(--radius-lg)',
+      background: fieldSurface,
+      transition: 'background-color 0.2s ease',
+      '& fieldset': {
+        border: 'none',
+      },
+      '&:hover fieldset': {
+        border: 'none',
+      },
+      // Hover tint only while the field is still empty (hint visible): a
+      // neutral grey in the dark theme, a pale primary tone in the light theme
+      // so the highlight follows the blue theme colour
+      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
+        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      },
+      // No blue highlight on focus
+      '&.Mui-focused fieldset': {
+        border: 'none',
+      },
+    },
+    '& .MuiOutlinedInput-input': {
+      color: 'var(--text-h)',
+    },
+    // Hint is rendered inside the field and disappears once it is filled
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: 'var(--text-muted)',
+      opacity: 1,
+    },
+    // Grey colour change on hover
+    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-input::placeholder': {
+      color: isDarkMode ? '#ffffff' : '#3f3f46',
+    },
+  };
+};
+
 export default function RecordingsPage() {
   const { t, i18n } = useTranslation();
+  const { isDarkMode } = useThemeStore();
   const [recordings, setRecordings] = useState<RecordingSummary[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
@@ -244,9 +358,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -255,11 +367,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(201, 154, 91, 0.12)',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#C99A5B',
+                  color: 'var(--primary-600)',
                 }}
               >
                 <HardDrive size={20} />
@@ -281,9 +393,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -292,11 +402,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(11, 113, 134, 0.12)',
+                  background: 'rgba(var(--primary-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#0B7186',
+                  color: 'var(--primary-600)',
                 }}
               >
                 <Film size={20} />
@@ -318,9 +428,7 @@ export default function RecordingsPage() {
               p: 3,
               background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-lg)',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -329,11 +437,11 @@ export default function RecordingsPage() {
                   width: 40,
                   height: 40,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(25, 179, 198, 0.12)',
+                  background: 'rgba(var(--primary-500-rgb), 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#19B3C6',
+                  color: 'var(--primary-500)',
                 }}
               >
                 <FileText size={20} />
@@ -378,13 +486,10 @@ export default function RecordingsPage() {
             }}
             sx={{
               minWidth: 260,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--glass-bg)',
-              },
+              ...createSearchFieldSx(isDarkMode),
             }}
           />
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...createFilterSelectSx(isDarkMode), minWidth: 140 }}>
             <InputLabel>{t('recordings.type')}</InputLabel>
             <Select
               value={typeFilter}
@@ -393,7 +498,7 @@ export default function RecordingsPage() {
                 setTypeFilter(e.target.value);
                 setPage(0);
               }}
-              sx={{ borderRadius: 'var(--radius-lg)', background: 'var(--glass-bg)' }}
+              MenuProps={filterMenuProps}
             >
               <MenuItem value="">{t('recordings.allTypes')}</MenuItem>
               <MenuItem value="VIDEO">{t('recordings.VIDEO')}</MenuItem>
@@ -401,7 +506,7 @@ export default function RecordingsPage() {
               <MenuItem value="TRANSCRIPT">{t('recordings.TRANSCRIPT')}</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          <FormControl size="small" sx={{ ...createFilterSelectSx(isDarkMode), minWidth: 140 }}>
             <InputLabel>{t('recordings.status')}</InputLabel>
             <Select
               value={statusFilter}
@@ -410,7 +515,7 @@ export default function RecordingsPage() {
                 setStatusFilter(e.target.value);
                 setPage(0);
               }}
-              sx={{ borderRadius: 'var(--radius-lg)', background: 'var(--glass-bg)' }}
+              MenuProps={filterMenuProps}
             >
               <MenuItem value="">{t('recordings.allStatuses')}</MenuItem>
               <MenuItem value="READY">{t('recordings.READY')}</MenuItem>
@@ -428,15 +533,13 @@ export default function RecordingsPage() {
           sx={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-xl)',
-            boxShadow: 'var(--shadow-lg)',
             overflow: 'hidden',
           }}
         >
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress sx={{ color: '#C99A5B' }} />
+              <CircularProgress sx={{ color: 'var(--primary-600)' }} />
             </Box>
           ) : recordings.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -532,7 +635,7 @@ export default function RecordingsPage() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handlePlay(recording)}
-                                    sx={{ color: '#0B7186' }}
+                                    sx={{ color: 'var(--primary-600)' }}
                                   >
                                     <Play size={18} />
                                   </IconButton>
@@ -543,7 +646,7 @@ export default function RecordingsPage() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handleDownload(recording)}
-                                    sx={{ color: '#19B3C6' }}
+                                    sx={{ color: 'var(--primary-500)' }}
                                   >
                                     <Download size={18} />
                                   </IconButton>
@@ -590,8 +693,7 @@ export default function RecordingsPage() {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            background: 'var(--bg-elevated)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-xl)',
           },

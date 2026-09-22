@@ -52,7 +52,7 @@ const useStyles = makeStyles()(theme => {
             backgroundColor: theme.palette.visitorsArrowBackground,
             width: '24px',
             height: '24px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             marginLeft: theme.spacing(2),
             display: 'flex',
             alignItems: 'center',

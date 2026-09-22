@@ -53,7 +53,7 @@ const itemVariants = {
   },
 };
 
-const PIE_COLORS = ['#C99A5B', '#0B7186', '#19B3C6', '#075D70', '#6b7280'];
+const PIE_COLORS = ['var(--primary-400)', 'var(--primary-600)', 'var(--primary-500)', 'var(--primary-700)', '#6b7280'];
 
 const BentoCard = ({ children, colSpan = 1 }: { children: React.ReactNode; colSpan?: number }) => (
   <motion.div
@@ -65,19 +65,12 @@ const BentoCard = ({ children, colSpan = 1 }: { children: React.ReactNode; colSp
         height: '100%',
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid var(--glass-border)',
         borderRadius: 'var(--radius-xl)',
-        boxShadow: 'var(--shadow-lg)',
         p: 3,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: 'var(--shadow-xl), 0 4px 20px rgba(201, 154, 91, 0.12)',
-        },
       }}
     >
       {children}
@@ -107,6 +100,19 @@ const formatDurationHuman = (seconds: number, t: (key: string) => string): strin
   return `${mins} ${t('analytics.minutes')}`;
 };
 
+// datetime-local shows local wall-clock time, so a UTC slice would shift the value
+const toDateTimeLocalValue = (date: Date): string => {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// datetime-local value -> ISO instant the backend can parse
+const toInstant = (value: string): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
 export default function AnalyticsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -124,12 +130,18 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
-    return d.toISOString().slice(0, 16);
+    return toDateTimeLocalValue(d);
   });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 16));
+  const [endDate, setEndDate] = useState(() => toDateTimeLocalValue(new Date()));
 
   const fetchData = useCallback(async () => {
     if (!canViewAnalytics) {
+      setLoading(false);
+      return;
+    }
+    const startInstant = toInstant(startDate);
+    const endInstant = toInstant(endDate);
+    if (!startInstant || !endInstant) {
       setLoading(false);
       return;
     }
@@ -137,9 +149,9 @@ export default function AnalyticsPage() {
     try {
       const [metricsRes, usageRes, participantRes, recordingRes] = await Promise.all([
         analyticsApi.getDashboardMetrics(),
-        analyticsApi.getUsageReport(startDate, endDate),
-        analyticsApi.getParticipantAnalytics(startDate, endDate),
-        analyticsApi.getRecordingAnalytics(startDate, endDate),
+        analyticsApi.getUsageReport(startInstant, endInstant),
+        analyticsApi.getParticipantAnalytics(startInstant, endInstant),
+        analyticsApi.getRecordingAnalytics(startInstant, endInstant),
       ]);
       setMetrics(metricsRes.data);
       setUsageReport(usageRes.data);
@@ -177,8 +189,8 @@ export default function AnalyticsPage() {
         start.setMonth(now.getMonth() - 3);
         break;
     }
-    setStartDate(start.toISOString().slice(0, 16));
-    setEndDate(now.toISOString().slice(0, 16));
+    setStartDate(toDateTimeLocalValue(start));
+    setEndDate(toDateTimeLocalValue(now));
   };
 
   // Prepare chart data
@@ -248,9 +260,12 @@ export default function AnalyticsPage() {
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--glass-bg)',
                 color: 'var(--text-h)',
-                '& input': { colorScheme: 'dark' },
+                '& fieldset': { borderColor: 'transparent' },
+                '&:hover fieldset': { borderColor: 'transparent' },
+                '&.Mui-focused fieldset': { borderColor: 'transparent' },
               },
               '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
             }}
           />
           <TextField
@@ -265,9 +280,12 @@ export default function AnalyticsPage() {
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--glass-bg)',
                 color: 'var(--text-h)',
-                '& input': { colorScheme: 'dark' },
+                '& fieldset': { borderColor: 'transparent' },
+                '&:hover fieldset': { borderColor: 'transparent' },
+                '&.Mui-focused fieldset': { borderColor: 'transparent' },
               },
               '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
+              '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
             }}
           />
           <Button
@@ -275,9 +293,10 @@ export default function AnalyticsPage() {
             onClick={fetchData}
             sx={{
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, #0B7186, #19B3C6)',
+              background: 'var(--primary-600)',
               textTransform: 'none',
               fontWeight: 600,
+              '&:hover': { background: 'var(--btn-hover-bg)' },
             }}
           >
             {t('common.apply')}
@@ -292,9 +311,9 @@ export default function AnalyticsPage() {
                 sx={{
                   fontWeight: 600,
                   borderRadius: 'var(--radius-lg)',
-                  background: 'rgba(201, 154, 91, 0.12)',
-                  color: '#C99A5B',
-                  '&:hover': { background: 'rgba(201, 154, 91, 0.25)' },
+                  background: 'rgba(var(--primary-rgb), 0.12)',
+                  color: 'var(--primary-600)',
+                  '&:hover': { background: 'rgba(var(--primary-rgb), 0.25)' },
                 }}
               />
             ))}
@@ -304,7 +323,7 @@ export default function AnalyticsPage() {
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress sx={{ color: '#C99A5B' }} />
+          <CircularProgress sx={{ color: 'var(--primary-600)' }} />
         </Box>
       ) : (
         <>
@@ -319,7 +338,7 @@ export default function AnalyticsPage() {
           >
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(11, 113, 134, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0B7186' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
                   <Video size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -346,7 +365,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(25, 179, 198, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#19B3C6' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-500-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
                   <Users size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -373,7 +392,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(201, 154, 91, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C99A5B' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
                   <Clock size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -389,7 +408,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(7, 93, 112, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#075D70' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-700-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-700)' }}>
                   <HardDrive size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -417,7 +436,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(25, 179, 198, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#19B3C6' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-500-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
                   <Activity size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -442,19 +461,19 @@ export default function AnalyticsPage() {
             {/* Participant Trend */}
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <BarChart3 size={20} color="#0B7186" />
+                <BarChart3 size={20} color="var(--primary-600)" />
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
                   {t('analytics.participantTrend')}
                 </Typography>
               </Box>
-              <Box sx={{ height: 280 }}>
+              <Box sx={{ height: 256 }}>
                 {trendData.length > 0 && trendData.some((d) => d.participants > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendData}>
                       <defs>
                         <linearGradient id="colorParticipantsAnalytics" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0B7186" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#0B7186" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--primary-600)" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="var(--primary-600)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -464,14 +483,14 @@ export default function AnalyticsPage() {
                         contentStyle={{
                           background: 'var(--glass-bg)',
                           backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(201, 154, 91, 0.15)',
+                          border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
                       />
                       <Area
                         type="monotone"
                         dataKey="participants"
-                        stroke="#0B7186"
+                        stroke="var(--primary-600)"
                         strokeWidth={2}
                         fillOpacity={1}
                         fill="url(#colorParticipantsAnalytics)"
@@ -492,12 +511,12 @@ export default function AnalyticsPage() {
             {/* Recordings by Type */}
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <HardDrive size={20} color="#C99A5B" />
+                <HardDrive size={20} color="var(--primary-500)" />
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
                   {t('analytics.recordingsByType')}
                 </Typography>
               </Box>
-              <Box sx={{ height: 280 }}>
+              <Box sx={{ height: 256 }}>
                 {recordingTypeData.length > 0 && recordingTypeData.some((d) => d.value > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -509,7 +528,7 @@ export default function AnalyticsPage() {
                         outerRadius={100}
                         paddingAngle={4}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       >
                         {recordingTypeData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -518,7 +537,7 @@ export default function AnalyticsPage() {
                       <Tooltip
                         contentStyle={{
                           background: 'var(--glass-bg)',
-                          border: '1px solid rgba(201, 154, 91, 0.15)',
+                          border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
                       />
@@ -541,14 +560,12 @@ export default function AnalyticsPage() {
               sx={{
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid var(--glass-border)',
                 borderRadius: 'var(--radius-xl)',
-                boxShadow: 'var(--shadow-lg)',
                 p: 3,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Clock size={20} color="#19B3C6" />
+                <Clock size={20} color="var(--primary-500)" />
                 <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
                   {t('analytics.durationStats')}
                 </Typography>
@@ -563,12 +580,12 @@ export default function AnalyticsPage() {
                       <Tooltip
                         contentStyle={{
                           background: 'var(--glass-bg)',
-                          border: '1px solid rgba(201, 154, 91, 0.15)',
+                          border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
-                        formatter={(value: number) => [formatDurationHuman(value, t), '']}
+                        formatter={(value) => [formatDurationHuman(Number(value ?? 0), t), '']}
                       />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      <Bar dataKey="value" radius={[12, 12, 0, 0]}>
                         {durationData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}

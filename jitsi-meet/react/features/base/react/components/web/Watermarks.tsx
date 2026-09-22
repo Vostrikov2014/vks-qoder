@@ -152,6 +152,13 @@ class Watermarks extends Component<IProps, State> {
      * @returns {ReactElement|null}
      */
     _renderJitsiWatermark() {
+        // Respect SHOW_JITSI_WATERMARK on every screen: the state mapping also
+        // enables the watermark outside of a room (welcome page), which would
+        // otherwise render the logo and its link even when disabled.
+        if (!interfaceConfig.SHOW_JITSI_WATERMARK) {
+            return null;
+        }
+
         const {
             _logoLink,
             _logoUrl,

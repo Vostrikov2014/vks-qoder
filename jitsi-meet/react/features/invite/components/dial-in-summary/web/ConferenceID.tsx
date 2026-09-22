@@ -30,7 +30,7 @@ const useStyles = makeStyles()((theme: Theme) => {
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
-            borderRadius: 6,
+            borderRadius: 12,
 
             '& *': {
                 userSelect: 'text'

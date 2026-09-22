@@ -46,6 +46,7 @@ public class ConferenceLinkService {
     private final ConferenceRepository conferenceRepository;
     private final UserRepository userRepository;
     private final ParticipantAssignmentService assignmentService;
+    private final ParticipantPresenceService participantPresenceService;
     private final JwtService jwtService;
     private final JitsiLinkBuilder linkBuilder;
 
@@ -144,11 +145,13 @@ public class ConferenceLinkService {
         boolean moderator = canModerate(conference, actorId, isAdmin);
         String token = jwtService.generateJitsiToken(conference, user, moderator);
 
+        participantPresenceService.recordEntry(conference, user, userDisplayName(user), moderator);
+
         log.info("Issued a personal Jitsi token for user: {} in conference: {} ({})",
             actorId, conferenceId, moderator ? "moderator" : "participant");
 
         return new ConferenceDto.TokenResponse(
-            linkBuilder.roomUrl(conference, token),
+            linkBuilder.roomUrlWithPrejoin(conference, token),
             jwtService.jitsiTokenExpiration()
         );
     }
@@ -209,10 +212,12 @@ public class ConferenceLinkService {
             ? jwtService.generateJitsiToken(conference, visitor, moderator)
             : jwtService.generateGuestToken(conference, displayName, moderator);
 
+        participantPresenceService.recordEntry(conference, visitor, displayName, moderator);
+
         link.registerVisit();
         linkRepository.save(link);
 
-        String roomUrl = linkBuilder.roomUrl(conference, token);
+        String roomUrl = linkBuilder.roomUrlWithPrejoin(conference, token);
         log.info("Granted access via join link {} to conference {} ({})",
             slug, conference.getId(), moderator ? "moderator" : "participant");
 

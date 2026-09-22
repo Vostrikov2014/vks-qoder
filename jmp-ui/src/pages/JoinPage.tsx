@@ -7,11 +7,9 @@ import {
   Button,
   CircularProgress,
   IconButton,
-  InputAdornment,
-  TextField,
   Typography,
 } from '@mui/material';
-import { ArrowLeft, DoorOpen, Moon, Sun, User, Video } from 'lucide-react';
+import { ArrowLeft, DoorOpen, Moon, Sun, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/config';
 import { extractApiError, joinApi } from '../services/api';
@@ -56,19 +54,19 @@ export default function JoinPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { isDarkMode, toggleTheme } = useThemeStore();
 
-  const [displayName, setDisplayName] = useState('');
-  const [phase, setPhase] = useState<Phase>('ask');
+  const [phase, setPhase] = useState<Phase>('resolving');
   const [result, setResult] = useState<JoinResult | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const autoJoined = useRef(false);
 
-  // A signed-in visitor needs no name prompt: the backend derives it from the account.
+  // The shared link resolves straight into Jitsi: no name is collected here, the Jitsi
+  // prejoin screen prompts for it (the personal token carries no editable name).
   const enter = useCallback(async () => {
     if (!slug) return;
     try {
       setPhase('resolving');
       setFailure(null);
-      const response = await joinApi.resolve(slug, displayName.trim() || undefined);
+      const response = await joinApi.resolve(slug);
       const join = response.data;
       setResult(join);
       if (join.decision === 'REDIRECT' && join.roomUrl) {
@@ -82,7 +80,7 @@ export default function JoinPage() {
       setFailure(extractApiError(err, t('join.requestFailed')));
       setPhase('blocked');
     }
-  }, [slug, displayName, t]);
+  }, [slug, t]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -92,16 +90,12 @@ export default function JoinPage() {
     }
   }, [isDarkMode]);
 
+  // Every visitor — signed-in or anonymous — is sent to the resolution immediately.
   useEffect(() => {
-    if (!isAuthenticated || autoJoined.current) return;
+    if (autoJoined.current) return;
     autoJoined.current = true;
     enter();
-  }, [isAuthenticated, enter]);
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    enter();
-  };
+  }, [enter]);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'ru' ? 'en' : 'ru');
@@ -115,6 +109,7 @@ export default function JoinPage() {
     <Box
       sx={{
         minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -137,7 +132,7 @@ export default function JoinPage() {
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -159,7 +154,7 @@ export default function JoinPage() {
             color: 'var(--text-muted)',
             fontSize: '0.75rem',
             fontWeight: 600,
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -176,7 +171,7 @@ export default function JoinPage() {
             backdropFilter: 'blur(10px)',
             border: '1px solid var(--glass-border)',
             color: 'var(--text-muted)',
-            '&:hover': { color: 'var(--text-h)', transform: 'scale(1.05)' },
+            '&:hover': { color: 'var(--primary-600)' },
             transition: 'all 0.2s ease',
           }}
         >
@@ -194,10 +189,7 @@ export default function JoinPage() {
           sx={{
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid var(--glass-border)',
-            borderTop: '3px solid #C99A5B',
             borderRadius: 'var(--radius-2xl)',
-            boxShadow: 'var(--shadow-xl), 0 0 60px rgba(0, 0, 0, 0.08)',
             p: { xs: 3, sm: 5 },
             textAlign: 'center',
           }}
@@ -210,11 +202,10 @@ export default function JoinPage() {
                 mx: 'auto',
                 mb: 3,
                 borderRadius: 'var(--radius-xl)',
-                background: 'linear-gradient(135deg, #0B7186 0%, #19B3C6 50%, #075D70 100%)',
+                background: 'var(--primary-600)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 30px rgba(11, 113, 134, 0.35), 0 0 0 2px rgba(201, 154, 91, 0.4)',
               }}
             >
               {phase === 'blocked' ? <DoorOpen size={36} color="white" /> : <Video size={36} color="white" />}
@@ -236,9 +227,9 @@ export default function JoinPage() {
                   textAlign: 'left',
                   borderRadius: 'var(--radius-lg)',
                   color: 'var(--text-h)',
-                  background: blockedSeverity === 'info' ? 'rgba(11, 113, 134, 0.16)' : 'rgba(239, 68, 68, 0.12)',
-                  border: `1px solid ${blockedSeverity === 'info' ? 'rgba(11, 113, 134, 0.3)' : 'rgba(239, 68, 68, 0.25)'}`,
-                  '& .MuiAlert-icon': { color: blockedSeverity === 'info' ? '#19B3C6' : '#ef4444' },
+                  background: blockedSeverity === 'info' ? 'rgba(var(--primary-rgb), 0.16)' : 'rgba(239, 68, 68, 0.12)',
+                  border: `1px solid ${blockedSeverity === 'info' ? 'rgba(var(--primary-rgb), 0.3)' : 'rgba(239, 68, 68, 0.25)'}`,
+                  '& .MuiAlert-icon': { color: blockedSeverity === 'info' ? 'var(--primary-500)' : '#ef4444' },
                 }}
               >
                 {blockedMessage}
@@ -267,66 +258,24 @@ export default function JoinPage() {
             </motion.div>
           )}
 
-          {phase === 'ask' || phase === 'resolving' ? (
-            <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'left' }}>
-              <motion.div variants={itemVariants}>
-                <TextField
-                  fullWidth
-                  label={t('join.displayName')}
-                  placeholder={t('join.displayNamePlaceholder')}
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  autoFocus
-                  inputProps={{ maxLength: 100 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <User size={20} color="var(--text-muted)" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    mb: 2.5,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 'var(--radius-lg)',
-                      background: 'var(--bg-elevated)',
-                      color: 'var(--text-h)',
-                      '& input': { color: 'var(--text-h)' },
-                      '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
-                      '& fieldset': { borderColor: 'var(--border)' },
-                      '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                      '&.Mui-focused fieldset': { borderColor: '#0B7186', borderWidth: 2 },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'var(--text-muted)',
-                      '&.Mui-focused': { color: '#0B7186' },
-                    },
-                  }}
-                />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  disabled={phase === 'resolving'}
-                  startIcon={phase === 'resolving' ? <CircularProgress size={18} color="inherit" /> : <Video size={18} />}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 'var(--radius-lg)',
-                    background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
-                    color: 'white',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    boxShadow: '0 4px 20px rgba(11, 113, 134, 0.3)',
-                    '&:hover': { background: 'linear-gradient(135deg, #05323C 0%, #031E24 100%)' },
-                  }}
-                >
-                  {t('common.join')}
-                </Button>
-              </motion.div>
-            </Box>
-          ) : null}
+          {(phase === 'ask' || phase === 'resolving') && (
+            <motion.div variants={itemVariants}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  py: 2,
+                }}
+              >
+                <CircularProgress size={36} sx={{ color: 'var(--primary-600)' }} />
+                <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+                  {t('join.redirecting')}
+                </Typography>
+              </Box>
+            </motion.div>
+          )}
 
           {phase === 'blocked' && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -337,10 +286,11 @@ export default function JoinPage() {
                   sx={{
                     py: 1.5,
                     borderRadius: 'var(--radius-lg)',
-                    background: 'linear-gradient(135deg, #075D70 0%, #05323C 100%)',
+                    background: 'var(--primary-600)',
                     color: 'white',
                     fontWeight: 600,
                     textTransform: 'none',
+                    '&:hover': { background: 'var(--btn-hover-bg)' },
                   }}
                 >
                   {t('common.signIn')}
@@ -351,9 +301,9 @@ export default function JoinPage() {
                 onClick={() => {
                   setResult(null);
                   setFailure(null);
-                  autoJoined.current = false;
-                  setPhase(isAuthenticated ? 'resolving' : 'ask');
-                  if (isAuthenticated) enter();
+                  autoJoined.current = true;
+                  setPhase('resolving');
+                  enter();
                 }}
                 sx={{
                   borderRadius: 'var(--radius-lg)',

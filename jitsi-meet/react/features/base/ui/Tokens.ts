@@ -79,7 +79,7 @@ export const colorMap = {
     chatEmptyText: 'ui03',                    // Empty component text
     chatInputBackground: 'surface03',         // Chat input field background (same as ui02)
     chatInputBorder: 'surface03',             // Chat input border (same as ui02)
-    chatLink: 'action01',                     // Chat link color (same as link01)
+    chatLink: 'link01',                       // Chat link color (same as link01)
     chatLobbyMessageBubble: 'support06',      // Lobby message bubble background
     chatLobbyMessageNotice: 'surface01',      // Lobby message notice text
     chatLobbyRecipientContainer: 'support06', // Lobby recipient container background
@@ -139,7 +139,7 @@ export const colorMap = {
     // Speaker Stats
     speakerStatsBackground: 'surface02',   // Speaker stats panel background
     speakerStatsRowBackground: 'ui02',     // Individual stat row background
-    speakerStatsRowAlternate: 'ui03',      // Alternate row background
+    speakerStatsRowAlternate: 'ui01',      // Alternate row background
     speakerStatsBorder: 'surface03',       // Speaker stats borders
     speakerStatsHeaderBackground: 'ui09',  // Header background
     speakerStatsSearchBackground: 'field01', // Search input background
@@ -155,7 +155,7 @@ export const colorMap = {
     preMeetingBackground: 'surface02',  // Pre-meeting screen container background
     preMeetingPreview: 'ui01',          // Video preview in pre-meeting
     prejoinDialogBackground: 'uiBackground', // Prejoin dialog background
-    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#040404)
+    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#0D0D0F)
     prejoinDialogDelimiter: 'ui03',     // Prejoin dialog delimiter line
     prejoinDialogDelimiterText: 'text01', // Prejoin dialog delimiter text
     prejoinTitleText: 'text01',         // Prejoin title text color
@@ -164,11 +164,11 @@ export const colorMap = {
     prejoinWarningText: 'text04',       // Warning banner text
     prejoinRecordingWarningText: 'text03', // Recording warning text
     prejoinActionButtonPrimary: 'action01', // Primary action button
-    prejoinActionButtonPrimaryHover: 'action01Hover', // Primary button hover
+    prejoinActionButtonPrimaryHover: 'hover01Light', // Primary button hover (a lighter step of action01)
     prejoinActionButtonPrimaryText: 'text01', // Primary button text
     prejoinActionButtonSecondary: 'action02', // Secondary action button
     prejoinActionButtonSecondaryHover: 'action02Hover', // Secondary button hover
-    prejoinActionButtonSecondaryText: 'text04', // Secondary button text
+    prejoinActionButtonSecondaryText: 'text01', // Secondary button text (light on dark surface)
     prejoinActionButtonDanger: 'actionDanger', // Danger button (leave)
     prejoinActionButtonDisabled: 'disabled01', // Disabled button
     prejoinCountryPickerBackground: 'ui01', // Country picker background
@@ -181,16 +181,16 @@ export const colorMap = {
     prejoinDeviceStatusText: 'uiBackground', // Device status text
 
     // Notifications
-    notificationBackground: 'ui04',     // Notification background
+    notificationBackground: 'surface02',  // Notification background (dark toast surface)
     notificationNormalIcon: 'action01', // Normal notification icon
     notificationError: 'iconError',     // Error notification icon
     notificationSuccess: 'success01',   // Success notification icon
     notificationWarning: 'warning01',   // Warning notification icon
-    notificationText: 'text04',         // Notification text
-    notificationActionText: 'action01', // Notification action text
+    notificationText: 'text01',           // Notification text
+    notificationActionText: 'link01',     // Notification action text (light link on dark)
     notificationErrorText: 'textError', // Error notification text
     notificationActionFocus: 'action01', // Notification action focus outline
-    notificationCloseIcon: 'icon04',    // Notification close icon
+    notificationCloseIcon: 'icon01',      // Notification close icon
 
     // Forms/Inputs
     inputBackground: 'field01',         // Input field background
@@ -292,8 +292,8 @@ export const colorMap = {
     // ListItem
     listItemText: 'text01',                  // List item text color
     listItemBackground: 'ui01',              // List item default background
-    listItemHover: 'surface03',              // List item hover background
-    listItemHighlighted: 'surface03',        // List item highlighted/active background
+    listItemHover: 'surface05',              // List item hover background
+    listItemHighlighted: 'ui02',             // List item highlighted/active background
     listItemBoxShadow: 'ui02',               // List item actions box shadow color
 
     // ClickableIcon
@@ -303,7 +303,7 @@ export const colorMap = {
     clickableIconFocus: 'focus01',           // Clickable icon focus outline
 
     // Label
-    labelBackground: 'ui04',                 // Label default background
+    labelBackground: 'surface01',            // Label default background
     labelText: 'text01',                     // Label text color
     labelWhiteBackground: 'ui08',            // Label white variant background
     labelWhiteText: 'text04',                // Label white variant text
@@ -355,7 +355,7 @@ export const colorMap = {
     dialInSecondaryText: 'text02',           // Dial-in summary secondary text
 
     // Reactions
-    reactionsMenuBackground: '#242528', // Reactions menu background
+    reactionsMenuBackground: '#1A1A1D', // Reactions menu background
     reactionsMenuBorder: 'ui02',             // Reactions menu border
     reactionsMenuButtonToggled: 'surface01', // Reactions menu button toggled state background
     reactionsMenuBoxShadow1: 'ui09',         // Reactions menu box shadow primary
@@ -412,7 +412,7 @@ export const colorMap = {
     fileSharingItemBorder: 'ui02',           // File sharing item hover/border
 
     // Gifs
-    gifsBackground: '#242528',                  // GIFs panel background
+    gifsBackground: '#1A1A1D',                  // GIFs panel background
     gifsText: 'text01',                      // GIFs panel text
 
     // Whiteboard
@@ -433,7 +433,7 @@ export const colorMap = {
     securityDialogBorder: 'ui07',            // Security dialog border color
 
     // Deep Linking
-    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#1e1e1e)
+    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#0D0D0F)
     deepLinkingBorder: 'ui03',               // Deep linking page content pane border
     deepLinkingText: 'text01',               // Deep linking page text
     deepLinkingSeparator: 'ui03',            // Deep linking separator line
@@ -475,9 +475,9 @@ export const colorMap = {
 
     // ----- Links -----
 
-    link01: 'action01',
-    link01Hover: 'hover07',
-    link01Active: 'action04',
+    link01: 'linkColor01',
+    link01Hover: 'linkColor01Hover',
+    link01Active: 'linkColor01Active',
 
     // ----- Text -----
 
@@ -552,7 +552,7 @@ export const font = {
 };
 
 export const shape = {
-    borderRadius: 6,
+    borderRadius: 12,
     circleRadius: 50,
     boxShadow: 'inset 0px -1px 0px rgba(255, 255, 255, 0.15)'
 };

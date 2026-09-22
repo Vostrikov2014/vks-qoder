@@ -12,13 +12,15 @@ i18n
       en: { translation: en },
       ru: { translation: ru },
     },
-    fallbackLng: 'en',
+    fallbackLng: 'ru',
     supportedLngs: ['en', 'ru'],
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // Russian is the default language; only an explicit user choice is cached.
+      // The browser locale is intentionally not used as a source.
+      order: ['localStorage'],
       caches: ['localStorage'],
     },
   });

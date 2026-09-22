@@ -56,8 +56,8 @@ const useStyles = makeStyles()(theme => {
                 marginRight: theme.spacing(3)
             },
             '& .prejoin-dialog-dialin-num': {
-                background: '#3e474f',
-                borderRadius: '4px',
+                background: '#2e2e33',
+                borderRadius: '8px',
                 display: 'inline-block',
                 fontSize: '1rem',
                 lineHeight: '1.5rem',
@@ -76,7 +76,7 @@ const useStyles = makeStyles()(theme => {
             },
 
             '& .prejoin-dialog-dialin-link': {
-                color: '#6FB1EA',
+                color: '#60A5FA',
                 cursor: 'pointer',
                 display: 'inline-block',
                 fontSize: '0.875rem',

@@ -1,24 +1,30 @@
 :root {
-  /* EMOO Teal-Sand Design System */
+  /* EMOO Design System - Blue (light) / Deep Blue (dark) */
   
-  /* Primary Colors - Teal Palette (from EMOO) */
-  --primary-50: #F1FAFB;
-  --primary-100: #D9F0F3;
-  --primary-200: #B3E4EA;
-  --primary-300: #7DD1DB;
-  --primary-400: #63D6E0;
-  --primary-500: #19B3C6;
-  --primary-600: #0B7186;
-  --primary-700: #075D70;
-  --primary-800: #05323C;
-  --primary-900: #031E24;
+  /* Primary Colors - Blue Palette (light theme) */
+  --primary-50: #EFF6FF;
+  --primary-100: #DBEAFE;
+  --primary-200: #BFDBFE;
+  --primary-300: #93C5FD;
+  --primary-400: #60A5FA;
+  --primary-500: #3B82F6;
+  --primary-600: #2563EB;
+  --primary-700: #1D4ED8;
+  --primary-800: #1E40AF;
+  --primary-900: #1E3A8A;
+
+  /* Filled blue buttons: one step darker on hover in the light theme */
+  --btn-hover-bg: var(--primary-700);
+  
+  /* Primary RGB triplets for alpha-composited colors */
+  --primary-rgb: 37, 99, 235;
+  --primary-500-rgb: 59, 130, 246;
+  --primary-700-rgb: 29, 78, 216;
   
   /* Accent Colors */
-  --accent-blue: #0B7186;
-  --accent-blue-light: #19B3C6;
-  --accent-blue-dark: #075D70;
-  --accent-sand: #C99A5B;
-  --accent-sand-light: #F4EADA;
+  --accent-blue: #2563EB;
+  --accent-blue-light: #3B82F6;
+  --accent-blue-dark: #1D4ED8;
   --accent-green: #22c55e;
   --accent-green-light: #10b981;
   --accent-cyan: #19B3C6;
@@ -27,41 +33,43 @@
   --accent-yellow: #eab308;
   --accent-red: #ef4444;
   
-  /* Sidebar Colors - Sea Wave Teal */
-  --sidebar-bg: #0B7186;
-  --sidebar-bg-dark: #075D70;
+  /* Sidebar Colors - Deep Blue */
+  --sidebar-bg: #2563EB;
+  --sidebar-bg-dark: #1D4ED8;
   --sidebar-text: #ffffff;
   --sidebar-text-muted: rgba(255, 255, 255, 0.7);
   --sidebar-active-bg: rgba(255, 255, 255, 0.15);
-  --sidebar-active-border: #C99A5B;
+
+  /* Avatar Colors */
+  /* Solid avatar background follows the logo (primary-600) color of the current theme */
+  --avatar-bg: var(--primary-600);
+  /* Avatar gradients are fixed across themes (keep light theme look) */
+  --avatar-gradient-1: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  --avatar-gradient-2: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --avatar-gradient-3: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  --avatar-gradient-4: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+  --avatar-gradient-5: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+  --sidebar-active-border: rgba(255, 255, 255, 0.9);
   
   /* Glassmorphism Colors */
   --glass-bg: rgba(255, 255, 255, 0.88);
   --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   
   /* Text Colors */
-  --text: #103C46;
-  --text-h: #05323C;
-  --text-muted: #4A6A71;
+  --text: #1E3A5F;
+  --text-h: #172554;
+  --text-muted: #57718E;
   --text-inverse: #ffffff;
   
   /* Background Colors */
-  --bg: #F1FAFB;
+  --bg: #F5F9FF;
   --bg-elevated: #ffffff;
-  --bg-gradient-start: #F1FAFB;
-  --bg-gradient-end: #E4F3F5;
+  --bg-gradient-start: #F5F9FF;
+  --bg-gradient-end: #E7EFFC;
   
   /* Border & Divider */
-  --border: rgba(11, 113, 134, 0.10);
-  --border-strong: rgba(11, 113, 134, 0.18);
-  
-  /* Shadows - Modern Elevation */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 40px rgba(0, 0, 0, 0.08);
+  --border: rgba(var(--primary-rgb), 0.10);
+  --border-strong: rgba(var(--primary-rgb), 0.18);
   
   /* Typography */
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -80,12 +88,13 @@
   --space-12: 3rem;
   --space-16: 4rem;
   
-  /* Border Radius */
-  --radius-sm: 0.1875rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.375rem;
-  --radius-xl: 0.5rem;
-  --radius-2xl: 0.75rem;
+  /* Border Radius — enlarged to the LoginPage rounding (16px controls).
+     Shared by every page except HomePage and LoginPage, which keep their own radii. */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
   --radius-full: 9999px;
   
   /* Transitions */
@@ -96,7 +105,7 @@
 
   font: 16px/1.6 var(--sans);
   letter-spacing: -0.01em;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -109,44 +118,56 @@
   }
 }
 
-/* Dark Mode - Deep Teal */
+/* Dark Mode - Black / Gray */
 html.dark,
 html.dark body {
-  --text: #9CC9D1;
-  --text-h: #EAF7F8;
-  --text-muted: #7FB4BD;
-  --text-inverse: #05323C;
+  color-scheme: dark;
+  --text: #B3B3B3;
+  --text-h: #F5F5F5;
+  --text-muted: #8A8A8A;
+  --text-inverse: #0A0A0A;
   
-  --bg: #031E24;
-  --bg-elevated: #05323C;
-  --bg-gradient-start: #031E24;
-  --bg-gradient-end: #05323C;
+  --bg: #0A0A0A;
+  --bg-elevated: #1A1A1A;
+  --bg-gradient-start: #0A0A0A;
+  --bg-gradient-end: #171717;
   
-  --sidebar-bg: #05323C;
-  --sidebar-bg-dark: #031E24;
-  --sidebar-text: #EAF7F8;
-  --sidebar-text-muted: #9CC9D1;
-  --sidebar-active-bg: rgba(25, 179, 198, 0.2);
-  --sidebar-active-border: #C99A5B;
+  --sidebar-bg: #1A1A1A;
+  --sidebar-bg-dark: #0A0A0A;
+  --sidebar-text: #F5F5F5;
+  --sidebar-text-muted: #9A9A9A;
+  --sidebar-active-bg: rgba(96, 165, 250, 0.2);
+  --sidebar-active-border: rgba(147, 197, 253, 0.85);
   
-  --glass-bg: rgba(5, 50, 60, 0.8);
+  --glass-bg: rgba(26, 26, 26, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.16);
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 40px rgba(25, 179, 198, 0.15);
-  
-  --accent-blue: #19B3C6;
-  --accent-blue-light: #63D6E0;
-  --accent-blue-dark: #0B7186;
+  --accent-blue: #3B82F6;
+  --accent-blue-light: #60A5FA;
+  --accent-blue-dark: #2563EB;
   --accent-green: #4ade80;
   --accent-green-light: #22c55e;
+
+  /* Blue primary palette shifted one step lighter so accents stay legible on dark surfaces */
+  --primary-50: #F5F9FF;
+  --primary-100: #EFF6FF;
+  --primary-200: #DBEAFE;
+  --primary-300: #BFDBFE;
+  --primary-400: #93C5FD;
+  --primary-500: #60A5FA;
+  --primary-600: #3B82F6;
+  --primary-700: #2563EB;
+  --primary-800: #1D4ED8;
+  --primary-900: #1E40AF;
+
+  /* Filled blue buttons: lighten one step on hover against dark surfaces */
+  --btn-hover-bg: var(--primary-500);
+  --primary-rgb: 59, 130, 246;
+  --primary-500-rgb: 96, 165, 250;
+  --primary-700-rgb: 37, 99, 235;
 }
 
 /* Smooth theme transition for all properties */
@@ -205,9 +226,9 @@ body {
   width: 200%;
   height: 200%;
   background: 
-    radial-gradient(ellipse at 20% 30%, rgba(11, 113, 134, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(25, 179, 198, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 80%, rgba(201, 154, 91, 0.02) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 30%, rgba(var(--primary-rgb), 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(var(--primary-500-rgb), 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(var(--primary-rgb), 0.02) 0%, transparent 50%);
   animation: aurora-flow 20s ease-in-out infinite;
 }
 
@@ -228,34 +249,15 @@ body {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--glass-shadow);
 }
 
-/* Gradient Text - Teal */
+/* Gradient Text - Blue */
 .gradient-text {
   background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Glow Effects - Monochrome */
-.glow-primary {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
-}
-
-.glow-success {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
-}
-
-.glow-warning {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-}
-
-.glow-error {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
 /* Modern Scrollbar */
@@ -279,11 +281,11 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(201, 154, 91, 0.3);
+  background: rgba(var(--primary-rgb), 0.3);
   color: var(--text-h);
 }
 
-/* Input Autofill - Override browser default blue background */
+/* Input Autofill - Keep the field's own background/text so it doesn't flash */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -296,8 +298,9 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px white inset !important;
-  -webkit-text-fill-color: var(--text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-elevated) inset !important;
+  -webkit-text-fill-color: var(--text-h) !important;
+  caret-color: var(--text-h) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -314,9 +317,24 @@ html.dark select:-webkit-autofill,
 html.dark select:-webkit-autofill:hover,
 html.dark select:-webkit-autofill:focus,
 html.dark select:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #05323C inset !important;
-  -webkit-text-fill-color: #9CC9D1 !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-elevated) inset !important;
+  -webkit-text-fill-color: var(--text-h) !important;
+  caret-color: var(--text-h) !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Light mode datetime-local input styling */
+input[type="datetime-local"] {
+  color-scheme: light;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
 }
 
 /* Dark mode datetime-local input styling */
@@ -325,7 +343,7 @@ html.dark input[type="datetime-local"] {
 }
 
 html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+  /* color-scheme: dark already renders the native icon light; inverting it again would make it black */
   opacity: 0.6;
   cursor: pointer;
 }
@@ -377,15 +395,15 @@ code {
   font-size: 0.875rem;
   line-height: 1.5;
   padding: 0.25rem 0.5rem;
-  background: rgba(11, 113, 134, 0.05);
+  background: rgba(var(--primary-rgb), 0.05);
   color: var(--primary-600);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(11, 113, 134, 0.08);
+  border: 1px solid rgba(var(--primary-rgb), 0.08);
 }
 
 /* Utility Classes */
 .text-gradient {
-  background: linear-gradient(135deg, var(--primary-600), var(--accent-sand));
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-500));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

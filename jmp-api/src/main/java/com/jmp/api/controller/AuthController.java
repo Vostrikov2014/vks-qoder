@@ -5,6 +5,8 @@ import com.jmp.application.service.JwtService;
 import com.jmp.application.service.UserService;
 import com.jmp.domain.entity.User;
 import com.jmp.domain.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -85,7 +87,15 @@ public class AuthController {
     public ResponseEntity<TokenRefreshResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         log.debug("Token refresh attempt");
 
-        var claims = jwtService.validateRefreshToken(request.refreshToken());
+        Claims claims;
+        try {
+            claims = jwtService.validateRefreshToken(request.refreshToken());
+        } catch (JwtException | IllegalArgumentException e) {
+            // Expired or forged refresh token: the client has to log in again.
+            log.warn("Refresh token rejected: {}", e.getMessage());
+            throw new BadCredentialsException("Invalid or expired refresh token");
+        }
+
         UUID userId = UUID.fromString(claims.getSubject());
         
         User user = userRepository.findWithRolesById(userId)

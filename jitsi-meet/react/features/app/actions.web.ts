@@ -96,8 +96,20 @@ export function maybeRedirectToWelcomePage(options: { feedbackSubmitted?: boolea
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
 
         const {
-            enableClosePage
+            enableClosePage,
+            leaveRedirectUrl
         } = getState()['features/base/config'];
+
+        // JMP: the platform UI owns the post-conference experience. This is the single
+        // exit point of the web app — a plain hangup, being kicked out and the
+        // conference being destroyed by the moderator all end up here — so the user is
+        // always returned to the address the deployment configured.
+        if (leaveRedirectUrl) {
+            logger.info(`Conference ended, redirecting to ${leaveRedirectUrl}`);
+            window.location.assign(leaveRedirectUrl);
+
+            return;
+        }
 
         // if close page is enabled redirect to it, without further action
         if (enableClosePage) {

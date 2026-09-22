@@ -111,16 +111,28 @@ management:
 
 # Jitsi Configuration
 jitsi:
-  domain: ${JITSI_DOMAIN:a.slamx.ru/jitsi}
+  # Public address of the Jitsi web deployment: host[:port][/path-prefix]. A per-tenant
+  # value from tenants.jitsi_domain wins over it. Keep the path prefix empty for the
+  # standard layout (Jitsi on its own subdomain) — the signalling of the web container is
+  # proxied at the root of the host.
+  domain: ${JITSI_DOMAIN:meet.slamx.ru}
   # Scheme used when building room addresses. The value of jitsi.domain may override it
   # by carrying an explicit scheme of its own.
   scheme: ${JITSI_SCHEME:https}
+  # Internal XMPP domain; must be the VirtualHost Prosody serves (XMPP_DOMAIN of the
+  # jitsi-prosody container). It goes into the `sub` claim of every Jitsi token.
   xmpp-domain: ${JITSI_XMPP_DOMAIN:meet.jitsi}
   admin-url: ${JITSI_ADMIN_URL:http://localhost:8080}
   admin-secret: ${JITSI_ADMIN_SECRET:}
   jwt:
     app-id: ${JITSI_JWT_APP_ID:jmp-platform}
     app-secret: ${JITSI_JWT_APP_SECRET:YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==}
+    # How `app-secret` is turned into the HMAC key. 'raw' signs with the literal bytes of
+    # the secret, which is what Prosody's token auth uses (Jitsi docker images pass
+    # JWT_APP_SECRET through unchanged); 'base64' is only for deployments where Prosody
+    # was configured with the decoded key. Both contours must use the same mode as the
+    # Prosody they talk to.
+    app-secret-type: ${JITSI_JWT_APP_SECRET_TYPE:raw}
     audience: ${JITSI_JWT_AUDIENCE:jitsi}
     # Lifetime of a token embedded into a room address. It has to outlive page reloads
     # inside a meeting, while join links themselves never expire with it.

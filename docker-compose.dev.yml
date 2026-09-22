@@ -5,7 +5,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: jmp-postgres
+    container_name: postgres-dev
     restart: unless-stopped
     environment:
       POSTGRES_DB: jmp
@@ -26,7 +26,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: jmp-redis
+    container_name: redis-dev
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -59,9 +59,9 @@ services:
   #     JWT_REFRESH_SECRET: cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=
   #     JMP_STORAGE_S3_BUCKET: jmp-recordings
   #     JMP_STORAGE_S3_REGION: us-east-1
-  #     JMP_STORAGE_S3_ACCESS_KEY: test-access-key
-  #     JMP_STORAGE_S3_SECRET_KEY: test-secret-key
-  #     JMP_STORAGE_S3_ENDPOINT: http://minio:9000
+  #     JMP_STORAGE_S3_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
+  #     JMP_STORAGE_S3_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
+  #     JMP_STORAGE_S3_ENDPOINT: http://garage:3900
   #     JITSI_JWT_APP_ID: jmp-platform
   #     JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
   #     JITSI_JWT_AUDIENCE: jitsi
@@ -75,7 +75,7 @@ services:
   #       condition: service_healthy
   #     redis:
   #       condition: service_healthy
-  #     minio:
+  #     garage:
   #       condition: service_healthy
   #   networks:
   #     - jmp-network
@@ -107,7 +107,7 @@ services:
   # Prometheus (Metrics)
   prometheus:
     image: prom/prometheus:latest
-    container_name: jmp-prometheus
+    container_name: prometheus-dev
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -125,7 +125,7 @@ services:
   # Grafana (Dashboards)
   grafana:
     image: grafana/grafana:latest
-    container_name: jmp-grafana
+    container_name: grafana-dev
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -140,79 +140,75 @@ services:
     networks:
       - jmp-network
 
-  # MinIO (S3-compatible Object Storage)
-  minio:
-    image: minio/minio:latest
-    container_name: jmp-minio
+  # Garage (S3-compatible Object Storage) — https://garagehq.deuxfleurs.fr
+  # --single-node assigns the cluster layout on the first start and is idempotent on
+  # restarts; --default-bucket creates the access key and the bucket below with
+  # read/write rights, so recordings storage needs no manual provisioning step.
+  garage:
+    image: dxflrs/garage:v2.4.1
+    container_name: garage-dev
     restart: unless-stopped
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
     environment:
-      MINIO_ROOT_USER: test-access-key
-      MINIO_ROOT_PASSWORD: test-secret-key
-    command: server /data --console-address ":9001"
+      GARAGE_DEFAULT_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
+      GARAGE_DEFAULT_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
+      GARAGE_DEFAULT_BUCKET: jmp-recordings
     volumes:
-      - minio_data:/data
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "3900:3900"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - jmp-network
 
-  # Jitsi Web (Web UI) - Local Build from jitsi-meet project
-  # Build locally: docker compose build jitsi-web
-  # Push to registry: docker compose push jitsi-web
-  # On remote: docker compose pull jitsi-web && docker compose up -d jitsi-web
-  # jitsi-web:
-  #   build:
-  #     context: ./jitsi-meet
-  #     dockerfile: Dockerfile
-  #   image: jmp-jitsi-web-dev
-  #   pull_policy: never
-  #   container_name: jmp-jitsi-web-dev
-  #   restart: "no"
-  #   environment:
-  #     # General
-  #     TZ: UTC
-  #     PUBLIC_URL: http://localhost:8000
-  #     ENABLE_AUTH: 1
-  #     ENABLE_GUESTS: 0
-  #     AUTH_TYPE: jwt
-  #     # JWT configuration
-  #     JWT_APP_ID: jmp-platform
-  #     JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-  #     JWT_ACCEPTED_ISSUERS: jmp-platform
-  #     JWT_ACCEPTED_AUDIENCES: jitsi
-  #     JWT_ALLOW_EMPTY: 0
-  #     # XMPP configuration
-  #     XMPP_DOMAIN: meet.jitsi
-  #     XMPP_AUTH_DOMAIN: auth.meet.jitsi
-  #     XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
-  #     XMPP_MUC_DOMAIN: muc.meet.jitsi
-  #     XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
-  #     XMPP_GUEST_DOMAIN: guest.meet.jitsi
-  #     XMPP_MODULES: ''
-  #     XMPP_MUC_MODULES: ''
-  #     XMPP_INTERNAL_MUC_MODULES: ''
-  #     # Web-specific settings
-  #     ENABLE_LOBBY: 1
-  #     ENABLE_PREJOIN_PAGE: 1
-  #     ENABLE_WELCOME_PAGE: 0
-  #     ENABLE_RECORDING: 1
-  #   ports:
-  #     - "8000:80"
-  #   depends_on:
-  #     - jitsi-prosody
-  #   networks:
-  #     - jmp-network
+  # Jitsi meet (local build of ./jitsi-meet) — serves the UI and, what matters for the
+  # LOCAL contour, proxies the XMPP/Colibri signalling to Prosody/JVB (see
+  # jitsi-meet/nginx.conf + jitsi-meet/docker/55-jmp-config.sh). Published on 8085
+  # because `make dev` occupies 8000; the dev server is pointed here with
+  # WEBPACK_DEV_SERVER_PROXY_TARGET, so a hot-reloaded bundle and this container talk to
+  # the very same Prosody and therefore land in the very same conference.
+  #jitsi-meet:
+  #  build:
+  #    context: ./jitsi-meet
+  #    dockerfile: Dockerfile
+  #  image: jmp-jitsi-meet-dev
+  #  pull_policy: never
+  #  container_name: jmp-jitsi-meet-dev
+  #  restart: unless-stopped
+  #  environment:
+  #    TZ: UTC
+  #    # --- contour switches, applied to config.js / nginx.conf at container start ---
+  #    # Must match the Prosody virtual host and `main_muc`.
+  #    XMPP_DOMAIN: meet.jitsi
+  #    XMPP_MUC_DOMAIN: muc.meet.jitsi
+  #    PROSODY_URL: http://jitsi-prosody:5280
+  #    JVB_WS_URL: http://jitsi-jvb:9090
+  #    # No TURN server in the local contour: two-person media goes over the bridge.
+  #    DISABLE_P2P: "true"
+  #    # Set to /jitsi when the app has to live under a path prefix instead of the root.
+  #    APP_PREFIX: ""
+  #    # bosh/websocket addresses are derived from the browser origin, so nothing here
+  #    # depends on the host name the developers open the page with.
+  #    #
+  #    # Authentication, lobby and JWT acceptance are decided by Prosody (see
+  #    # jitsi-prosody below) and by the tokens issued by jmp-api; the web container
+  #    # only serves static files and proxies.
+  #  ports:
+  #    - "8085:80"
+  #  depends_on:
+  #    - jitsi-prosody
+  #  networks:
+  #    - jmp-network
 
   # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
     image: jitsi/prosody:stable
-    container_name: jmp-jitsi-prosody
+    container_name: jitsi-prosody-dev
     restart: unless-stopped
     environment:
       # General
@@ -252,13 +248,20 @@ services:
     volumes:
       - jitsi_prosody_config:/config
       - jitsi_prosody_plugins:/prosody-plugins-custom
+    # Jicofo and JVB reach Prosody by the XMPP_SERVER host name, which the Jitsi images
+    # default to xmpp.meet.jitsi. Upstream docker-jitsi-meet publishes Prosody under that
+    # name, so the alias is what makes the two connect; without it they only log
+    # "DNS lookup exception for xmpp.meet.jitsi" and the focus IQ answers
+    # service-unavailable, which the browser reports as a failed conference request.
     networks:
-      - jmp-network
+      jmp-network:
+        aliases:
+          - xmpp.meet.jitsi
 
   # Jitsi Jicofo (Conference Focus)
   jitsi-jicofo:
     image: jitsi/jicofo:stable
-    container_name: jmp-jitsi-jicofo
+    container_name: jitsi-jicofo-dev
     restart: unless-stopped
     environment:
       # General
@@ -300,7 +303,7 @@ services:
   # Jitsi JVB (Video Bridge)
   jitsi-jvb:
     image: jitsi/jvb:stable
-    container_name: jmp-jitsi-jvb
+    container_name: jitsi-jvb-dev
     restart: unless-stopped
     environment:
       # General
@@ -340,6 +343,10 @@ services:
       - jitsi_jvb_config:/config
     ports:
       - "10000:10000/udp"
+      # colibri-ws (bridge channel) published for the LOCAL contour so webpack-dev-server
+      # can proxy /colibri-ws straight to the JVB. Host 9090 is taken by Prometheus, so
+      # the JVB's 9090 is exposed on 9091 (loopback only).
+      - "127.0.0.1:9091:9090"
     depends_on:
       - jitsi-prosody
     networks:
@@ -350,7 +357,7 @@ volumes:
   redis_data:
   prometheus_data:
   grafana_data:
-  minio_data:
+  garage_data:
   #jitsi_web_config:
   #jitsi_web_certs:
   #jitsi_transcripts:

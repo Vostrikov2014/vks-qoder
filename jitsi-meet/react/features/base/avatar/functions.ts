@@ -2,15 +2,15 @@ import GraphemeSplitter from 'grapheme-splitter';
 import { split } from 'lodash-es';
 
 const AVATAR_COLORS = [
-    '#6A50D3',
-    '#FF9B42',
-    '#DF486F',
-    '#73348C',
-    '#B23683',
-    '#F96E57',
-    '#4380E2',
-    '#238561',
-    '#00A8B3'
+    '#2563EB',
+    '#3B82F6',
+    '#19B3C6',
+    '#8B5CF6',
+    '#6366F1',
+    '#22C55E',
+    '#F97316',
+    '#EF4444',
+    '#0EA5E9'
 ];
 const wordSplitRegex = (/\s+|\.+|_+|;+|-+|,+|\|+|\/+|\\+|"+|'+|\(+|\)+|#+|&+/);
 const splitter = new GraphemeSplitter();

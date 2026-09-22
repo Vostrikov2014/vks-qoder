@@ -32,8 +32,8 @@ const styles = (_theme: Theme, { _chatWidth }: IProps) => {
             transition: 'max-height 0.3s',
 
             '& #smileysContainer': {
-                backgroundColor: '#131519',
-                borderTop: '1px solid #A4B8D1'
+                backgroundColor: '#1a1a1d',
+                borderTop: '1px solid rgba(255, 255, 255, 0.16)'
             }
         },
         chatDisabled: {

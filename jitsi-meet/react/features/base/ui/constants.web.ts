@@ -46,7 +46,7 @@ export const commonStyles = (theme: Theme) => {
                 padding: '0 20px',
                 width: '100%',
                 height: '1px',
-                background: '#5E6D7A'
+                background: theme.palette.dialogBorder
             },
 
             '& .control-row': {
@@ -133,7 +133,7 @@ export const commonStyles = (theme: Theme) => {
             backgroundColor: theme.palette.prejoinDialogBackground,
             boxShadow: '0px 2px 20px rgba(0, 0, 0, 0.5)',
             borderRadius: theme.shape.borderRadius,
-            color: '#fff',
+            color: theme.palette.text01,
             height: '400px',
             width: '375px',
 
@@ -148,10 +148,10 @@ export const commonStyles = (theme: Theme) => {
             },
 
             '.prejoin-dialog-label-num': {
-                background: '#2b3b4b',
-                border: '1px solid #A4B8D1',
+                background: theme.palette.ui02,
+                border: `1px solid ${theme.palette.ui07}`,
                 borderRadius: '50%',
-                color: '#fff',
+                color: theme.palette.text01,
                 display: 'inline-block',
                 height: '24px',
                 marginRight: theme.spacing(2),
@@ -233,7 +233,7 @@ export const commonStyles = (theme: Theme) => {
 
         '.toolbox-icon': {
             display: 'flex',
-            borderRadius: 3,
+            borderRadius: 10,
             flexDirection: 'column' as const,
             fontSize: '1.5rem',
             height: 48,
@@ -278,7 +278,7 @@ export const commonStyles = (theme: Theme) => {
 
         '.toolbox-content-items': {
             background: theme.palette.toolboxBackground,
-            borderRadius: 6,
+            borderRadius: 16,
             margin: '0 auto',
             padding: 6,
             textAlign: 'center' as const,

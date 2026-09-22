@@ -1,22 +1,22 @@
 .inlay {
     margin-top: 14%;
-    @include border-radius(4px);
+    @include border-radius(16px);
     padding: 40px 38px 44px;
-    color: #fff;
-    background: lighten(#474747, 20%);
+    color: #F5F5F5;
+    background: #1a1a1d;
     text-align: center;
 
     &__title {
         margin: 17px 0;
         padding-bottom: 17px;
-        color: #ffffff;
+        color: #F5F5F5;
         font-size: 1.25rem;
         letter-spacing: 0.3px;
-        border-bottom: 1px solid lighten(#FFFFFF, 10%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
     }
 
     &__text {
-        color: #ffffff;
+        color: #B3B3B3;
         display: block;
         margin-top: 22px;
         font-size: 1rem;
