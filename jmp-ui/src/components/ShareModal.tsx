@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next';
 import { conferenceLinkApi, extractApiError } from '../services/api';
 import type { ConferenceLink, ConferenceLinkCreateRequest, ConferenceLinkRole } from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
 import type { Conference } from '../types';
 
 interface ShareModalProps {
@@ -56,39 +58,6 @@ const toInstant = (value: string): string | undefined => {
 
 const isRevoked = (link: ConferenceLink): boolean => Boolean(link.revokedAt);
 
-/**
- * Палитра MUI в проекте светлая (main.tsx), а тёмная тема переключается классом
- * html.dark, поэтому текст полей задаётся явно через CSS-переменные: иначе в тёмной
- * теме он остаётся чёрным и сливается с фоном диалога.
- */
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 'var(--radius-md)',
-    color: 'var(--text-h)',
-    '& input': { color: 'var(--text-h)' },
-    '& input::placeholder': { color: 'var(--text-muted)', opacity: 1 },
-    '& fieldset': { borderColor: 'var(--border-strong)' },
-    '&:hover fieldset': { borderColor: 'var(--text-muted)' },
-    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)', borderWidth: 2 },
-  },
-  '& .MuiInputLabel-root': {
-    color: 'var(--text-muted)',
-    '&.Mui-focused': { color: 'var(--primary-600)' },
-  },
-};
-
-/** Меню выбора роли — в тех же цветах, что и диалог, а не дефолтный белый Paper. */
-const menuProps = {
-  PaperProps: {
-    sx: {
-      background: 'var(--bg-elevated)',
-      border: '1px solid var(--glass-border)',
-      '& .MuiMenuItem-root': { color: 'var(--text-h)' },
-      '& .MuiMenuItem-root.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.15)', color: 'var(--primary-600)' },
-    },
-  },
-};
-
 const isExpired = (link: ConferenceLink): boolean => {
   if (!link.expiresAt || link.revokedAt) return false;
   return new Date(link.expiresAt).getTime() < Date.now();
@@ -97,6 +66,9 @@ const isExpired = (link: ConferenceLink): boolean => {
 export default function ShareModal({ conference, open, onClose }: ShareModalProps) {
   const { t, i18n } = useTranslation();
   const user = useAuthStore((state) => state.user);
+  const { isDarkMode } = useThemeStore();
+  // Add-link fields follow the Recordings (Entries) page look
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
   const [links, setLinks] = useState<ConferenceLink[]>([]);
   const [loading, setLoading] = useState(false);
@@ -283,15 +255,12 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
             ),
           }}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(255, 255, 255, 0.05)',
+            ...dialogFieldSx,
+            // The URL is rendered in the mono font
+            '& .MuiOutlinedInput-input': {
+              color: 'var(--text-h)',
               fontFamily: 'var(--mono)',
               fontSize: '0.8125rem',
-              color: 'var(--text-h)',
-              '& input': { color: 'var(--text-h)' },
-              '& fieldset': { borderColor: 'transparent' },
-              '&:hover fieldset': { borderColor: 'var(--border)' },
             },
           }}
         />
@@ -335,8 +304,8 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-elevated)',
+          borderRadius: 'var(--radius-lg)',
+          background: 'var(--bg)',
           border: '1px solid var(--glass-border)',
         },
       }}
@@ -439,11 +408,11 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             inputProps={{ maxLength: 100 }}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel id="link-role-label" sx={{ color: 'var(--text-muted)', '&.Mui-focused': { color: 'var(--primary-600)' } }}>
+            <FormControl size="small" sx={{ minWidth: 200, ...dialogFieldSx }}>
+              <InputLabel id="link-role-label">
                 {t('share.linkRole')}
               </InputLabel>
               <Select
@@ -451,15 +420,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                 label={t('share.linkRole')}
                 value={role}
                 onChange={(e) => setRole(e.target.value as ConferenceLinkRole)}
-                MenuProps={menuProps}
-                sx={{
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-h)',
-                  '& fieldset': { borderColor: 'var(--border-strong)' },
-                  '&:hover fieldset': { borderColor: 'var(--text-muted)' },
-                  '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-                  '& .MuiSelect-icon': { color: 'var(--text-muted)' },
-                }}
+                MenuProps={dialogMenuProps}
               >
                 <MenuItem value="PARTICIPANT">{t('roles.PARTICIPANT')}</MenuItem>
                 {canModerate && <MenuItem value="MODERATOR">{t('roles.MODERATOR')}</MenuItem>}
@@ -492,15 +453,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                   onChange={(e) => setExpiresAt(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   label={t('share.expiresAt')}
-                  sx={{
-                    ...fieldSx,
-                    mt: 1,
-                    '& .MuiOutlinedInput-root': {
-                      ...fieldSx['& .MuiOutlinedInput-root'],
-                      '& fieldset': { borderColor: 'transparent' },
-                      '&:hover fieldset': { borderColor: 'transparent' },
-                    },
-                  }}
+                  sx={{ ...dialogFieldSx, mt: 1 }}
                 />
               )}
             </Box>

@@ -49,6 +49,7 @@ import {
 } from 'lucide-react';
 import { conferenceApi, participantAssignmentApi } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
 import ShareModal from '../components/ShareModal';
 import ParticipantManagementPanel from '../components/ParticipantManagementPanel';
 import type { Conference, ConferenceType, AccessPolicy, ParticipantAssignment } from '../types';
@@ -229,6 +230,8 @@ export default function ConferencesPage() {
   const [participants, setParticipants] = useState<ParticipantAssignment[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Create/edit dialog fields follow the Recordings (Entries) page look
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
   const fetchConferences = async () => {
     try {
@@ -769,7 +772,7 @@ export default function ConferencesPage() {
                         onClick={() => handleStart(conference.id, conference.status)}
                         sx={{
                           py: 1,
-                          flex: 1,
+                          flex: '1 1 auto',
                           borderRadius: 'var(--radius-lg)',
                           background: 'var(--primary-600)',
                           color: 'white',
@@ -780,7 +783,7 @@ export default function ConferencesPage() {
                           },
                         }}
                       >
-                        {conference.status === 'ACTIVE' ? t('common.join') : t('common.start')}
+                        {conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}
                       </Button>
                       <Button
                         variant="contained"
@@ -789,7 +792,7 @@ export default function ConferencesPage() {
                         disabled={conference.status !== 'ACTIVE'}
                         sx={{
                           py: 1,
-                          flex: 1,
+                          flex: '1 1 auto',
                           borderRadius: 'var(--radius-lg)',
                           background: conference.status === 'ACTIVE' ? '#4b5563' : 'rgba(107, 114, 128, 0.2)',
                           color: 'white',
@@ -1042,7 +1045,7 @@ export default function ConferencesPage() {
 
                       {/* Actions */}
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                          <Tooltip title={conference.status === 'ACTIVE' ? t('common.join') : t('common.start')}>
+                          <Tooltip title={conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}>
                             <IconButton
                               size="small"
                               onClick={() => handleStart(conference.id, conference.status)}
@@ -1179,7 +1182,7 @@ export default function ConferencesPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--bg-elevated)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
           },
@@ -1224,9 +1227,6 @@ export default function ConferencesPage() {
           )}
           {/* Type Selector */}
           <Box sx={{ mt: 2, mb: 2 }}>
-            <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1, fontWeight: 500 }}>
-              {t('conferences.type')}
-            </Typography>
             <ToggleButtonGroup
               value={formData.type}
               exclusive
@@ -1280,27 +1280,7 @@ export default function ConferencesPage() {
             onChange={(e) => setFormData({ ...formData, roomName: e.target.value })}
             margin="normal"
             disabled={!!editingConference}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                color: 'var(--text)',
-                '& fieldset': {
-                  borderColor: 'var(--border)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'var(--border-strong)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'var(--primary-600)',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'var(--text-muted)',
-              },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: 'var(--primary-600)',
-              },
-            }}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -1308,27 +1288,7 @@ export default function ConferencesPage() {
             value={formData.displayName}
             onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
             margin="normal"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                color: 'var(--text)',
-                '& fieldset': {
-                  borderColor: 'var(--border)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'var(--border-strong)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'var(--primary-600)',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'var(--text-muted)',
-              },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: 'var(--primary-600)',
-              },
-            }}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -1338,27 +1298,7 @@ export default function ConferencesPage() {
             margin="normal"
             multiline
             rows={2}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                color: 'var(--text)',
-                '& fieldset': {
-                  borderColor: 'var(--border)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'var(--border-strong)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'var(--primary-600)',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'var(--text-muted)',
-              },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: 'var(--primary-600)',
-              },
-            }}
+            sx={dialogFieldSx}
           />
 
           {/* Scheduled Date/Time Fields */}
@@ -1369,29 +1309,7 @@ export default function ConferencesPage() {
                 type="datetime-local"
                 value={formData.scheduledStartAt}
                 onChange={(e) => setFormData({ ...formData, scheduledStartAt: e.target.value })}
-                sx={{
-                  flex: 1,
-                  minWidth: 200,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 'var(--radius-lg)',
-                    color: 'var(--text)',
-                    '& fieldset': {
-                      borderColor: 'transparent',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'transparent',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'var(--primary-600)',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'var(--text-muted)',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'var(--primary-600)',
-                  },
-                }}
+                sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
@@ -1399,29 +1317,7 @@ export default function ConferencesPage() {
                 type="datetime-local"
                 value={formData.scheduledEndAt}
                 onChange={(e) => setFormData({ ...formData, scheduledEndAt: e.target.value })}
-                sx={{
-                  flex: 1,
-                  minWidth: 200,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 'var(--radius-lg)',
-                    color: 'var(--text)',
-                    '& fieldset': {
-                      borderColor: 'transparent',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'transparent',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'var(--primary-600)',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'var(--text-muted)',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'var(--primary-600)',
-                  },
-                }}
+                sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 InputLabelProps={{ shrink: true }}
               />
             </Box>
@@ -1522,40 +1418,14 @@ export default function ConferencesPage() {
             <FormControl
               fullWidth
               size="small"
-              sx={{
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 'var(--radius-lg)',
-                  color: 'var(--text)',
-                  '& fieldset': { borderColor: 'var(--border)' },
-                  '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                  '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-                },
-                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-                '& .MuiSelect-icon': { color: 'var(--text-muted)' },
-              }}
+              sx={{ mb: 2, ...dialogFieldSx }}
             >
               <InputLabel>{t('conferences.accessPolicy')}</InputLabel>
               <Select
                 value={formData.accessPolicy}
                 label={t('conferences.accessPolicy')}
                 onChange={(e) => setFormData({ ...formData, accessPolicy: e.target.value as AccessPolicy })}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      background: 'var(--glass-bg)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid var(--glass-border)',
-                      borderRadius: 'var(--radius-lg)',
-                      '& .MuiMenuItem-root': {
-                        color: 'var(--text)',
-                        '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
-                        '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
-                      },
-                    },
-                  },
-                }}
+                MenuProps={dialogMenuProps}
               >
                 <MenuItem value="PUBLIC">{t('conferences.accessPolicyPublic')}</MenuItem>
                 <MenuItem value="ASSIGNED_ONLY">{t('conferences.accessPolicyAssignedOnly')}</MenuItem>
@@ -1572,18 +1442,7 @@ export default function ConferencesPage() {
                 placeholder="company.com"
                 value={formData.allowedDomain}
                 onChange={(e) => setFormData({ ...formData, allowedDomain: e.target.value })}
-                sx={{
-                  mb: 2,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 'var(--radius-lg)',
-                    color: 'var(--text)',
-                    '& fieldset': { borderColor: 'var(--border)' },
-                    '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-                  },
-                  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-                }}
+                sx={{ mb: 2, ...dialogFieldSx }}
               />
             )}
 

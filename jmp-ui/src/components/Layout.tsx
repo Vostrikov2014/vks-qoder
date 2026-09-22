@@ -117,7 +117,9 @@ export default function Layout() {
           sx={{
             width: 44,
             height: 44,
-            borderRadius: 'var(--radius-xl)',
+            // Pinned to the previous --radius-xl value (0.5rem): the logo keeps
+            // its original rounding while the shared radius scale grew
+            borderRadius: '0.5rem',
             // The light-theme sidebar is primary-600 blue itself, so the logo uses the
             // darker primary (button) blue to stand out; dark theme keeps the accent blue
             background: isDarkMode ? 'var(--primary-600)' : 'var(--primary-700)',

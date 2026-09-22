@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { userApi } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
 
 interface UserData {
   id: string;
@@ -188,6 +189,8 @@ export default function UsersPage() {
     roleNames: [] as string[],
   });
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Create/edit dialog fields follow the Recordings (Entries) page look
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
   const fetchUsers = async () => {
     try {
@@ -875,7 +878,7 @@ export default function UsersPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--bg-elevated)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
           },
@@ -902,22 +905,7 @@ export default function UsersPage() {
                 </InputAdornment>
               ),
             }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 'var(--radius-lg)',
-                '& fieldset': {
-                  borderColor: 'var(--border)',
-                },
-                '&:hover fieldset': {
-                  borderColor: 'var(--border-strong)',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'var(--primary-600)',
-                },
-              },
-              '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-              '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-            }}
+            sx={dialogFieldSx}
           />
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <TextField
@@ -926,22 +914,7 @@ export default function UsersPage() {
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
               margin="normal"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 'var(--radius-lg)',
-                  '& fieldset': {
-                    borderColor: 'var(--border)',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'var(--border-strong)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--primary-600)',
-                  },
-                },
-                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-              }}
+              sx={dialogFieldSx}
             />
             <TextField
               fullWidth
@@ -949,22 +922,7 @@ export default function UsersPage() {
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               margin="normal"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 'var(--radius-lg)',
-                  '& fieldset': {
-                    borderColor: 'var(--border)',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'var(--border-strong)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--primary-600)',
-                  },
-                },
-                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-              }}
+              sx={dialogFieldSx}
             />
           </Box>
           {!editingUser && (
@@ -975,26 +933,11 @@ export default function UsersPage() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               margin="normal"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 'var(--radius-lg)',
-                  '& fieldset': {
-                    borderColor: 'var(--border)',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'var(--border-strong)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--primary-600)',
-                  },
-                },
-                '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-              }}
+              sx={dialogFieldSx}
             />
           )}
-          <FormControl fullWidth margin="normal">
-            <InputLabel sx={{ color: 'var(--text-muted)' }}>{t('users.roles')}</InputLabel>
+          <FormControl fullWidth margin="normal" sx={dialogFieldSx}>
+            <InputLabel>{t('users.roles')}</InputLabel>
             <Select
               multiple
               value={formData.roleNames}
@@ -1016,19 +959,7 @@ export default function UsersPage() {
                   ))}
                 </Box>
               )}
-              sx={{
-                borderRadius: 'var(--radius-lg)',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'var(--border)',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'var(--border-strong)',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'var(--primary-600)',
-                },
-                '&.Mui-focused .MuiInputLabel-root': { color: 'var(--primary-600)' },
-              }}
+              MenuProps={dialogMenuProps}
             >
               <MenuItem value="ROLE_SUPER_ADMIN">{t('roles.SUPER_ADMIN')}</MenuItem>
               <MenuItem value="ROLE_TENANT_ADMIN">{t('roles.TENANT_ADMIN')}</MenuItem>

@@ -20,6 +20,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import UploadIcon from '@mui/icons-material/Upload';
 import PersonIcon from '@mui/icons-material/Person';
 import { participantAssignmentApi } from '../services/api';
+import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
 import type { ParticipantAssignment, AssignmentRole } from '../types';
 
 interface ParticipantManagementPanelProps {
@@ -36,26 +38,16 @@ const statusChipConfig: Record<string, { color: 'info' | 'success' | 'warning' |
   REMOVED: { color: 'error' },
 };
 
-const switchSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 'var(--radius-lg)',
-    color: 'var(--text)',
-    background: 'transparent',
-    '& fieldset': { borderColor: 'var(--border)' },
-    '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-  },
-  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
-  '& .MuiSelect-icon': { color: 'var(--text-muted)' },
-};
-
 export default function ParticipantManagementPanel({
   conferenceId,
   participants,
   onParticipantsChange,
 }: ParticipantManagementPanelProps) {
   const { t } = useTranslation();
+  const { isDarkMode } = useThemeStore();
+  // The panel is a light tint over the dialog paper, so the default
+  // (lighter) field surface keeps the fields standing out against it
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<AssignmentRole>('PARTICIPANT');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -209,30 +201,16 @@ export default function ParticipantManagementPanel({
           sx={{
             flex: 2,
             minWidth: 160,
-            ...switchSx,
+            ...dialogFieldSx,
           }}
         />
-        <FormControl size="small" sx={{ flex: 1, minWidth: 120, ...switchSx }}>
+        <FormControl size="small" sx={{ flex: 1, minWidth: 120, ...dialogFieldSx }}>
           <InputLabel>{t('conferences.role')}</InputLabel>
           <Select
             value={newRole}
             label={t('conferences.role')}
             onChange={(e) => setNewRole(e.target.value as AssignmentRole)}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  '& .MuiMenuItem-root': {
-                    color: 'var(--text)',
-                    '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
-                    '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
-                  },
-                },
-              },
-            }}
+            MenuProps={dialogMenuProps}
           >
             <MenuItem value="PARTICIPANT">{t('conferences.participant')}</MenuItem>
             <MenuItem value="MODERATOR">{t('conferences.moderator')}</MenuItem>
@@ -312,26 +290,12 @@ export default function ParticipantManagementPanel({
                 </Typography>
 
                 {/* Role selector */}
-                <FormControl size="small" sx={{ flex: 1, minWidth: 110, ...switchSx }}>
+                <FormControl size="small" sx={{ flex: 1, minWidth: 110, ...dialogFieldSx }}>
                   <Select
                     value={p.role}
                     onChange={(e) => handleRoleChange(p.id, e.target.value as AssignmentRole)}
                     variant="outlined"
-                    MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          background: 'var(--glass-bg)',
-                          backdropFilter: 'blur(20px)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: 'var(--radius-lg)',
-                          '& .MuiMenuItem-root': {
-                            color: 'var(--text)',
-                            '&:hover': { background: 'rgba(var(--primary-rgb), 0.08)' },
-                            '&.Mui-selected': { background: 'rgba(var(--primary-rgb), 0.12)', color: 'var(--primary-600)' },
-                          },
-                        },
-                      },
-                    }}
+                    MenuProps={dialogMenuProps}
                   >
                     <MenuItem value="PARTICIPANT">{t('conferences.participant')}</MenuItem>
                     <MenuItem value="MODERATOR">{t('conferences.moderator')}</MenuItem>

@@ -585,7 +585,7 @@ export default function AnalyticsPage() {
                         }}
                         formatter={(value) => [formatDurationHuman(Number(value ?? 0), t), '']}
                       />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      <Bar dataKey="value" radius={[12, 12, 0, 0]}>
                         {durationData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}

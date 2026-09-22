@@ -385,7 +385,10 @@ export default function LoginPage() {
               severity="error"
               sx={{
                 mb: 3,
-                borderRadius: 'var(--radius-lg)',
+                // Pinned to the previous --radius-lg value (0.375rem): the shared
+                // radius scale grew for the other pages, but this page must keep
+                // its exact look
+                borderRadius: '0.375rem',
                 background: 'rgba(239, 68, 68, 0.06)',
                 border: '1px solid rgba(239, 68, 68, 0.15)',
                 color: '#dc2626',

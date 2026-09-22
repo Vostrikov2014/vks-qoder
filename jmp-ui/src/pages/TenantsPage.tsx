@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { createDialogFieldSx } from '../styles/dialogFields';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -84,19 +85,6 @@ const emptyForm: FormData = {
   maxRecordingStorageMb: '10240',
   maxConferenceDurationMinutes: '240',
   allowedFeatures: 'chat,screen_share,recording,live_streaming',
-};
-
-// Shared field styling matching ConferencesPage
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 'var(--radius-lg)',
-    color: 'var(--text)',
-    '& fieldset': { borderColor: 'var(--border)' },
-    '&:hover fieldset': { borderColor: 'var(--border-strong)' },
-    '&.Mui-focused fieldset': { borderColor: 'var(--primary-600)' },
-  },
-  '& .MuiInputLabel-root': { color: 'var(--text-muted)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: 'var(--primary-600)' },
 };
 
 // The search field follows the LoginPage field look: fully frameless (no blue
@@ -158,6 +146,8 @@ export default function TenantsPage() {
   const [suspendReason, setSuspendReason] = useState('');
   const [formData, setFormData] = useState<FormData>(emptyForm);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Create/edit dialog fields follow the Recordings (Entries) page look
+  const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
   const fetchTenants = async () => {
     try {
@@ -864,7 +854,7 @@ export default function TenantsPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--bg-elevated)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
           },
@@ -882,7 +872,7 @@ export default function TenantsPage() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             margin="normal"
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -893,7 +883,7 @@ export default function TenantsPage() {
             disabled={!!editingTenant}
             helperText={editingTenant ? undefined : t('tenants.slugHelp')}
             FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <TextField
             fullWidth
@@ -903,20 +893,20 @@ export default function TenantsPage() {
             margin="normal"
             multiline
             rows={2}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
           <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
               label={t('tenants.domain')}
               value={formData.domain}
               onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-              sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+              sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
             />
             <TextField
               label={t('tenants.jitsiDomain')}
               value={formData.jitsiDomain}
               onChange={(e) => setFormData({ ...formData, jitsiDomain: e.target.value })}
-              sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+              sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
             />
           </Box>
 
@@ -933,14 +923,14 @@ export default function TenantsPage() {
                   type="number"
                   value={formData.maxConcurrentConferences}
                   onChange={(e) => setFormData({ ...formData, maxConcurrentConferences: e.target.value })}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
                 <TextField
                   label={t('tenants.maxParticipants')}
                   type="number"
                   value={formData.maxParticipantsPerConference}
                   onChange={(e) => setFormData({ ...formData, maxParticipantsPerConference: e.target.value })}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -951,7 +941,7 @@ export default function TenantsPage() {
                   onChange={(e) => setFormData({ ...formData, maxRecordingStorageMb: e.target.value })}
                   helperText="MB"
                   FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
                 <TextField
                   label={t('tenants.maxDuration')}
@@ -960,7 +950,7 @@ export default function TenantsPage() {
                   onChange={(e) => setFormData({ ...formData, maxConferenceDurationMinutes: e.target.value })}
                   helperText={t('tenants.minutes')}
                   FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                  sx={{ flex: 1, minWidth: 200, ...fieldSx }}
+                  sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
               <TextField
@@ -970,7 +960,7 @@ export default function TenantsPage() {
                 fullWidth
                 helperText={t('tenants.allowedFeaturesHelp')}
                 FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
-                sx={fieldSx}
+                sx={dialogFieldSx}
               />
             </Box>
           </Box>
@@ -1015,7 +1005,7 @@ export default function TenantsPage() {
         fullWidth
         PaperProps={{
           sx: {
-            background: 'var(--bg-elevated)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: 'var(--radius-lg)',
           },
@@ -1037,7 +1027,7 @@ export default function TenantsPage() {
             fullWidth
             multiline
             rows={2}
-            sx={fieldSx}
+            sx={dialogFieldSx}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
