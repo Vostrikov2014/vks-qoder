@@ -99,10 +99,6 @@ services:
     restart: unless-stopped
     environment:
       VITE_API_URL: /api/v1
-      # nginx-proxy virtual host configuration (ONLY for this container)
-      VIRTUAL_HOST: a.slamx.ru,meet.slamx.ru
-      LETSENCRYPT_HOST: a.slamx.ru,meet.slamx.ru
-      LETSENCRYPT_EMAIL: admin@slamx.ru
     # Port 80 exposed internally only (accessed via nginx-proxy)
     expose:
       - "80"
@@ -172,9 +168,9 @@ services:
       - jmp-network
 
   # Jitsi meet (Web UI) - Local Build from jitsi-meet project
-  # Build locally: docker compose build jitsi-web
-  # Push to registry: docker compose push jitsi-web
-  # On remote: docker compose pull jitsi-web && docker compose up -d jitsi-web
+  # Build locally: docker compose build jitsi-meet
+  # Push to registry: docker compose push jitsi-meet
+  # On remote: docker compose pull jitsi-meet && docker compose up -d jitsi-meet
   jitsi-meet:
     build:
       context: ./jitsi-meet
@@ -370,41 +366,30 @@ services:
   # Reads your nginx-proxy.conf from /etc/nginx/user_conf.d/ and
   # inspects every `server_name` to request certificates for those hosts.
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:alpine
+    image: jonasal/nginx-certbot:6.2-alpine
     container_name: nginx-proxy
     restart: unless-stopped
+    environment:
+      # Required by the image; also used by Let's Encrypt for expiry notices.
+      CERTBOT_EMAIL: admin@slamx.ru
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./certs:/etc/nginx/certs:rw
-      - ./vhost.d:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # Certificates and DH parameters survive container recreation here.
+      - ./certs:/etc/letsencrypt:rw
+      - ./nginx-proxy.conf:/etc/nginx/user_conf.d/nginx-proxy.conf:ro
     depends_on:
       jmp-api:
         condition: service_healthy
       jmp-ui:
         condition: service_started
-      jitsi-web:
-        condition: service_started  
-    networks:
-      - jmp-network
-
-  acme-companion:
-    image: nginxproxy/acme-companion
-    container_name: letsencrypt
-    restart: unless-stopped
-    environment:
-      NGINX_PROXY_CONTAINER: jmp-nginx-proxy
-      DEFAULT_EMAIL: admin@slamx.ru
-    volumes:
-      - ./certs:/etc/nginx/certs:rw
-      - ./vhost.d:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      - nginx-proxy
+      jitsi-meet:
+        condition: service_started
+      # The /colibri-ws upstream is resolved when nginx starts, so the bridge
+      # must already exist on the network under its service name.
+      jitsi-jvb:
+        condition: service_started
     networks:
       - jmp-network
 
