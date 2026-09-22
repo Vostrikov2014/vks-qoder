@@ -3,8 +3,10 @@
  *
  * Design: dark corporate "start screen" (2x2 action tiles + right hero),
  * mirroring the attached mock-up. Layout:
- * - .home-rail: fixed-width icon rail on the left
- * - .home-main: header (brand) + body (tiles grid + hero panel)
+ * - .home-rail: side panel on the left (sign in / meetings / language),
+ *   pinned to the viewport so its height always equals the screen height
+ * - .home-main: header (brand) + body (tiles grid + hero panel), offset by the
+ *   panel width
  *
  * Note: the landing page keeps its own dark palette regardless of the app
  * theme variables, so all colors here are literal.
@@ -41,23 +43,34 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* The side panel is fixed, so the content is offset by its width instead */
+  margin-left: 88px;
   padding: var(--space-6) var(--space-8) var(--space-8);
   box-sizing: border-box;
 }
 
 /* ==========================================================================
-   Left Icon Rail
+   Left Side Panel
    ========================================================================== */
 
 .home-rail {
+  /* Pinned to the viewport: the panel keeps the exact screen height no matter
+     how tall the page content is, so the bottom "language" button never
+     scrolls below the fold. No background or divider - the panel shares the
+     page background, so only the buttons themselves are visible */
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 88px;
-  flex-shrink: 0;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-5) 0;
   box-sizing: border-box;
+  z-index: 20;
 }
 
 .rail-item {
@@ -183,12 +196,17 @@
 
 .cards-grid {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  /* Two rows: the schedule tile gets more height, the connect tile less;
-     the primary tile spans both, so the columns stay aligned */
-  grid-template-rows: 1.45fr 1fr;
+  /* Equal columns, and the whole block is a touch narrower than the
+     available column: the right column of tiles (schedule / connect) gets
+     slimmer, while the blue "create meeting" tile keeps its current width */
+  grid-template-columns: 1fr 1fr;
+  width: 97.5%;
+  /* Two rows: the schedule tile (row 1) keeps its height while the connect
+     tile (row 2) is only half as tall; the primary tile spans both rows, so
+     it shortens together with the connect row and the columns stay aligned */
+  grid-template-rows: 2fr 1fr;
   gap: var(--space-4);
-  min-height: 680px;
+  min-height: 600px;
 }
 
 .tile {
@@ -475,7 +493,7 @@
   }
 
   .cards-grid {
-    min-height: 560px;
+    min-height: 520px;
   }
 
   .hero-art {
@@ -488,12 +506,19 @@
     flex-direction: column;
   }
 
+  /* Narrow screens: the panel turns into a normal-flow top bar */
   .home-rail {
+    position: static;
     width: 100%;
+    height: auto;
     flex-direction: row;
     justify-content: flex-start;
     gap: var(--space-4);
     padding: var(--space-3) var(--space-4);
+  }
+
+  .home-main {
+    margin-left: 0;
   }
 
   .rail-spacer {
@@ -512,6 +537,7 @@
   .cards-grid {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    width: 100%;
     min-height: 0;
   }
 

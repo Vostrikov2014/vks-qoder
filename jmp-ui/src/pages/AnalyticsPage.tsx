@@ -466,7 +466,7 @@ export default function AnalyticsPage() {
                   {t('analytics.participantTrend')}
                 </Typography>
               </Box>
-              <Box sx={{ height: 280 }}>
+              <Box sx={{ height: 256 }}>
                 {trendData.length > 0 && trendData.some((d) => d.participants > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={trendData}>
@@ -516,7 +516,7 @@ export default function AnalyticsPage() {
                   {t('analytics.recordingsByType')}
                 </Typography>
               </Box>
-              <Box sx={{ height: 280 }}>
+              <Box sx={{ height: 256 }}>
                 {recordingTypeData.length > 0 && recordingTypeData.some((d) => d.value > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>

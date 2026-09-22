@@ -13,7 +13,8 @@ import './HomePage.css';
  *
  * Layout mirrors the corporate "start screen" design (dark-only palette,
  * see HomePage.css - no theme toggle on this page):
- * - left icon rail (sign in / meetings / language)
+ * - left side panel, pinned to the viewport (always screen height):
+ *   sign in / meetings / language
  * - 2x2 action grid: big blue "create meeting" tile, "schedule" tile,
  *   "connect by code" tile (expands inline), "sign in" tile
  * - right hero: call-to-action for authenticated users + decorative line-art SVG
@@ -264,7 +265,7 @@ export default function HomePage() {
       {/* Aurora overlay - same as on the login page (styles come from index.css) */}
       <div className="aurora-bg" />
 
-      {/* Left icon rail */}
+      {/* Left side panel - fixed, always the full screen height */}
       <aside className="home-rail">
         <button
           className="rail-item"

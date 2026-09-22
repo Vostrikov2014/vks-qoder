@@ -326,7 +326,7 @@ export default function DashboardPage() {
       >
         {/* Usage Chart */}
         <BentoCard colSpan={1}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 0.5 }}>
                 {t('dashboard.weeklyUsageTrends')}
@@ -351,7 +351,7 @@ export default function DashboardPage() {
               />
             </Box>
           </Box>
-          <Box sx={{ height: 280 }}>
+          <Box sx={{ height: 240 }}>
             {analyticsLoading ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <motion.div
@@ -429,7 +429,7 @@ export default function DashboardPage() {
         {/* System Health */}
         {isAdmin && (
           <BentoCard>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
                 {t('dashboard.systemHealth')}
               </Typography>
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                 </motion.div>
               </Box>
             ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {/* CPU */}
                 <Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -505,10 +505,10 @@ export default function DashboardPage() {
                 </Box>
 
                 {/* Stats Grid */}
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 1 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 0.5 }}>
                   <Box
                     sx={{
-                      p: 2,
+                      p: 1.5,
                       borderRadius: 'var(--radius-lg)',
                       background: 'rgba(var(--primary-rgb), 0.08)',
                       border: '1px solid rgba(var(--primary-rgb), 0.12)',
@@ -523,7 +523,7 @@ export default function DashboardPage() {
                   </Box>
                   <Box
                     sx={{
-                      p: 2,
+                      p: 1.5,
                       borderRadius: 'var(--radius-lg)',
                       background: 'rgba(var(--primary-rgb), 0.08)',
                       border: '1px solid rgba(var(--primary-rgb), 0.12)',
