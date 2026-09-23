@@ -19,7 +19,8 @@
       "Bash(docker inspect jmp-minio --format '{{json .Mounts}}' 2>&1; echo \"--- container ---\"; docker ps -a --filter name=minio --format '{{.Names}}\\\\t{{.Status}}\\\\t{{.Image}}')",
       "Bash(docker ps -a --filter ancestor=minio/minio:latest --format '{{.Names}}'; echo \"--- volume ---\"; docker volume ls --filter name=minio)",
       "Bash(docker rm -f jmp-minio && echo \"контейнер удалён\"; docker rmi minio/minio:latest)",
-      "Bash(docker images | grep -i -E \"minio|garage\" ; echo \"--- ps ---\"; docker ps --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' | grep -E \"minio|garage\" || echo \"minio: нет запущенных контейнеров\")"
+      "Bash(docker images | grep -i -E \"minio|garage\" ; echo \"--- ps ---\"; docker ps --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' | grep -E \"minio|garage\" || echo \"minio: нет запущенных контейнеров\")",
+      "Bash(sshpass -p 'dimdim70' ssh -p 64888 -o StrictHostKeyChecking=accept-new dim@a.slamx.ru 'mkdir -p ~/jmp && echo READY' 2>&1)"
     ]
   }
 }
