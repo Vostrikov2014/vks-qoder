@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "WebFetch(*)",
+      "Bash(*)",
       "Bash(timeout 300 docker pull jitsi/prosody:stable 2>&1 | tail -1)",
       "Bash(docker compose:*)",
       "Bash(ss -tlnp 2>/dev/null | grep :5432; docker ps --format '{{.Names}}\\\\t{{.Ports}}' | grep 5432)",
@@ -20,8 +21,7 @@
       "Bash(docker ps -a --filter ancestor=minio/minio:latest --format '{{.Names}}'; echo \"--- volume ---\"; docker volume ls --filter name=minio)",
       "Bash(docker rm -f jmp-minio && echo \"контейнер удалён\"; docker rmi minio/minio:latest)",
       "Bash(docker images | grep -i -E \"minio|garage\" ; echo \"--- ps ---\"; docker ps --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' | grep -E \"minio|garage\" || echo \"minio: нет запущенных контейнеров\")",
-      "Bash(sshpass -p 'dimdim70' ssh -p 64888 -o StrictHostKeyChecking=accept-new dim@a.slamx.ru 'mkdir -p ~/jmp && echo READY' 2>&1)"
-      "Bash(docker images | grep -i -E \"minio|garage\" ; echo \"--- ps ---\"; docker ps --format '{{.Names}}\\\\t{{.Image}}\\\\t{{.Status}}' | grep -E \"minio|garage\" || echo \"minio: нет запущенных контейнеров\")",
+      "Bash(sshpass -p 'dimdim70' ssh -p 64888 -o StrictHostKeyChecking=accept-new dim@a.slamx.ru 'mkdir -p ~/jmp && echo READY' 2>&1)",
       "Bash(docker ps -a 2>&1 | head -40)",
       "Bash(ls -la /home/vd/Projects/vks-qoder | head -40)",
       "Bash(echo \"--- networks ---\"; docker network ls; echo \"--- builders ---\"; docker buildx ls 2>/dev/null)",
