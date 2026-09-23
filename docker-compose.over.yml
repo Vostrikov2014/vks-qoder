@@ -1,6 +1,173 @@
-services:
+# Jitsi Management Platform - Docker Compose
+# Per specification §13.5, §4.15
 
-# Jitsi meet (Web UI) - Local Build from jitsi-meet project
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: jmp
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jmp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+  # JMP Backend API
+  jmp-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vostrlog/jmp-api
+    container_name: jmp-api
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/jmp
+      DB_USER: jmp
+      DB_PASS: jmp
+      REDIS_URL: redis
+      JWT_ACCESS_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JWT_REFRESH_SECRET: cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=
+      JMP_STORAGE_S3_BUCKET: jmp-recordings
+      JMP_STORAGE_S3_REGION: us-east-1
+      # Must match GARAGE_DEFAULT_ACCESS_KEY / GARAGE_DEFAULT_SECRET_KEY of the garage service.
+      JMP_STORAGE_S3_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
+      JMP_STORAGE_S3_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
+      JMP_STORAGE_S3_ENDPOINT: http://garage:3900
+      JITSI_JWT_APP_ID: jmp-platform
+      JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JITSI_JWT_AUDIENCE: jitsi
+      JITSI_XMPP_DOMAIN: meet.jitsi
+      JITSI_DOMAIN: meet.slamx.ru
+      # Public address of the UI — conference join links are built from it.
+      JMP_PUBLIC_URL: http://a.slamx.ru
+      CORS_ALLOWED_ORIGINS: http://a.slamx.ru,http://meet.slamx.ru,http://localhost:5173,http://localhost:3000
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+    networks:
+      - jmp-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health/liveness"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # JMP Frontend (React)
+  jmp-ui:
+    build:
+      context: ./jmp-ui
+      dockerfile: Dockerfile
+    image: vostrlog/jmp-ui
+    container_name: jmp-ui
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: /api/v1
+    # Port 80 exposed internally only (accessed via nginx-proxy)
+    expose:
+      - "80"
+    depends_on:
+      - jmp-api
+    networks:
+      - jmp-network
+
+  # Prometheus (Metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - jmp-network
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - jmp-network
+
+  # Garage (S3-compatible Object Storage) — https://garagehq.deuxfleurs.fr
+  # --single-node assigns the cluster layout on the first start and is idempotent on
+  # restarts; --default-bucket creates the access key and the bucket below with
+  # read/write rights, so recordings storage needs no manual provisioning step.
+  garage:
+    image: dxflrs/garage:v2.4.1
+    container_name: garage
+    restart: unless-stopped
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
+      GARAGE_DEFAULT_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
+      GARAGE_DEFAULT_BUCKET: jmp-recordings
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    ports:
+      - "3900:3900"
+    healthcheck:
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+  # Jitsi meet (Web UI) - Local Build from jitsi-meet project
   # Build locally: docker compose build jitsi-meet
   # Push to registry: docker compose push jitsi-meet
   # On remote: docker compose pull jitsi-meet && docker compose up -d jitsi-meet
@@ -46,138 +213,7 @@ services:
     networks:
       - jmp-network
 
-# JMP Backend API
-  jmp-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: vostrlog/jmp-api
-    container_name: jmp-api
-    restart: unless-stopped
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/jmp
-      DB_USER: jmp
-      DB_PASS: jmp
-      REDIS_URL: redis
-      JWT_ACCESS_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JWT_REFRESH_SECRET: cmVmcmVzaC1zZWNyZXQta2V5LWZvci1qbXAtcGxhdGZvcm0tMjU2LWJpdHM=
-      JMP_STORAGE_S3_BUCKET: jmp-recordings
-      JMP_STORAGE_S3_REGION: us-east-1
-      # Must match GARAGE_DEFAULT_ACCESS_KEY / GARAGE_DEFAULT_SECRET_KEY of the garage service.
-      JMP_STORAGE_S3_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
-      JMP_STORAGE_S3_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
-      JMP_STORAGE_S3_ENDPOINT: http://garage:3900
-      JITSI_JWT_APP_ID: jmp-platform
-      JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
-      JITSI_JWT_AUDIENCE: jitsi
-      JITSI_XMPP_DOMAIN: meet.jitsi
-      JITSI_DOMAIN: meet.slamx.ru
-      # Public address of the UI — conference join links are built from it.
-      JMP_PUBLIC_URL: http://a.slamx.ru
-      CORS_ALLOWED_ORIGINS: http://a.slamx.ru,http://meet.slamx.ru,http://localhost:5173,http://localhost:3000
-    ports:
-      - "8081:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      garage:
-        condition: service_healthy
-    networks:
-      - jmp-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health/liveness"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s      
-
-# JMP Frontend (React)
-  jmp-ui:
-    build:
-      context: ./jmp-ui
-      dockerfile: Dockerfile
-    image: vostrlog/jmp-ui
-    container_name: jmp-ui
-    restart: unless-stopped
-    environment:
-      VITE_API_URL: /api/v1
-    # Port 80 exposed internally only (accessed via nginx-proxy)
-    expose:
-      - "80"
-    depends_on:
-      - jmp-api
-    networks:
-      - jmp-network
-
-# PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      POSTGRES_DB: jmp
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jmp"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - jmp-network
-
-# Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - jmp-network
-
-# Garage (S3-compatible Object Storage) — https://garagehq.deuxfleurs.fr
-  # --single-node assigns the cluster layout on the first start and is idempotent on
-  # restarts; --default-bucket creates the access key and the bucket below with
-  # read/write rights, so recordings storage needs no manual provisioning step.
-  garage:
-    image: dxflrs/garage:v2.4.1
-    container_name: garage
-    restart: unless-stopped
-    command: ["/garage", "server", "--single-node", "--default-bucket"]
-    environment:
-      GARAGE_DEFAULT_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
-      GARAGE_DEFAULT_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
-      GARAGE_DEFAULT_BUCKET: jmp-recordings
-    volumes:
-      - ./garage/garage.toml:/etc/garage.toml:ro
-      - garage_data:/var/lib/garage
-    ports:
-      - "3900:3900"
-    healthcheck:
-      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - jmp-network
-
-# Jitsi Prosody (XMPP Server)
+  # Jitsi Prosody (XMPP Server)
   jitsi-prosody:
     image: jitsi/prosody:stable
     container_name: jitsi-prosody
@@ -226,17 +262,152 @@ services:
       jmp-network:
         aliases:
           - xmpp.meet.jitsi
-          
+
+  # Jitsi Jicofo (Conference Focus)
+  jitsi-jicofo:
+    image: jitsi/jicofo:stable
+    container_name: jitsi-jicofo
+    restart: unless-stopped
+    environment:
+      # General
+      TZ: UTC
+      PUBLIC_URL: http://meet.slamx.ru
+      ENABLE_AUTH: 1
+      ENABLE_GUESTS: 0
+      AUTH_TYPE: jwt
+      # JWT configuration
+      JWT_APP_ID: jmp-platform
+      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JWT_ACCEPTED_ISSUERS: jmp-platform
+      JWT_ACCEPTED_AUDIENCES: jitsi
+      JWT_ALLOW_EMPTY: 0
+      # XMPP configuration
+      XMPP_DOMAIN: meet.jitsi
+      XMPP_AUTH_DOMAIN: auth.meet.jitsi
+      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
+      XMPP_MUC_DOMAIN: muc.meet.jitsi
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+      XMPP_GUEST_DOMAIN: guest.meet.jitsi
+      XMPP_MODULES: ''
+      XMPP_MUC_MODULES: ''
+      XMPP_INTERNAL_MUC_MODULES: ''
+      # Jicofo credentials
+      JICOFO_AUTH_USER: focus
+      JICOFO_AUTH_PASSWORD: jicofo-pass-changeme
+      # JVB credentials
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: jvb-pass-changeme
+      JVB_BREWERY_MUC: jvbbrewery
+    volumes:
+      - jitsi_jicofo_config:/config
+    depends_on:
+      - jitsi-prosody
+    networks:
+      - jmp-network
+
+  # Jitsi JVB (Video Bridge)
+  jitsi-jvb:
+    image: jitsi/jvb:stable
+    container_name: jitsi-jvb
+    restart: unless-stopped
+    environment:
+      # General
+      TZ: UTC
+      PUBLIC_URL: http://meet.slamx.ru
+      ENABLE_AUTH: 1
+      ENABLE_GUESTS: 0
+      AUTH_TYPE: jwt
+      # JWT configuration
+      JWT_APP_ID: jmp-platform
+      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JWT_ACCEPTED_ISSUERS: jmp-platform
+      JWT_ACCEPTED_AUDIENCES: jitsi
+      JWT_ALLOW_EMPTY: 0
+      # XMPP configuration
+      XMPP_DOMAIN: meet.jitsi
+      XMPP_AUTH_DOMAIN: auth.meet.jitsi
+      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
+      XMPP_MUC_DOMAIN: muc.meet.jitsi
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+      XMPP_GUEST_DOMAIN: guest.meet.jitsi
+      XMPP_MODULES: ''
+      XMPP_MUC_MODULES: ''
+      XMPP_INTERNAL_MUC_MODULES: ''
+      # Jicofo credentials
+      JICOFO_AUTH_USER: focus
+      JICOFO_AUTH_PASSWORD: jicofo-pass-changeme
+      # JVB credentials
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: jvb-pass-changeme
+      JVB_BREWERY_MUC: jvbbrewery
+      # JVB-specific settings
+      JVB_PORT: 10000
+      JVB_STUN_SERVERS: meet-jit-si-turnrelay.jitsi.net:443
+      JVB_TCP_HARVESTER_DISABLED: "true"
+      # Colibri WebSocket (media signalling direct from browser to JVB).
+      # Public URL: wss://meet.slamx.ru/colibri-ws/default/...
+      JVB_WS_DOMAIN: meet.slamx.ru
+      JVB_WS_SERVER_ID: default
+      # ENABLE_COLIBRI_WEBSOCKET is the env knob in recent jitsi/jvb images
+      ENABLE_COLIBRI_WEBSOCKET: "true"
+    volumes:
+      - jitsi_jvb_config:/config
+    expose:
+      - "9090"
+    ports:
+      - "10000:10000/udp"
+    depends_on:
+      - jitsi-prosody
+    networks:
+      - jmp-network
+
+  # Reverse proxy + automatic Let's Encrypt (issue & auto-renewal).
+  # https://github.com/JonasAlfredsson/docker-nginx-certbot
+  # Reads your nginx-proxy.conf from /etc/nginx/user_conf.d/ and
+  # inspects every `server_name` to request certificates for those hosts.
+  nginx-proxy:
+    image: jonasal/nginx-certbot:6.2-alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    environment:
+      # Required by the image; also used by Let's Encrypt for expiry notices.
+      CERTBOT_EMAIL: admin@slamx.ru
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Certificates and DH parameters survive container recreation here.
+      - ./certs:/etc/letsencrypt:rw
+      - ./nginx-proxy.conf:/etc/nginx/user_conf.d/nginx-proxy.conf:ro
+    depends_on:
+      jmp-api:
+        condition: service_healthy
+      jmp-ui:
+        condition: service_started
+      jitsi-meet:
+        condition: service_started
+      # The /colibri-ws upstream is resolved when nginx starts, so the bridge
+      # must already exist on the network under its service name.
+      jitsi-jvb:
+        condition: service_started
+    networks:
+      - jmp-network
+
 volumes:
   postgres_data:
   redis_data:
+  prometheus_data:
+  grafana_data:
   garage_data:
   jitsi_meet_config:
   jitsi_meet_certs:
   jitsi_transcripts:
   jitsi_prosody_config:
   jitsi_prosody_plugins:
-  
+  jitsi_jicofo_config:
+  jitsi_jvb_config:
+  nginx_secrets:
+
 networks:
   jmp-network:
-    driver: bridge            
+    driver: bridge
