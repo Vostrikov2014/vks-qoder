@@ -111,10 +111,131 @@ services:
     networks:
       - jmp-network
 
+# PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: jmp
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jmp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+# Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+# Garage (S3-compatible Object Storage) — https://garagehq.deuxfleurs.fr
+  # --single-node assigns the cluster layout on the first start and is idempotent on
+  # restarts; --default-bucket creates the access key and the bucket below with
+  # read/write rights, so recordings storage needs no manual provisioning step.
+  garage:
+    image: dxflrs/garage:v2.4.1
+    container_name: garage
+    restart: unless-stopped
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: GK9e4c1f7a2b8d5e0f3a6c9b2d
+      GARAGE_DEFAULT_SECRET_KEY: 9f5c2a7e4b1d8f3a6c0e2b5d7a9f1c4e8b3d6a0f2c5e7b9d1a4f6c8e0b2d5a7f
+      GARAGE_DEFAULT_BUCKET: jmp-recordings
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    ports:
+      - "3900:3900"
+    healthcheck:
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jmp-network
+
+# Jitsi Prosody (XMPP Server)
+  jitsi-prosody:
+    image: jitsi/prosody:stable
+    container_name: jitsi-prosody
+    restart: unless-stopped
+    environment:
+      # General
+      TZ: UTC
+      PUBLIC_URL: http://meet.slamx.ru
+      ENABLE_AUTH: 1
+      ENABLE_GUESTS: 0
+      AUTH_TYPE: jwt
+      # JWT configuration
+      JWT_APP_ID: jmp-platform
+      JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
+      JWT_ACCEPTED_ISSUERS: jmp-platform
+      JWT_ACCEPTED_AUDIENCES: jitsi
+      JWT_ALLOW_EMPTY: 0
+      # XMPP configuration
+      XMPP_DOMAIN: meet.jitsi
+      XMPP_AUTH_DOMAIN: auth.meet.jitsi
+      XMPP_BOSH_URL_BASE: http://jitsi-prosody:5280
+      XMPP_MUC_DOMAIN: muc.meet.jitsi
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+      XMPP_GUEST_DOMAIN: guest.meet.jitsi
+      XMPP_MODULES: ''
+      XMPP_MUC_MODULES: ''
+      XMPP_INTERNAL_MUC_MODULES: ''
+      # Jicofo credentials
+      JICOFO_AUTH_USER: focus
+      JICOFO_AUTH_PASSWORD: jicofo-pass-changeme
+      # JVB credentials
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: jvb-pass-changeme
+      JVB_BREWERY_MUC: jvbbrewery
+    expose:
+      - "5222"
+    volumes:
+      - jitsi_prosody_config:/config
+      - jitsi_prosody_plugins:/prosody-plugins-custom
+    # Jicofo and JVB reach Prosody by the XMPP_SERVER host name, which the Jitsi images
+    # default to xmpp.meet.jitsi. Upstream docker-jitsi-meet publishes Prosody under that
+    # name, so the alias is what makes the two connect; without it they only log
+    # "DNS lookup exception for xmpp.meet.jitsi" and the focus IQ answers
+    # service-unavailable, which the browser reports as a failed conference request.
+    networks:
+      jmp-network:
+        aliases:
+          - xmpp.meet.jitsi
+          
 volumes:
+  postgres_data:
+  redis_data:
+  garage_data:
   jitsi_meet_config:
   jitsi_meet_certs:
   jitsi_transcripts:
+  jitsi_prosody_config:
+  jitsi_prosody_plugins:
   
 networks:
   jmp-network:
