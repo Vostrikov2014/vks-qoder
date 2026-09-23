@@ -15,8 +15,8 @@ import './HomePage.css';
  * see HomePage.css - no theme toggle on this page):
  * - left side panel, pinned to the viewport (always screen height):
  *   sign in / meetings / language
- * - 2x2 action grid: big blue "create meeting" tile, "schedule" tile,
- *   "connect by code" tile (expands inline), "sign in" tile
+ * - 2x2 action grid: big blue "create meeting" tile, compact "schedule" tile,
+ *   tall "connect by code" tile (the join input lives inside it), "sign in" tile
  * - right hero: call-to-action for authenticated users + decorative line-art SVG
  *
  * Features kept from the previous design:
@@ -177,8 +177,7 @@ export default function HomePage() {
     i18n.changeLanguage(newLang);
   };
 
-  // State for the "Connect" tile - controls visibility of the meeting code input
-  const [isConnectExpanded, setIsConnectExpanded] = useState(false);
+  // Meeting code / link typed into the always-visible input of the "Connect" tile
   const [meetingCode, setMeetingCode] = useState('');
 
   // State of the in-flight "create instant meeting" request + errors
@@ -257,6 +256,18 @@ export default function HomePage() {
    */
   const handleJoinSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    joinMeeting(meetingCode);
+  };
+
+  /**
+   * Clicking anywhere on the connect tile (except the input itself) joins the
+   * meeting - but only once a code or link has been typed into the field
+   */
+  const handleConnectClick = (e: React.MouseEvent<HTMLFormElement>) => {
+    if (!meetingCode.trim() || e.target instanceof HTMLInputElement) {
+      return;
+    }
+
     joinMeeting(meetingCode);
   };
 
@@ -342,10 +353,10 @@ export default function HomePage() {
               <span className="tile-title">{t('home.createMeeting')}</span>
             </motion.button>
 
-            {/* Tile 2: Meetings list / scheduling (requires an account) */}
+            {/* Tile 2: Meetings list / scheduling (requires an account), compact row */}
             <motion.button
               type="button"
-              className="tile tile-dark"
+              className="tile tile-dark tile-schedule"
               variants={itemVariants}
               whileTap={{ scale: 0.99 }}
               onClick={handleMeetings}
@@ -358,55 +369,29 @@ export default function HomePage() {
               <span className="tile-subtitle">{t('home.scheduleMeetingDesc')}</span>
             </motion.button>
 
-            {/* Tile 3: Connect by code or link (expands inline) */}
-            <motion.div
-              className={`tile tile-dark tile-connect ${isConnectExpanded ? 'expanded' : ''}`}
+            {/* Tile 3: Connect by code or link - the tile itself is the join form */}
+            <motion.form
+              className={`tile tile-dark tile-connect ${meetingCode.trim() ? 'tile-connect-active' : ''}`}
               variants={itemVariants}
+              onSubmit={handleJoinSubmit}
+              onClick={handleConnectClick}
+              aria-label={t('home.connectAria')}
             >
-              <button
-                type="button"
-                className="tile-button"
-                onClick={() => setIsConnectExpanded(!isConnectExpanded)}
-                aria-expanded={isConnectExpanded}
-                aria-label={t('home.connectAria')}
-              >
-                <span className="tile-icon tile-icon-arrow">
-                  <ArrowRight size={52} strokeWidth={1.8} />
-                </span>
-                <span className="tile-title">{t('home.connect')}</span>
-              </button>
+              <span className="tile-icon tile-icon-arrow">
+                <ArrowRight size={52} strokeWidth={1.8} />
+              </span>
 
-              <AnimatePresence>
-                {isConnectExpanded && (
-                  <motion.form
-                    className="connect-form"
-                    onSubmit={handleJoinSubmit}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <input
-                      type="text"
-                      className="meeting-input"
-                      placeholder={t('home.enterMeetingCode')}
-                      value={meetingCode}
-                      onChange={(e) => setMeetingCode(e.target.value)}
-                      autoFocus
-                      aria-label={t('home.enterMeetingCode')}
-                    />
-                    <button
-                      type="submit"
-                      className="join-button"
-                      disabled={!meetingCode.trim()}
-                      aria-label={t('common.join')}
-                    >
-                      {t('common.join')}
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              <input
+                type="text"
+                className="meeting-input"
+                placeholder={t('home.enterMeetingCode')}
+                value={meetingCode}
+                onChange={(e) => setMeetingCode(e.target.value)}
+                aria-label={t('home.enterMeetingCode')}
+              />
+
+              <span className="tile-title">{t('home.connect')}</span>
+            </motion.form>
 
             {/* Backend errors of the "create meeting" tile */}
             <AnimatePresence>
