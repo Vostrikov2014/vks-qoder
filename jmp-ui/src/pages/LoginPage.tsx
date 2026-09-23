@@ -200,7 +200,7 @@ export default function LoginPage() {
               background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
             },
             '&:focus-visible': {
-              outline: '2px solid #4b7bec',
+              outline: '2px solid #2563eb',
               outlineOffset: 2,
             },
           }}
@@ -252,7 +252,7 @@ export default function LoginPage() {
               background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
             },
             '&:focus-visible': {
-              outline: '2px solid #4b7bec',
+              outline: '2px solid #2563eb',
               outlineOffset: 2,
             },
           }}
@@ -313,7 +313,7 @@ export default function LoginPage() {
               background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
             },
             '&:focus-visible': {
-              outline: '2px solid #4b7bec',
+              outline: '2px solid #2563eb',
               outlineOffset: 2,
             },
           }}
@@ -490,7 +490,7 @@ export default function LoginPage() {
                 outline: 'none',
                 // Match the corner radius of the email/password fields
                 borderRadius: AUTH_CONTROL_RADIUS,
-                // Standard filled-button colours, same as the conferences page
+                // Same theme colours as the "Create conference" button on the Conferences page
                 background: 'var(--primary-600)',
                 color: 'white',
                 fontWeight: 600,

@@ -44,9 +44,6 @@ services:
 
   # JMP Backend API
   jmp-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: vostrlog/jmp-api
     container_name: jmp-api
     restart: unless-stopped
@@ -69,8 +66,8 @@ services:
       JITSI_XMPP_DOMAIN: meet.jitsi
       JITSI_DOMAIN: meet.slamx.ru
       # Public address of the UI — conference join links are built from it.
-      JMP_PUBLIC_URL: https://a.slamx.ru
-      CORS_ALLOWED_ORIGINS: https://a.slamx.ru,https://meet.slamx.ru,http://localhost:5173,http://localhost:3000
+      JMP_PUBLIC_URL: http://a.slamx.ru
+      CORS_ALLOWED_ORIGINS: http://a.slamx.ru,http://meet.slamx.ru,http://localhost:5173,http://localhost:3000
     ports:
       - "8081:8080"
     depends_on:
@@ -91,9 +88,6 @@ services:
 
   # JMP Frontend (React)
   jmp-ui:
-    build:
-      context: ./jmp-ui
-      dockerfile: Dockerfile
     image: vostrlog/jmp-ui
     container_name: jmp-ui
     restart: unless-stopped
@@ -172,9 +166,6 @@ services:
   # Push to registry: docker compose push jitsi-meet
   # On remote: docker compose pull jitsi-meet && docker compose up -d jitsi-meet
   jitsi-meet:
-    build:
-      context: ./jitsi-meet
-      dockerfile: Dockerfile
     image: vostrlog/jmp-jitsi-meet
     container_name: jmp-jitsi-meet
     restart: unless-stopped
@@ -198,7 +189,7 @@ services:
       # Where a participant lands once the conference is over (hangup, kicked out,
       # meeting ended for all). The public UI address of this contour; the baked default
       # points at the local dev server (http://localhost:5173/).
-      LEAVE_REDIRECT_URL: https://a.slamx.ru/
+      LEAVE_REDIRECT_URL: http://a.slamx.ru/
       # A public STUN is fine for P2P ICE, but it is not a substitute for TURN.
       P2P_STUN_SERVERS: stun:meet-jit-si-turnrelay.jitsi.net:443
       #
@@ -221,7 +212,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: http://meet.slamx.ru
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -271,7 +262,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: http://meet.slamx.ru
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -313,7 +304,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: http://meet.slamx.ru
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -399,8 +390,8 @@ volumes:
   prometheus_data:
   grafana_data:
   garage_data:
-  jitsi_web_config:
-  jitsi_web_certs:
+  jitsi_meet_config:
+  jitsi_meet_certs:
   jitsi_transcripts:
   jitsi_prosody_config:
   jitsi_prosody_plugins:
