@@ -64,10 +64,12 @@ services:
       JITSI_JWT_APP_SECRET: YWNjZXNzLXNlY3JldC1rZXktZm9yLWptcC1wbGF0Zm9ybS0yNTYtYml0cw==
       JITSI_JWT_AUDIENCE: jitsi
       JITSI_XMPP_DOMAIN: meet.jitsi
-      JITSI_DOMAIN: meet.slamx.ru
+      # Host[:port][/path-prefix] of the Jitsi web app. The path prefix is part of the
+      # value on purpose: Jitsi shares the platform host and is served under /meet-legacy.
+      JITSI_DOMAIN: a.slamx.ru/meet-legacy
       # Public address of the UI — conference join links are built from it.
       JMP_PUBLIC_URL: https://a.slamx.ru
-      CORS_ALLOWED_ORIGINS: https://a.slamx.ru,https://meet.slamx.ru,http://localhost:5173,http://localhost:3000
+      CORS_ALLOWED_ORIGINS: https://a.slamx.ru,http://localhost:5173,http://localhost:3000
     ports:
       - "8081:8080"
     depends_on:
@@ -162,8 +164,9 @@ services:
       - jmp-network
 
   # Jitsi meet (Web UI) - Local Build from jitsi-meet project
-  # Build locally: docker compose build jitsi-meet
-  # Push to registry: docker compose push jitsi-meet
+  # Build: docker build -t vostrlog/jmp-jitsi-meet ./jitsi-meet   (no build: key here on
+  #   purpose, so `docker compose up` can never rebuild this heavy image by accident)
+  # Push to registry: docker push vostrlog/jmp-jitsi-meet
   # On remote: docker compose pull jitsi-meet && docker compose up -d jitsi-meet
   jitsi-meet:
     image: vostrlog/jmp-jitsi-meet
@@ -171,10 +174,12 @@ services:
     restart: unless-stopped
     environment:
       TZ: UTC
-      # --- contour switches, applied to config.js / nginx.conf at container start ----
-      # Identical to the local contour on purpose: the contour differs only in the
-      # public host name (nginx-proxy) and in these two addresses being docker DNS
-      # names. Changing a contour therefore never requires an image rebuild.
+      # --- contour switches, applied at container start to config.js, nginx.conf,
+      #     base.html and manifest.json by docker/55-jmp-config.sh ----
+      # Identical to the local contour on purpose: the contour differs only in the public
+      # address and in these two addresses being docker DNS names. Switching a contour
+      # therefore stays a compose edit; only changing WHAT the switch rewrites (as when
+      # APP_PREFIX started driving <base href>) needs an image rebuild.
       XMPP_DOMAIN: meet.jitsi
       XMPP_MUC_DOMAIN: muc.meet.jitsi
       PROSODY_URL: http://jitsi-prosody:5280
@@ -183,9 +188,11 @@ services:
       # bridge; otherwise participants behind NATs see nobody and each conference looks
       # like an empty room of its own.
       DISABLE_P2P: "true"
-      # Leave empty: meet.slamx.ru serves Jitsi at the root. A path prefix (/jitsi)
-      # would have to be stripped by the outer nginx before BOSH/Colibri work.
-      APP_PREFIX: ""
+      # Public path the app is reached on: https://a.slamx.ru/meet-legacy/<room>.
+      # The outer nginx strips it, so this container keeps serving from its own
+      # root; the value only has to reach the client, via <base href> and the
+      # bosh/websocket URLs in config.js.
+      APP_PREFIX: /meet-legacy
       # Where a participant lands once the conference is over (hangup, kicked out,
       # meeting ended for all). The public UI address of this contour; the baked default
       # points at the local dev server (http://localhost:5173/).
@@ -212,7 +219,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: https://a.slamx.ru/meet-legacy
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -262,7 +269,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: https://a.slamx.ru/meet-legacy
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -304,7 +311,7 @@ services:
     environment:
       # General
       TZ: UTC
-      PUBLIC_URL: https://meet.slamx.ru
+      PUBLIC_URL: https://a.slamx.ru/meet-legacy
       ENABLE_AUTH: 1
       ENABLE_GUESTS: 0
       AUTH_TYPE: jwt
@@ -336,8 +343,10 @@ services:
       JVB_STUN_SERVERS: meet-jit-si-turnrelay.jitsi.net:443
       JVB_TCP_HARVESTER_DISABLED: "true"
       # Colibri WebSocket (media signalling direct from browser to JVB).
-      # Public URL: wss://meet.slamx.ru/colibri-ws/default/...
-      JVB_WS_DOMAIN: meet.slamx.ru
+      # The JVB advertises an absolute URL and lib-jitsi-meet dials it verbatim, so it
+      # cannot carry the /meet-legacy prefix: wss://a.slamx.ru/colibri-ws/default/...
+      # is served by a root-level location in nginx-proxy.conf, next to the platform.
+      JVB_WS_DOMAIN: a.slamx.ru
       JVB_WS_SERVER_ID: default
       # ENABLE_COLIBRI_WEBSOCKET is the env knob in recent jitsi/jvb images
       ENABLE_COLIBRI_WEBSOCKET: "true"

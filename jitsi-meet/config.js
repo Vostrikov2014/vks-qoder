@@ -5,7 +5,7 @@
  * https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-configuration
  */
 
-var subdir = '<!--# echo var="subdir" default="" -->';
+var subdir = '<!--# echo var="subdir" default="/" -->';
 var subdomain = '<!--# echo var="subdomain" default="" -->';
 
 if (subdomain) {
@@ -14,9 +14,11 @@ if (subdomain) {
         .toLowerCase() + '.';
 }
 
-// In case of no ssi provided by the webserver, use empty strings
+// In case of no ssi provided by the webserver, use empty strings. subdir is the one
+// exception: bosh/websocket are built as `//host + subdir + 'http-bind'`, so an empty
+// value there does not fall back to the root, it welds the prefix to the host name.
 if (subdir.startsWith('<!--')) {
-    subdir = '';
+    subdir = '/';
 }
 if (subdomain.startsWith('<!--')) {
     subdomain = '';
