@@ -17,6 +17,9 @@ if (subdomain) {
 // In case of no ssi provided by the webserver, use empty strings. subdir is the one
 // exception: bosh/websocket are built as `//host + subdir + 'http-bind'`, so an empty
 // value there does not fall back to the root, it welds the prefix to the host name.
+// Inside the Docker image the line above is replaced with the literal prefix at container
+// start (docker/55-jmp-config.sh), so the two fallbacks below matter only when the file is
+// served by something that does not run that script (webpack dev server, source checkout).
 if (subdir.startsWith('<!--')) {
     subdir = '/';
 }
