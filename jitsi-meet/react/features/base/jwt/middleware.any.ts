@@ -3,6 +3,7 @@ import jwtDecode from 'jwt-decode';
 import { AnyAction } from 'redux';
 
 import { IStore } from '../../app/types';
+import { LOGOUT } from '../../authentication/actionTypes';
 import { isVpaasMeeting } from '../../jaas/functions';
 import { authStatusChanged } from '../conference/actions.any';
 import { getCurrentConference } from '../conference/functions';
@@ -19,6 +20,7 @@ import { SET_JWT } from './actionTypes';
 import { setDelayedLoadOfAvatarUrl, setJWT, setKnownAvatarUrl } from './actions';
 import { parseJWTFromURLParams } from './functions';
 import logger from './logger';
+import { clearJWT, restoreJWT, storeJWT } from './tokenStorage';
 
 /**
  * Set up a state change listener to perform maintenance tasks when the conference
@@ -62,6 +64,11 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case SET_JWT:
         return _setJWT(store, next, action);
+    case LOGOUT:
+        // The user is signing out: the tab must not keep a token for the room it
+        // was signed in with.
+        clearJWT();
+        break;
     }
 
     return next(action);
@@ -129,9 +136,25 @@ function _setConfigOrLocationURL({ dispatch, getState }: IStore, next: Function,
     const result = next(action);
 
     const { locationURL } = getState()['features/base/connection'];
+    const room = locationURL ? parseURIString(locationURL.href)?.room : undefined;
+    const jwt = locationURL ? parseJWTFromURLParams(locationURL) : undefined;
 
-    dispatch(
-        setJWT(locationURL ? parseJWTFromURLParams(locationURL) : undefined));
+    if (jwt) {
+        // The token is stripped from the address bar once the connection is up
+        // (see features/app/middleware.ts), so the tab keeps its own copy: that
+        // is what makes a reload of the room page authenticate again.
+        storeJWT(jwt, room);
+    } else if (room) {
+        const storedJWT = restoreJWT(room);
+
+        if (storedJWT) {
+            dispatch(setJWT(storedJWT));
+
+            return result;
+        }
+    }
+
+    dispatch(setJWT(jwt));
 
     return result;
 }

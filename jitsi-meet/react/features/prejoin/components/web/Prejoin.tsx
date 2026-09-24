@@ -477,6 +477,7 @@ const Prejoin = ({
                             ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
                             ariaLabel = { t('prejoin.joinMeeting') }
                             ariaPressed = { showJoinByPhoneButtons }
+                            busy = { joiningInProgress }
                             disabled = { joiningInProgress
                                 || (showUnsafeRoomWarning && !unsafeRoomConsent)
                                 || showErrorOnField }

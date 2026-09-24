@@ -27,6 +27,14 @@ interface IProps {
     ariaPressed?: boolean;
 
     /**
+     * Whether the action the button was pressed for is still in progress. Such a
+     * button cannot be pressed again, but it keeps the look of an enabled button
+     * on purpose: switching to the disabled look would only make it flash grey
+     * while the action is running.
+     */
+    busy?: boolean;
+
+    /**
      * Text of the button.
      */
     children: ReactNode;
@@ -133,6 +141,13 @@ const useStyles = makeStyles()(theme => {
                 }
             },
 
+            '&.busy': {
+                // The button has been pressed and its action is in progress: it
+                // keeps the look of the enabled button, only the cursor is turned
+                // off so that it does not invite another press.
+                cursor: 'initial'
+            },
+
 
             [theme.breakpoints.down(400)]: {
                 fontSize: '1rem',
@@ -174,6 +189,7 @@ const useStyles = makeStyles()(theme => {
 function ActionButton({
     children,
     className = '',
+    busy,
     disabled,
     hasOptions,
     OptionsIcon = IconArrowDown,
@@ -208,7 +224,8 @@ function ActionButton({
         classes.actionButton,
         className && className,
         type,
-        disabled && 'disabled'
+        disabled && !busy && 'disabled',
+        busy && 'busy'
     );
 
     return (
