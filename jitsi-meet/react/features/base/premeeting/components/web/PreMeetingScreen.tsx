@@ -232,9 +232,11 @@ const PreMeetingScreen = ({
 
                     <div className = { classes.contentControls }>
                         <div className = { classes.paddedContent }>
-                            <h1 className = { classes.title }>
-                                {title}
-                            </h1>
+                            {title && (
+                                <h1 className = { classes.title }>
+                                    {title}
+                                </h1>
+                            )}
                             {_roomName && (
                                 <span className = { classes.roomNameContainer }>
                                     {isOverflowing ? (

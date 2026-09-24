@@ -141,7 +141,9 @@ const useStyles = makeStyles()(theme => {
             }
         },
         options: {
-            borderRadius: Number(theme.shape.borderRadius) / 2,
+            // Same corner radius as the button itself so the hover highlight
+            // of the dropdown area matches the button shape.
+            borderRadius: theme.shape.borderRadius,
             alignItems: 'center',
             display: 'flex',
             height: '100%',
@@ -152,7 +154,9 @@ const useStyles = makeStyles()(theme => {
             width: 36,
 
             '&:hover': {
-                backgroundColor: '#60A5FA'
+                // Match the primary button hover so the dropdown-arrow area blends
+                // seamlessly into the button (single source of truth: the token).
+                backgroundColor: theme.palette.prejoinActionButtonPrimaryHover
             },
 
             '& svg': {

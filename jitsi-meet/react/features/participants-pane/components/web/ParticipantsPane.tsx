@@ -54,6 +54,14 @@ const useStyles = makeStyles<IStylesProps>()((theme, { isChatOpen }) => {
             fontWeight: 600,
             height: '100%',
 
+            // The SECONDARY action buttons of this panel ("Mute everyone", "More
+            // actions", "Create breakout room") are drawn with a 1px light
+            // outline by the shared Button component. The pane surface is meant
+            // to stay flat, so drop that frame for every button inside it.
+            '& button': {
+                border: 'none'
+            },
+
             [[ '& > *:first-child', '& > *:last-child' ] as any]: {
                 flexShrink: 0
             },

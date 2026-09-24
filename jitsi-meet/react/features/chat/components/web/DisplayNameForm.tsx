@@ -1,6 +1,8 @@
+import { Theme } from '@mui/material';
 import React, { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
 import { IStore } from '../../../app/types';
 import { translate } from '../../../base/i18n/functions';
@@ -10,10 +12,38 @@ import Input from '../../../base/ui/components/web/Input';
 
 import KeyboardAvoider from './KeyboardAvoider';
 
+const styles = (theme: Theme) => {
+    return {
+        // Mirror the Prejoin name field: the nickname input surface is already
+        // #2E2E33 (ui02), so on hover/focus lighten it one step to #3A3A42
+        // (ui04) instead of drawing the default blue focus frame.
+        nicknameInput: {
+            '& input': {
+                transition: 'background-color 0.2s ease',
+
+                '&:hover': {
+                    background: theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: theme.palette.ui04
+                }
+            }
+        }
+    };
+};
+
 /**
  * The type of the React {@code Component} props of {@DisplayNameForm}.
  */
 interface IProps extends WithTranslation {
+
+    /**
+     * An object containing the CSS classes.
+     */
+    classes?: Partial<Record<keyof ReturnType<typeof styles>, string>>;
 
     /**
      * Invoked to set the local participant display name.
@@ -85,6 +115,7 @@ class DisplayNameForm extends Component<IProps, IState> {
      */
     override render() {
         const { isCCTabEnabled, isChatDisabled, isFileSharingEnabled, isPollsEnabled, t } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         // Build array of enabled feature names (translated).
         const features = [
@@ -115,6 +146,7 @@ class DisplayNameForm extends Component<IProps, IState> {
                     <Input
                         accessibilityLabel = { t(title) }
                         autoFocus = { true }
+                        className = { classes.nicknameInput }
                         id = 'nickinput'
                         label = { t(title) }
                         name = 'name'
@@ -177,4 +209,4 @@ class DisplayNameForm extends Component<IProps, IState> {
     }
 }
 
-export default translate(connect()(DisplayNameForm));
+export default translate(connect()(withStyles(DisplayNameForm, styles)));

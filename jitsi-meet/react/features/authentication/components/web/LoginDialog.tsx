@@ -1,6 +1,8 @@
+import { Theme } from '@mui/material';
 import React, { Component } from 'react';
 import { WithTranslation } from 'react-i18next';
 import { connect as reduxConnect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
 import { IReduxState, IStore } from '../../../app/types';
 import { IJitsiConference } from '../../../base/conference/reducer';
@@ -17,10 +19,68 @@ import {
 } from '../../actions.web';
 import logger from '../../logger';
 
+const styles = (theme: Theme) => {
+    return {
+        // Match the rest of the app (Prejoin name field, chat input,
+        // participants search): the input surface is already #2E2E33 (ui02),
+        // so on hover/focus lighten it one step to #3A3A42 (ui04) instead of
+        // drawing the default blue focus frame. There is no border: the frame
+        // is only the box-shadow applied on :focus, which we drop here.
+        authInput: {
+            marginBottom: '16px',
+
+            '& input': {
+                // Explicit dark surface so the field never flashes the browser
+                // default white before/behind the themed background.
+                backgroundColor: theme.palette.ui02,
+                color: theme.palette.text01,
+                transition: 'background-color 0.2s ease',
+
+                '&:hover': {
+                    background: theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: theme.palette.ui04
+                },
+
+                // Chrome autofills saved credentials when the dialog opens and
+                // paints the field white/yellow, ignoring the theme. Keep it
+                // dark: the box-shadow fills the field, text-fill-color keeps
+                // the text visible, and a huge transition delays the browser's
+                // own background change off-screen.
+                '&:-webkit-autofill': {
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.palette.ui02} inset`,
+                    WebkitTextFillColor: theme.palette.text01,
+                    transition: 'background-color 99999s ease-in-out 0s'
+                },
+
+                '&:-webkit-autofill:hover, &:-webkit-autofill:focus': {
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.palette.ui04} inset`
+                }
+            }
+        },
+
+        // Status/error text rendered under the fields, styled like the rest of
+        // the dialog content instead of the browser default.
+        message: {
+            ...theme.typography.bodyShortRegular,
+            color: theme.palette.text01
+        }
+    };
+};
+
 /**
  * The type of the React {@code Component} props of {@link LoginDialog}.
  */
 interface IProps extends WithTranslation {
+
+    /**
+     * An object containing the CSS classes.
+     */
+    classes?: Partial<Record<keyof ReturnType<typeof styles>, string>>;
 
     /**
      * {@link JitsiConference} That needs authentication - will hold a valid
@@ -136,7 +196,18 @@ class LoginDialog extends Component<IProps, IState> {
             dispatch(authenticateAndUpgradeRole(jid, password, conference));
         } else {
             logger.info('Dispatching connect from LoginDialog.');
-            dispatch(connect(jid, password));
+
+            // The connect thunk returns a promise that rejects with the raw
+            // connection error (e.g. 'connection.otherError') when the XMPP
+            // connection fails. That failure is already surfaced to the user
+            // through the redux state and the inline dialog message, so we
+            // swallow the rejection here to prevent an unhandled promise
+            // rejection (which otherwise trips the webpack-dev-server overlay).
+            Promise.resolve(
+                dispatch(connect(jid, password))
+            ).catch(() => {
+                /* handled via redux state / renderMessage */
+            });
         }
     }
 
@@ -206,7 +277,7 @@ class LoginDialog extends Component<IProps, IState> {
 
         if (messageKey) {
             return (
-                <span>
+                <span className = { withStyles.getClasses(this.props).message }>
                     { translateToHTML(t, messageKey, messageOptions) }
                 </span>
             );
@@ -226,6 +297,7 @@ class LoginDialog extends Component<IProps, IState> {
             t
         } = this.props;
         const { password, username } = this.state;
+        const classes = withStyles.getClasses(this.props);
 
         return (
             <Dialog
@@ -243,6 +315,7 @@ class LoginDialog extends Component<IProps, IState> {
                 titleKey = { t('dialog.authenticationRequired') }>
                 <Input
                     autoFocus = { true }
+                    className = { classes.authInput }
                     id = 'login-dialog-username'
                     label = { t('dialog.user') }
                     name = 'username'
@@ -250,9 +323,8 @@ class LoginDialog extends Component<IProps, IState> {
                     placeholder = { t('dialog.userIdentifier') }
                     type = 'text'
                     value = { username } />
-                <br />
                 <Input
-                    className = 'dialog-bottom-margin'
+                    className = { classes.authInput }
                     id = 'login-dialog-password'
                     label = { t('dialog.userPassword') }
                     name = 'password'
@@ -296,4 +368,4 @@ function mapStateToProps(state: IReduxState) {
     };
 }
 
-export default translate(reduxConnect(mapStateToProps)(LoginDialog));
+export default translate(reduxConnect(mapStateToProps)(withStyles(LoginDialog, styles)));

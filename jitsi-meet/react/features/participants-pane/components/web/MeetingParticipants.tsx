@@ -40,7 +40,23 @@ const useStyles = makeStyles()(theme => {
 
             '& input': {
                 textAlign: 'center',
-                paddingRight: '16px'
+                paddingRight: '16px',
+                transition: 'background-color 0.2s ease',
+
+                // Mirror the Prejoin name field and the chat inputs: the search
+                // surface is already #2E2E33 (ui02), so on hover/focus lighten it
+                // one step to #3A3A42 (ui04) instead of drawing the default blue
+                // focus frame (the Input component has no border, its frame is the
+                // 2px box-shadow applied on :focus).
+                '&:hover': {
+                    background: theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: theme.palette.ui04
+                }
             }
         }
     };

@@ -148,7 +148,21 @@ const useStyles = makeStyles()(theme => {
             marginBottom: theme.spacing(3),
 
             '& input': {
-                textAlign: 'center'
+                textAlign: 'center',
+                transition: 'background-color 0.2s ease',
+
+                // The field surface is already #2E2E33 (ui02/surface03), so hover
+                // and focus lighten it one step to #3A3A42 (ui04/surface05) instead
+                // of drawing the default blue focus frame.
+                '&:hover': {
+                    background: theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: theme.palette.ui04
+                }
             }
         },
 
@@ -406,7 +420,6 @@ const Prejoin = ({
             showDeviceStatus = { deviceStatusVisible }
             showRecordingWarning = { showRecordingWarning }
             showUnsafeRoomWarning = { showUnsafeRoomWarning }
-            title = { t('prejoin.joinMeeting') }
             videoMuted = { !showCameraPreview }
             videoTrack = { videoTrack }>
             <div
