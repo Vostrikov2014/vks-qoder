@@ -198,12 +198,18 @@ export function getConferenceName(stateful: IStateful): string {
 /**
  * Returns the name of the conference formatted for the title.
  *
+ * <p>Delegates to {@link getConferenceName} so the browser tab matches the on-screen
+ * conference header: an explicit subject/display name (e.g. the instant-meeting
+ * "Новая видеовстреча" passed as {@code config.subject}) wins, and only when none is
+ * set does it fall back to the room name formatted with {@code safeStartCase} - exactly
+ * the previous behaviour for regular conferences, which carry no subject.
+ *
  * @param {IStateful} stateful - Reference that can be resolved to Redux state with the {@code toState}
  * function.
  * @returns {string} - The name of the conference formatted for the title.
  */
 export function getConferenceNameForTitle(stateful: IStateful) {
-    return safeStartCase(safeDecodeURIComponent(getConferenceState(toState(stateful)).room ?? ''));
+    return getConferenceName(stateful);
 }
 
 /**
