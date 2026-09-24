@@ -765,7 +765,7 @@ export default function ConferencesPage() {
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}

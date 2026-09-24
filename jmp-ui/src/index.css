@@ -33,12 +33,22 @@
   --accent-yellow: #eab308;
   --accent-red: #ef4444;
   
-  /* Sidebar Colors - Deep Blue */
-  --sidebar-bg: #2563EB;
-  --sidebar-bg-dark: #1D4ED8;
-  --sidebar-text: #ffffff;
-  --sidebar-text-muted: rgba(255, 255, 255, 0.7);
-  --sidebar-active-bg: rgba(255, 255, 255, 0.15);
+  /* Sidebar Colors - light theme: pale blue surface, a shade below the page
+     gradient (#F5F9FF → #E7EFFC) so the panel still reads as a separate surface */
+  --sidebar-bg: #E8F0FA;
+  --sidebar-bg-dark: #DBE7F6;
+  --sidebar-text: var(--text-h);
+  --sidebar-text-muted: var(--text-muted);
+  --sidebar-active-bg: rgba(var(--primary-rgb), 0.14);
+  --sidebar-caption: var(--text-muted);
+  --sidebar-item-text: var(--text);
+  --sidebar-item-text-active: var(--primary-700);
+  --sidebar-icon: var(--text-muted);
+  --sidebar-icon-active: var(--primary-600);
+  --sidebar-active-bg-hover: rgba(var(--primary-rgb), 0.20);
+  --sidebar-hover-bg: rgba(var(--primary-rgb), 0.08);
+  --sidebar-divider: rgba(var(--primary-rgb), 0.14);
+  --sidebar-border-right: rgba(var(--primary-rgb), 0.16);
 
   /* Avatar Colors */
   /* Solid avatar background follows the logo (primary-600) color of the current theme */
@@ -132,12 +142,22 @@ html.dark body {
   --bg-gradient-start: #0A0A0A;
   --bg-gradient-end: #171717;
   
+  /* Sidebar keeps the previous dark look: all whitish values are set explicitly */
   --sidebar-bg: #1A1A1A;
   --sidebar-bg-dark: #0A0A0A;
   --sidebar-text: #F5F5F5;
   --sidebar-text-muted: #9A9A9A;
   --sidebar-active-bg: rgba(96, 165, 250, 0.2);
   --sidebar-active-border: rgba(147, 197, 253, 0.85);
+  --sidebar-caption: rgba(255, 255, 255, 0.6);
+  --sidebar-item-text: rgba(255, 255, 255, 0.9);
+  --sidebar-item-text-active: #ffffff;
+  --sidebar-icon: rgba(255, 255, 255, 0.7);
+  --sidebar-icon-active: #ffffff;
+  --sidebar-active-bg-hover: rgba(255, 255, 255, 0.2);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-divider: rgba(255, 255, 255, 0.15);
+  --sidebar-border-right: rgba(255, 255, 255, 0.08);
   
   --glass-bg: rgba(26, 26, 26, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);

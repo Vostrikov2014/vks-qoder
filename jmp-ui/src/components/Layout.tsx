@@ -41,14 +41,16 @@ const DRAWER_WIDTH = 280;
 // so both horizontal divider lines run on the same level
 const HEADER_HEIGHT = 85;
 const MOBILE_HEADER_HEIGHT = 64;
+// Top panel background, matched to the HomePage "Создать видео-встречу" tile (--lp-blue)
+const HEADER_BLUE = '#2563eb';
 
 const menuItems = [
-  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.dashboard', icon: LayoutDashboard, path: '/dashboard', color: 'var(--sidebar-icon-active)', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.conferences', icon: Video, path: '/dashboard/conferences', color: 'var(--sidebar-icon-active)', requiresAdmin: false, requiresSuperAdmin: false },
   { textKey: 'common.analytics', icon: BarChart3, path: '/dashboard/analytics', color: 'var(--primary-500)', requiresAdmin: true, requiresSuperAdmin: false },
-  { textKey: 'common.recordings', icon: HardDrive, path: '/dashboard/recordings', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: false },
-  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: '#ffffff', requiresAdmin: true, requiresSuperAdmin: false },
-  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: '#ffffff', requiresAdmin: false, requiresSuperAdmin: true },
+  { textKey: 'common.recordings', icon: HardDrive, path: '/dashboard/recordings', color: 'var(--sidebar-icon-active)', requiresAdmin: false, requiresSuperAdmin: false },
+  { textKey: 'common.users', icon: Users, path: '/dashboard/users', color: 'var(--sidebar-icon-active)', requiresAdmin: true, requiresSuperAdmin: false },
+  { textKey: 'common.tenants', icon: Building2, path: '/dashboard/tenants', color: 'var(--sidebar-icon-active)', requiresAdmin: false, requiresSuperAdmin: true },
 ];
 
 const itemVariants = {
@@ -102,7 +104,7 @@ export default function Layout() {
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo Section */}
+      {/* Logo Section: same blue as the top header, so both form one continuous band */}
       <Box
         sx={{
           px: 3,
@@ -110,7 +112,8 @@ export default function Layout() {
           display: 'flex',
           alignItems: 'center',
           gap: 2,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
+          background: HEADER_BLUE,
+          // No bottom border: the block must blend into the header band without a seam
         }}
       >
         <Box
@@ -120,10 +123,9 @@ export default function Layout() {
             // Pinned to the previous --radius-xl value (0.5rem): the logo keeps
             // its original rounding while the shared radius scale grew
             borderRadius: '0.5rem',
-            // The light-theme sidebar is primary-600 blue itself, so the logo uses the
-            // darker primary (button) blue to stand out; dark theme keeps the accent blue
-            background: isDarkMode ? 'var(--primary-600)' : 'var(--primary-700)',
-            color: '#ffffff',
+            // Inverted tile: white plate with the brand glyph, since the block itself is blue
+            background: '#ffffff',
+            color: HEADER_BLUE,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -150,14 +152,22 @@ export default function Layout() {
         )}
       </Box>
 
-      {/* Navigation */}
-      <Box sx={{ flex: 1, py: 2, px: collapsed ? 1 : 2 }}>
+      {/* Navigation: carries the sidebar/content divider, so the line starts
+          below the blue logo band instead of crossing it */}
+      <Box
+        sx={{
+          flex: 1,
+          py: 2,
+          px: collapsed ? 1 : 2,
+          borderRight: '1px solid var(--sidebar-border-right)',
+        }}
+      >
         <Typography
           variant="caption"
           sx={{
             px: collapsed ? 0 : 2,
             py: 1,
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: 'var(--sidebar-caption)',
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
@@ -207,13 +217,13 @@ export default function Layout() {
                             }
                           : {},
                         '&.Mui-selected': {
-                          background: 'rgba(255, 255, 255, 0.15)',
+                          background: 'var(--sidebar-active-bg)',
                           '&:hover': {
-                            background: 'rgba(255, 255, 255, 0.2)',
+                            background: 'var(--sidebar-active-bg-hover)',
                           },
                         },
                         '&:hover': {
-                          background: 'rgba(255, 255, 255, 0.08)',
+                          background: 'var(--sidebar-hover-bg)',
                         },
                       }}
                     >
@@ -221,7 +231,9 @@ export default function Layout() {
                         sx={{
                           minWidth: collapsed ? 0 : 40,
                           mr: collapsed ? 0 : 2,
-                          color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                          color: isActive
+                            ? 'var(--sidebar-icon-active)'
+                            : 'var(--sidebar-icon)',
                           justifyContent: 'center',
                         }}
                       >
@@ -232,13 +244,15 @@ export default function Layout() {
                           primary={t(item.textKey)}
                           primaryTypographyProps={{
                             fontWeight: isActive ? 600 : 500,
-                            color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
+                            color: isActive
+                              ? 'var(--sidebar-item-text-active)'
+                              : 'var(--sidebar-item-text)',
                             fontSize: '0.95rem',
                           }}
                         />
                       )}
                       {!collapsed && isActive && (
-                        <ChevronRight size={16} color="#ffffff" />
+                        <ChevronRight size={16} color="var(--sidebar-icon-active)" />
                       )}
                     </ListItemButton>
                   </Tooltip>
@@ -250,7 +264,13 @@ export default function Layout() {
       </Box>
 
       {/* Bottom Section */}
-      <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.15)' }}>
+      <Box
+        sx={{
+          p: 2,
+          borderTop: '1px solid var(--sidebar-divider)',
+          borderRight: '1px solid var(--sidebar-border-right)',
+        }}
+      >
         <Tooltip title={collapsed ? t('common.settings') : ''} placement="right">
           <ListItemButton
             sx={{
@@ -258,7 +278,7 @@ export default function Layout() {
               justifyContent: collapsed ? 'center' : 'initial',
               py: 1.5,
               '&:hover': {
-                background: 'rgba(255, 255, 255, 0.08)',
+                background: 'var(--sidebar-hover-bg)',
               },
             }}
           >
@@ -266,7 +286,7 @@ export default function Layout() {
               sx={{
                 minWidth: collapsed ? 0 : 40,
                 mr: collapsed ? 0 : 2,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: 'var(--sidebar-icon)',
                 justifyContent: 'center',
               }}
             >
@@ -277,7 +297,7 @@ export default function Layout() {
                 primary={t('common.settings')}
                 primaryTypographyProps={{
                   fontWeight: 500,
-                  color: 'rgba(255, 255, 255, 0.9)',
+                  color: 'var(--sidebar-item-text)',
                 }}
               />
             )}
@@ -303,13 +323,11 @@ export default function Layout() {
           display: { xs: 'flex', sm: 'none' },
           alignItems: 'center',
           px: 2,
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid var(--glass-border)',
+          background: HEADER_BLUE,
           zIndex: 1200,
         }}
       >
-        <IconButton onClick={handleDrawerToggle} sx={{ color: 'var(--text-h)' }}>
+        <IconButton onClick={handleDrawerToggle} sx={{ color: '#ffffff' }}>
           <MenuIcon size={24} color="currentColor" />
         </IconButton>
         <Typography
@@ -317,7 +335,7 @@ export default function Layout() {
           sx={{
             ml: 2,
             fontWeight: 700,
-            color: 'var(--primary-600)',
+            color: '#ffffff',
           }}
         >
           {t('common.appName')}
@@ -341,6 +359,8 @@ export default function Layout() {
               width: collapsed ? 80 : DRAWER_WIDTH,
               boxSizing: 'border-box',
               background: 'var(--sidebar-bg)',
+              // The divider is rendered per section inside drawerContent, so the
+              // blue logo band stays seamless
               borderRight: 'none',
               transition: 'width 0.3s ease',
             },
@@ -391,17 +411,15 @@ export default function Layout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid var(--glass-border)',
+            background: HEADER_BLUE,
             mt: { xs: 8, sm: 0 },
           }}
         >
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#ffffff' }}>
               {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
               {t('layout.welcomeBack', { firstName: user?.firstName || 'User' })}
             </Typography>
           </Box>
@@ -412,8 +430,8 @@ export default function Layout() {
               <IconButton
                 onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ru' : 'en')}
                 sx={{
-                  color: 'var(--text-muted)',
-                  '&:hover': { color: 'var(--text-h)' },
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  '&:hover': { color: '#ffffff' },
                 }}
               >
                 <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.75rem' }}>
@@ -427,8 +445,8 @@ export default function Layout() {
               <IconButton
                 onClick={toggleTheme}
                 sx={{
-                  color: 'var(--text-muted)',
-                  '&:hover': { color: 'var(--text-h)' },
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  '&:hover': { color: '#ffffff' },
                   position: 'relative',
                   overflow: 'hidden',
                 }}
@@ -446,15 +464,15 @@ export default function Layout() {
             <Tooltip title={t('common.notifications')}>
               <IconButton
                 sx={{
-                  color: 'var(--text-muted)',
-                  '&:hover': { color: 'var(--text-h)' },
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  '&:hover': { color: '#ffffff' },
                 }}
               >
                 <Bell size={20} />
               </IconButton>
             </Tooltip>
 
-            <Divider orientation="vertical" flexItem sx={{ borderColor: 'var(--border)' }} />
+            <Divider orientation="vertical" flexItem sx={{ borderColor: 'rgba(255, 255, 255, 0.3)' }} />
 
             <Box
               onClick={handleMenuOpen}
@@ -467,7 +485,7 @@ export default function Layout() {
                 pr: 1.5,
                 borderRadius: 'var(--radius-xl)',
                 '&:hover': {
-                  background: 'rgba(148, 163, 184, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.12)',
                 },
               }}
             >
@@ -475,7 +493,9 @@ export default function Layout() {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'var(--avatar-bg)',
+                  // Same inversion as the sidebar logo: white plate, blue initials on the blue header
+                  background: '#ffffff',
+                  color: HEADER_BLUE,
                   fontWeight: 600,
                   fontSize: '0.875rem',
                 }}
@@ -483,10 +503,10 @@ export default function Layout() {
                 {user?.firstName?.[0]}{user?.lastName?.[0]}
               </Avatar>
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {user?.firstName} {user?.lastName}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
                   {user?.roles?.[0]?.replace('ROLE_', '') || 'User'}
                 </Typography>
               </Box>

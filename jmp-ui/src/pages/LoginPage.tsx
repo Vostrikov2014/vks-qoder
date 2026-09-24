@@ -45,20 +45,28 @@ const itemVariants = {
 const AUTH_CONTROL_RADIUS = '16px';
 
 // Shared styles for the email/password fields: fully frameless (no blue
-// highlight on focus), the hint stays inside the field while it is empty, and
-// hover follows the blue theme colour like the search field on ConferencesPage.
+// outline on focus), the hint stays inside the field while it is empty, and the
+// field surface is filled on hover and focus - for empty and filled fields alike.
 const createAuthFieldSx = (isDarkMode: boolean) => {
-  // Single source of truth for the field surface; the autofill fill below
-  // reuses it so a filled field keeps the exact background it had while empty.
-  // The light theme uses a white surface, the dark theme keeps matching the
-  // elevated surfaces
+  // Field surfaces: idle and the single highlight used by both hover and focus
+  // (a focused field must not look different from a hovered one). The light theme
+  // uses a white surface with a pale primary tone so the highlight follows the blue
+  // theme colour, the dark theme keeps matching the elevated surfaces
   const fieldSurface = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
+  const highlightSurface = isDarkMode ? '#2e2e33' : 'var(--primary-100)';
+
+  // Chrome paints autofilled inputs with its own background, which only an inset
+  // shadow can cover: the fill is repeated per state, so autofilled (filled)
+  // credentials keep showing the hover/focus highlight too. Naming the input
+  // class raises the specificity above the global autofill rules of index.css,
+  // including the html.dark ones.
+  const autofillFill = (surface: string) => ({
+    WebkitBoxShadow: `0 0 0 1000px ${surface} inset !important`,
+  });
 
   return {
     '& .MuiOutlinedInput-root': {
       borderRadius: AUTH_CONTROL_RADIUS,
-      // A filled field keeps the same surface it had while empty, just like
-      // the dark theme keeps its own colour
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
       '& fieldset': {
@@ -67,22 +75,20 @@ const createAuthFieldSx = (isDarkMode: boolean) => {
       '&:hover fieldset': {
         border: 'none',
       },
-      // Hover tint only while the field is still empty (hint visible): a
-      // neutral grey in the dark theme, a pale primary tone in the light theme
-      // so the highlight follows the blue theme colour
-      '&:hover:has(.MuiOutlinedInput-input:placeholder-shown)': {
-        background: isDarkMode ? '#2e2e33' : 'var(--primary-100)',
+      // Background highlight on hover, no matter whether the field is filled
+      '&:hover': {
+        background: highlightSurface,
       },
-      // No blue highlight on focus
+      // No blue highlight on focus: the same fill marks the focused field
       '&.Mui-focused fieldset': {
         border: 'none',
       },
-      // The global autofill rule in index.css repaints autofilled inputs with
-      // --bg-elevated (plain white in the light theme); pin the fill to the
-      // field surface so autofilled credentials never change the background
-      '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active': {
-        WebkitBoxShadow: `0 0 0 1000px ${fieldSurface} inset !important`,
+      '&.Mui-focused': {
+        background: highlightSurface,
       },
+      '& input.MuiOutlinedInput-input:-webkit-autofill': autofillFill(fieldSurface),
+      '&:hover input.MuiOutlinedInput-input:-webkit-autofill, &.Mui-focused input.MuiOutlinedInput-input:-webkit-autofill':
+        autofillFill(highlightSurface),
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
@@ -110,6 +116,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const authFieldSx = createAuthFieldSx(isDarkMode);
+
+  // Plates of the left rail buttons (home / theme / language): same treatment as
+  // the auth fields - a plain white surface that turns pale blue on hover, plus
+  // the matching dark theme pair. The glyphs themselves keep the muted grey (white
+  // in the dark theme): only the plate reacts to hover, hence the fixed tile colour
+  const railTileBg = isDarkMode ? '#1a1a1d' : '#ffffff';
+  const railTileHoverBg = isDarkMode ? '#2e2e33' : 'var(--primary-100)';
+  const railTileColor = isDarkMode ? '#ffffff' : 'var(--text-muted)';
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -197,7 +211,7 @@ export default function LoginPage() {
               color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
             '&:hover .rail-tile': {
-              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+              background: railTileHoverBg,
             },
             '&:focus-visible': {
               outline: '2px solid #2563eb',
@@ -211,12 +225,11 @@ export default function LoginPage() {
               width: 44,
               height: 44,
               borderRadius: '14px',
-              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
-              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              background: railTileBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: isDarkMode ? '#ffffff' : 'inherit',
+              color: railTileColor,
               transition: 'background-color 0.2s ease',
             }}
           >
@@ -249,7 +262,7 @@ export default function LoginPage() {
               color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
             '&:hover .rail-tile': {
-              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+              background: railTileHoverBg,
             },
             '&:focus-visible': {
               outline: '2px solid #2563eb',
@@ -263,12 +276,11 @@ export default function LoginPage() {
               width: 44,
               height: 44,
               borderRadius: '14px',
-              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
-              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              background: railTileBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: isDarkMode ? '#ffffff' : 'inherit',
+              color: railTileColor,
               transition: 'background-color 0.2s ease',
             }}
           >
@@ -310,7 +322,7 @@ export default function LoginPage() {
               color: isDarkMode ? '#ffffff' : 'var(--primary-600)',
             },
             '&:hover .rail-tile': {
-              background: isDarkMode ? '#2e2e33' : 'var(--bg-elevated)',
+              background: railTileHoverBg,
             },
             '&:focus-visible': {
               outline: '2px solid #2563eb',
@@ -324,15 +336,14 @@ export default function LoginPage() {
               width: 56,
               height: 36,
               borderRadius: '10px',
-              background: isDarkMode ? '#1a1a1d' : 'var(--glass-bg)',
-              backdropFilter: isDarkMode ? 'none' : 'blur(10px)',
+              background: railTileBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '0.75rem',
               fontWeight: 600,
               letterSpacing: '0.05em',
-              color: isDarkMode ? '#ffffff' : 'inherit',
+              color: railTileColor,
               transition: 'background-color 0.2s ease',
             }}
           >
