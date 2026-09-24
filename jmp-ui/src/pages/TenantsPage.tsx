@@ -101,6 +101,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
       borderRadius: 'var(--radius-lg)',
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
       '& fieldset': {
         border: 'none',
       },
@@ -120,6 +122,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
+      // Compact vertical padding so the text centers inside the fixed 40px root
+      py: 1,
     },
     // Hint is rendered inside the field and disappears once it is filled
     '& .MuiOutlinedInput-input::placeholder': {
@@ -284,7 +288,8 @@ export default function TenantsPage() {
             startIcon={<Plus size={20} />}
             onClick={handleCreate}
             sx={{
-              py: 1.5,
+              py: 0,
+              height: 40,
               px: 3,
               borderRadius: 'var(--radius-lg)',
               background: 'var(--primary-600)',
@@ -330,6 +335,9 @@ export default function TenantsPage() {
                 border: '1px solid var(--border)',
                 borderLeft: '1px solid var(--border) !important',
                 marginLeft: '0 !important',
+                // Match the 40px height of the other toolbar controls
+                // (MUI ToggleButton defaults to min-height 48px)
+                minHeight: 40,
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',

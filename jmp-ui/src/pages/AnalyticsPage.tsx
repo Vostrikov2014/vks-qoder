@@ -296,6 +296,9 @@ export default function AnalyticsPage() {
               background: 'var(--primary-600)',
               textTransform: 'none',
               fontWeight: 600,
+              // Match the 40px height of the filter controls in the toolbar
+              py: 0,
+              height: 40,
               '&:hover': { background: 'var(--btn-hover-bg)' },
             }}
           >

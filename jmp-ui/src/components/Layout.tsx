@@ -39,8 +39,8 @@ import { useThemeStore } from '../store/themeStore';
 const DRAWER_WIDTH = 280;
 // The sidebar logo block is matched to the header height,
 // so both horizontal divider lines run on the same level
-const HEADER_HEIGHT = 85;
-const MOBILE_HEADER_HEIGHT = 64;
+const HEADER_HEIGHT = 52;
+const MOBILE_HEADER_HEIGHT = 48;
 // Top panel background, matched to the HomePage "Создать видео-встречу" tile (--lp-blue)
 const HEADER_BLUE = '#2563eb';
 
@@ -118,11 +118,10 @@ export default function Layout() {
       >
         <Box
           sx={{
-            width: 44,
-            height: 44,
-            // Pinned to the previous --radius-xl value (0.5rem): the logo keeps
-            // its original rounding while the shared radius scale grew
-            borderRadius: '0.5rem',
+            width: 32,
+            height: 32,
+            // Scaled-down rounding to match the smaller plate
+            borderRadius: '0.375rem',
             // Inverted tile: white plate with the brand glyph, since the block itself is blue
             background: '#ffffff',
             color: HEADER_BLUE,
@@ -131,7 +130,7 @@ export default function Layout() {
             justifyContent: 'center',
           }}
         >
-          <Video size={24} color="currentColor" />
+          <Video size={18} color="currentColor" />
         </Box>
         {!collapsed && (
           <motion.div
@@ -142,8 +141,16 @@ export default function Layout() {
             <Typography
               variant="h6"
               sx={{
-                fontWeight: 700,
+                fontWeight: 900,
                 color: '#ffffff',
+                // Inter is not bundled and the global stylesheet sets
+                // `font-synthesis: none`, so a bold fallback face may not render;
+                // re-enable synthesis for the wordmark only
+                fontSynthesis: 'weight style',
+                // Fallback fonts rarely ship a real 900 face, so the extra
+                // weight is enforced with a hairline stroke of the same color
+                WebkitTextStroke: '0.6px #ffffff',
+                letterSpacing: '0.01em',
               }}
             >
               {t('common.appName')}
@@ -197,8 +204,8 @@ export default function Layout() {
                       sx={{
                         borderRadius: 'var(--radius-lg)',
                         mx: collapsed ? 0.5 : 0,
-                        py: 1.5,
-                        minHeight: 48,
+                        py: 1,
+                        minHeight: 40,
                         justifyContent: collapsed ? 'center' : 'initial',
                         px: collapsed ? 2 : 2,
                         position: 'relative',
@@ -267,7 +274,7 @@ export default function Layout() {
       <Box
         sx={{
           p: 2,
-          borderTop: '1px solid var(--sidebar-divider)',
+          // No top divider: the block must read as part of the main menu list
           borderRight: '1px solid var(--sidebar-border-right)',
         }}
       >
@@ -276,7 +283,9 @@ export default function Layout() {
             sx={{
               borderRadius: 'var(--radius-lg)',
               justifyContent: collapsed ? 'center' : 'initial',
-              py: 1.5,
+              // Same height as the main menu items (e.g. "Dashboard")
+              py: 1,
+              minHeight: 40,
               '&:hover': {
                 background: 'var(--sidebar-hover-bg)',
               },
@@ -334,8 +343,12 @@ export default function Layout() {
           variant="h6"
           sx={{
             ml: 2,
-            fontWeight: 700,
+            fontWeight: 900,
             color: '#ffffff',
+            // Same wordmark bolding rules as the sidebar logo band
+            fontSynthesis: 'weight style',
+            WebkitTextStroke: '0.6px #ffffff',
+            letterSpacing: '0.01em',
           }}
         >
           {t('common.appName')}
@@ -406,17 +419,19 @@ export default function Layout() {
             top: 0,
             zIndex: 1100,
             px: { xs: 2, sm: 4 },
-            py: 2,
-            minHeight: HEADER_HEIGHT,
+            // Fixed height (not minHeight): the header must be exactly as tall as
+            // the sidebar logo band, so both blue panels end on the same line.
+            // No vertical padding: the two text lines (~46px) fit into 48/52px
+            height: { xs: MOBILE_HEADER_HEIGHT, sm: HEADER_HEIGHT },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             background: HEADER_BLUE,
-            mt: { xs: 8, sm: 0 },
+            mt: { xs: 6, sm: 0 },
           }}
         >
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#ffffff' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
               {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
