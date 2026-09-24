@@ -37,7 +37,7 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
     // --bg-elevated; pin the fill to the field surface so autofilled values
     // never change the background
     '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active': {
-      '-webkit-box-shadow': `0 0 0 1000px ${fieldSurface} inset !important`,
+      WebkitBoxShadow: `0 0 0 1000px ${fieldSurface} inset !important`,
     },
   },
   // Hover tint for fields with a label: the label floats once a value is
@@ -59,7 +59,7 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
   },
   '& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-input': {
     color: 'var(--text-muted)',
-    '-webkit-text-fill-color': 'var(--text-muted)',
+    WebkitTextFillColor: 'var(--text-muted)',
   },
   // Label acts as the in-field hint while empty and floats once a value is picked
   '& .MuiInputLabel-root': {

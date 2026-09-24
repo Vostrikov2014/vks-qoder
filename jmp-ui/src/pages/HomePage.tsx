@@ -65,6 +65,13 @@ const JITSI_BASE_URL = import.meta.env.VITE_JITSI_URL || 'http://localhost:8000'
 const JOIN_IMMEDIATE_HASH = '#config.prejoinConfig.enabled=false&config.requireDisplayName=false';
 
 /**
+ * Human-readable title shown on the Jitsi prejoin screen for instant meetings.
+ * Appended to the server-built link as the whitelisted `config.subject` override: the
+ * room name stays the unique technical `vks-...` id, only the displayed header changes.
+ */
+const INSTANT_MEETING_SUBJECT = 'Новая видеовстреча';
+
+/**
  * HeroHills - decorative line-art illustration (lock / video / servers / shield
  * connected by routes with gradient "sparkles"), pure SVG, no interactivity.
  */
@@ -201,7 +208,13 @@ export default function HomePage() {
     try {
       const { data } = await joinApi.createInstant();
       if (data.roomUrl) {
-        window.open(data.roomUrl, '_blank', 'noopener');
+        // roomUrl already ends with a "#config...." fragment, so we extend it (not start a new one).
+        // Jitsi parses every hash value through JSON (parseURLParams -> safeJsonParse), and a bare
+        // string is invalid JSON -> the param would be silently dropped. JSON.stringify wraps the
+        // title in quotes so it decodes back to the plain string.
+        const subject = encodeURIComponent(JSON.stringify(INSTANT_MEETING_SUBJECT));
+        const url = `${data.roomUrl}&config.subject=${subject}`;
+        window.open(url, '_blank', 'noopener');
       } else {
         setCreateError(t('home.createFailed'));
       }

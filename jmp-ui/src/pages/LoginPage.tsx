@@ -81,7 +81,7 @@ const createAuthFieldSx = (isDarkMode: boolean) => {
       // --bg-elevated (plain white in the light theme); pin the fill to the
       // field surface so autofilled credentials never change the background
       '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active': {
-        '-webkit-box-shadow': `0 0 0 1000px ${fieldSurface} inset !important`,
+        WebkitBoxShadow: `0 0 0 1000px ${fieldSurface} inset !important`,
       },
     },
     '& .MuiOutlinedInput-input': {
