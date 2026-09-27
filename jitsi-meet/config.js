@@ -1308,6 +1308,16 @@ var config = {
     // disableDeepLinking: false,
 
     // The deeplinking config.
+    deeplinking: {
+        // If true, any checks to handoff to another application will be prevented
+        // and instead the app will continue to display in the current browser.
+        // Enabled for this deployment: on mobile browsers (Android/iOS) the
+        // conference opens directly in the browser, without the
+        // "download the mobile app" interstitial page.
+        disabled: true,
+    },
+
+    // Upstream reference for the remaining deeplinking options (inactive):
     // deeplinking: {
     //
     //     // The desktop deeplinking config, disabled by default.
