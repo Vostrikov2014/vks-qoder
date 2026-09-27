@@ -10,7 +10,6 @@ import {
   IconButton,
   Chip,
   Button,
-  Divider,
   Tooltip,
   FormControl,
   InputLabel,
@@ -187,8 +186,6 @@ export default function ParticipantManagementPanel({
           {participants.length} {t('conferences.participantsAssigned')}
         </Typography>
       </Box>
-
-      <Divider sx={{ borderColor: 'var(--glass-border)', mb: 2 }} />
 
       {/* Add participant row */}
       <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>

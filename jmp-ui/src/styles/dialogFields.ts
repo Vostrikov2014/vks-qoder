@@ -13,8 +13,18 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
     // A filled field keeps the exact background it had while it was still empty
     background: fieldSurface,
     transition: 'background-color 0.2s ease',
+    // Compact fields: single-line controls share the 40px height of the
+    // toolbar search on the conferences dashboard; multiline fields stretch
+    '&:not(.MuiOutlinedInput-multiline)': {
+      height: 40,
+    },
     '& fieldset': {
       border: 'none',
+    },
+    // The label always floats above the field, so the notch gap in the
+    // (invisible) outline is never needed
+    '& .MuiOutlinedInput-notchedOutline > legend': {
+      display: 'none',
     },
     '&:hover fieldset': {
       border: 'none',
@@ -47,6 +57,16 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
   },
   '& .MuiOutlinedInput-input': {
     color: 'var(--text-h)',
+    // Compact text so the value centers nicely inside the fixed 40px root
+    fontSize: '0.8125rem',
+    py: 0.5,
+    minHeight: 0,
+  },
+  // Multiline fields (description) keep their original roomier look: default
+  // font size and padding, the height is driven by the rows
+  '& .MuiOutlinedInput-inputMultiline': {
+    fontSize: '1rem',
+    py: '12px',
   },
   // Hint is rendered inside the field and disappears once it is filled
   '& .MuiOutlinedInput-input::placeholder': {
@@ -61,9 +81,25 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
     color: 'var(--text-muted)',
     WebkitTextFillColor: 'var(--text-muted)',
   },
-  // Label acts as the in-field hint while empty and floats once a value is picked
+  // Disabled fields keep the placeholder hint readable: browsers wash out
+  // placeholder text with the input's -webkit-text-fill-color otherwise
+  '& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-input::placeholder': {
+    color: 'var(--text-muted)',
+    opacity: 1,
+    WebkitTextFillColor: 'var(--text-muted)',
+  },
+  // Label acts as the hint: it always sits above the field, both while the
+  // field is empty and once a value is picked, so the compact 40px height is
+  // never eaten by a floating label inside the control
   '& .MuiInputLabel-root': {
     color: 'var(--text-muted)',
+    top: 'auto',
+    bottom: '100%',
+    left: 0,
+    transform: 'none !important',
+    fontSize: '0.75rem',
+    mb: '2px',
+    pointerEvents: 'none',
   },
   '& .MuiInputLabel-root.Mui-focused': {
     color: 'var(--primary-600)',
@@ -74,11 +110,21 @@ export const createDialogFieldSx = (isDarkMode: boolean, fieldSurface = isDarkMo
   },
   '& .MuiSelect-select': {
     color: 'var(--text-h)',
+    // Drop the theme's min-height so the select fits the fixed 40px root
+    minHeight: 0,
   },
   '& .MuiSelect-icon': {
     color: 'var(--text-muted)',
   },
 });
+
+// Dialog action buttons (Создать/Отмена/Закрыть and friends): the same 40px
+// height as the toolbar controls on the conferences dashboard
+export const dialogButtonSx = {
+  height: 40,
+  py: 0,
+  borderRadius: 'var(--radius-lg)',
+} as const;
 
 // Dropdown menu of the dialog selects: the app menu colours instead of the
 // default white Paper, which would stay white in the dark theme as well

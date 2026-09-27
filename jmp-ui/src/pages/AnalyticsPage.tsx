@@ -341,7 +341,7 @@ export default function AnalyticsPage() {
           >
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
                   <Video size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -368,7 +368,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-500-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
                   <Users size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -395,7 +395,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-600)' }}>
                   <Clock size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -411,7 +411,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-700-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-700)' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-700)' }}>
                   <HardDrive size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -425,7 +425,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(107, 114, 128, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
                   <HardDrive size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
@@ -439,7 +439,7 @@ export default function AnalyticsPage() {
 
             <BentoCard>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--primary-500-rgb), 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
+                <Box sx={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-500)' }}>
                   <Activity size={24} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
