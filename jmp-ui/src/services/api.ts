@@ -270,6 +270,10 @@ export interface JoinResult {
 export const joinApi = {
   resolve: (slug: string, displayName?: string) =>
     api.get<JoinResult>(`/join/${slug}`, { params: displayName ? { displayName } : undefined }),
+  // Instant rooms are not stored anywhere, so they are resolved by their generated name:
+  // the backend mints a fresh guest token for it (never a moderator one).
+  resolveRoom: (room: string) =>
+    api.get<JoinResult>(`/join/room/${encodeURIComponent(room)}`),
   // Open a brand-new guest room: the server invents the room and signs a token,
   // nothing is stored and no account is needed.
   createInstant: (displayName?: string) =>

@@ -7,6 +7,7 @@ import { LOGOUT } from '../../authentication/actionTypes';
 import { isVpaasMeeting } from '../../jaas/functions';
 import { authStatusChanged } from '../conference/actions.any';
 import { getCurrentConference } from '../conference/functions';
+import { overwriteConfig } from '../config/actions';
 import { SET_CONFIG } from '../config/actionTypes';
 import { CONNECTION_ESTABLISHED, SET_LOCATION_URL } from '../connection/actionTypes';
 import { participantUpdated } from '../participants/actions';
@@ -20,7 +21,7 @@ import { SET_JWT } from './actionTypes';
 import { setDelayedLoadOfAvatarUrl, setJWT, setKnownAvatarUrl } from './actions';
 import { parseJWTFromURLParams } from './functions';
 import logger from './logger';
-import { clearJWT, restoreJWT, storeJWT } from './tokenStorage';
+import { clearJWT, restoreJWT, restoreShareUrl, storeJWT, storeShareUrl } from './tokenStorage';
 
 /**
  * Set up a state change listener to perform maintenance tasks when the conference
@@ -144,11 +145,29 @@ function _setConfigOrLocationURL({ dispatch, getState }: IStore, next: Function,
         // (see features/app/middleware.ts), so the tab keeps its own copy: that
         // is what makes a reload of the room page authenticate again.
         storeJWT(jwt, room);
+
+        // The share address travels as a config hash override and leaves the
+        // address bar together with the token, so it is kept next to the token
+        // as well: «Пригласить» must keep handing out the platform link.
+        const { jmpShareUrl } = getState()['features/base/config'];
+
+        if (typeof jmpShareUrl === 'string' && jmpShareUrl) {
+            storeShareUrl(jmpShareUrl, room);
+        }
     } else if (room) {
         const storedJWT = restoreJWT(room);
 
         if (storedJWT) {
             dispatch(setJWT(storedJWT));
+
+            // A reload no longer carries the share address in the URL, and the
+            // config was loaded without it — restore it so the invite dialog
+            // keeps producing the platform link.
+            const storedShareUrl = restoreShareUrl(room);
+
+            if (storedShareUrl) {
+                dispatch(overwriteConfig({ jmpShareUrl: storedShareUrl }));
+            }
 
             return result;
         }

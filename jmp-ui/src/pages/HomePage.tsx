@@ -71,6 +71,19 @@ const JOIN_IMMEDIATE_HASH = '#config.prejoinConfig.enabled=false&config.requireD
  */
 const INSTANT_MEETING_SUBJECT = 'Новая видеовстреча';
 
+/** Slug inside a platform join link (mirrors JoinController.SLUG_PATTERN). */
+const JOIN_LINK_PATTERN = /\/j\/([A-Za-z0-9_-]{22,32})(?:[/?#]|$)/;
+
+/** Generated name of an instant guest room, entered as a bare code. */
+const INSTANT_ROOM_PATTERN = /^vks-[0-9a-z]{8}$/;
+
+/**
+ * The same room name anywhere inside a pasted Jitsi address, e.g.
+ * `https://a.slamx.ru/meet-legacy/vks-xxxxxxxx`. Such an address carries no token, so it
+ * must be resolved through the platform page that mints a fresh one.
+ */
+const INSTANT_ROOM_IN_URL_PATTERN = /(?:^|[/%])(vks-[0-9a-z]{8})(?:[/?#]|$)/;
+
 /**
  * HeroHills - decorative line-art illustration (lock / video / servers / shield
  * connected by routes with gradient "sparkles"), pure SVG, no interactivity.
@@ -236,6 +249,25 @@ export default function HomePage() {
     }
 
     const trimmedCode = code.trim();
+
+    // A platform share link resolves through the join page: the backend mints a fresh
+    // token there, and opening the link "as is" would only work by accident.
+    const joinLink = trimmedCode.match(JOIN_LINK_PATTERN);
+    if (joinLink) {
+      navigate(`/j/${joinLink[1]}`);
+      return;
+    }
+
+    // An instant room: either the bare generated name or a room name inside a pasted
+    // Jitsi address. Such a room lives only in Jitsi and is not stored in the platform,
+    // so the join page has to ask the backend for a fresh guest token.
+    const roomCode = INSTANT_ROOM_PATTERN.test(trimmedCode)
+      ? trimmedCode
+      : trimmedCode.match(INSTANT_ROOM_IN_URL_PATTERN)?.[1];
+    if (roomCode) {
+      navigate(`/j/${roomCode}`);
+      return;
+    }
 
     // If it's a full URL (starts with http:// or https://), open it directly
     if (trimmedCode.startsWith('http://') || trimmedCode.startsWith('https://')) {

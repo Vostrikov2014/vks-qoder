@@ -19,6 +19,7 @@ import com.jmp.infrastructure.security.JwtAuthenticationFilter;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,6 +43,13 @@ public class JoinController {
 
     /** Shape of a generated slug: 16 random bytes, base64url without padding. */
     private static final Pattern SLUG_PATTERN = Pattern.compile("[A-Za-z0-9_-]{22,32}");
+
+    /**
+     * Shape of an instant guest room name: the platform prefix plus the 8 random
+     * lower-case alphanumerics invented by {@code InstantMeetingService}. Everything
+     * else — scheduled conference rooms, foreign names — never gets a token minted.
+     */
+    private static final Pattern INSTANT_ROOM_PATTERN = Pattern.compile("vks-[0-9a-z]{8}");
 
     private final ConferenceLinkService conferenceLinkService;
     private final InstantMeetingService instantMeetingService;
@@ -75,6 +83,34 @@ public class JoinController {
     public ResponseEntity<ConferenceLinkDto.JoinResponse> instant(
             @RequestParam(name = "displayName", required = false) String displayName) {
         return ResponseEntity.ok(instantMeetingService.createInstantMeeting(displayName));
+    }
+
+    /**
+     * Resolve an instant guest room by its name: the name is the only credential such a
+     * room has, and every visit mints a fresh short-lived token for a guest — never a
+     * moderator one, moderation stays with whoever created the room.
+     *
+     * <p>The literal {@code /room} segment wins over the {@code /{slug}} template (Spring
+     * MVC prefers the more specific pattern), and a room name could not pass the slug
+     * guard anyway: the shapes do not overlap. Anything that does not look like a
+     * generated room name is answered exactly like an unknown link, without a token.
+     */
+    @GetMapping("/room/{roomName}")
+    @Operation(summary = "Mint a fresh guest token for an instant room by its name")
+    public ResponseEntity<ConferenceLinkDto.JoinResponse> resolveRoom(
+            @PathVariable String roomName,
+            @RequestParam(name = "displayName", required = false) String displayName,
+            HttpServletRequest request) {
+
+        if (!INSTANT_ROOM_PATTERN.matcher(roomName).matches()) {
+            log.info("Rejected instant room request '{}' from {}", roomName, request.getRemoteAddr());
+            return ResponseEntity.ok(ConferenceLinkDto.JoinResponse.of(
+                ConferenceLinkDto.Decision.NOT_FOUND, "link_not_found", null));
+        }
+
+        log.info("Instant room '{}' requested by {}", roomName, request.getRemoteAddr());
+
+        return ResponseEntity.ok(instantMeetingService.resolveRoomJoin(roomName, displayName));
     }
 
     /**

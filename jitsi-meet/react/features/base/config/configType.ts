@@ -498,6 +498,12 @@ export interface IConfig {
     jaasFeedbackMetadataURL?: string;
     jaasTokenUrl?: string;
     /**
+     * JMP: stable platform address of the room («/j/…») that the invite dialog must hand
+     * out instead of the bare Jitsi URL. Arrives as a hash override from the backend;
+     * empty/absent keeps the stock {@code getInviteURL} behaviour.
+     */
+    jmpShareUrl?: string;
+    /**
      * JMP: address of the platform UI to return to after the conference ends
      * (hangup, kicked out, terminated by the moderator). Empty/absent keeps the
      * stock Jitsi behaviour (close page / welcome page).

@@ -12,11 +12,25 @@ import logger from './logger';
 const STORAGE_KEY = 'jitsi.jwt';
 
 /**
+ * Key under which the platform share address of the room the current tab opened is
+ * kept in the browser session storage.
+ */
+const SHARE_URL_STORAGE_KEY = 'jitsi.shareUrl';
+
+/**
  * The persisted token together with the room it gives access to.
  */
 interface IStoredToken {
     jwt: string;
     room: string;
+}
+
+/**
+ * The persisted share address together with the room it belongs to.
+ */
+interface IStoredShareUrl {
+    room: string;
+    shareUrl: string;
 }
 
 /**
@@ -99,6 +113,70 @@ export function clearJWT() {
     } catch (e) {
         // Nothing to do: without sessionStorage there is nothing stored either.
     }
+}
+
+/**
+ * Remembers the platform share address the room was opened with.
+ *
+ * <p>The address travels as a config hash override, and the hash is stripped from the
+ * address bar together with the token (see {@code features/app/middleware.ts}). Without
+ * a copy of its own the invite dialog would fall back to the bare room URL after a
+ * reload, and a guest opening that URL would be refused by Prosody.
+ *
+ * @param {string} shareUrl - The stable join address of the room.
+ * @param {string|undefined} room - The room the address belongs to.
+ * @returns {void}
+ */
+export function storeShareUrl(shareUrl: string, room?: string) {
+    const backendSafeRoom = getBackendSafeRoomName(room);
+
+    if (!backendSafeRoom || !shareUrl) {
+        return;
+    }
+
+    try {
+        const storedShareUrl: IStoredShareUrl = { room: backendSafeRoom,
+            shareUrl };
+
+        sessionStorage.setItem(SHARE_URL_STORAGE_KEY, JSON.stringify(storedShareUrl));
+    } catch (e) {
+        logger.error('Unable to keep the share URL for this tab', e);
+    }
+}
+
+/**
+ * Returns the share address a previous visit to the given room was opened with, if any.
+ *
+ * <p>Mirrors {@link restoreJWT}: only an address of the very same room is eligible, so
+ * a room opened without one can never borrow the address of another room.
+ *
+ * @param {string|undefined} room - The room the user is opening.
+ * @returns {string|undefined} The share address to reuse or {@code undefined}.
+ */
+export function restoreShareUrl(room?: string): string | undefined {
+    const backendSafeRoom = getBackendSafeRoomName(room);
+
+    if (!backendSafeRoom) {
+        return undefined;
+    }
+
+    let storedShareUrl: IStoredShareUrl | undefined;
+
+    try {
+        const stored = sessionStorage.getItem(SHARE_URL_STORAGE_KEY);
+
+        storedShareUrl = stored ? JSON.parse(stored) : undefined;
+    } catch (e) {
+        return undefined;
+    }
+
+    if (!storedShareUrl
+            || typeof storedShareUrl.shareUrl !== 'string'
+            || storedShareUrl.room !== backendSafeRoom) {
+        return undefined;
+    }
+
+    return storedShareUrl.shareUrl;
 }
 
 /**
