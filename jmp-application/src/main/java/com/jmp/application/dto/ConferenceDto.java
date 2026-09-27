@@ -154,6 +154,7 @@ public sealed interface ConferenceDto {
         UUID id,
         String roomName,
         String displayName,
+        String description,
         String status,
         String type,
         UUID createdById,
@@ -163,9 +164,16 @@ public sealed interface ConferenceDto {
         Integer currentParticipants,
         Integer maxParticipants,
         String accessPolicy,
+        String allowedDomain,
+        Boolean enableLobby,
+        Boolean enableRecording,
+        Boolean enableLiveStreaming,
+        Boolean enableChat,
+        Boolean enableScreenSharing,
+        Boolean waitingRoomEnabled,
+        Boolean requireAuthForAssigned,
         Integer assignedCount
     ) implements ConferenceDto {
-        @Override public String description() { return null; }
         @Override public UUID tenantId() { return null; }
         @Override public UUID createdById() { return null; }
         @Override public String createdByName() { return null; }
@@ -173,16 +181,8 @@ public sealed interface ConferenceDto {
         @Override public Instant actualEndedAt() { return null; }
         @Override public Boolean isRecurring() { return null; }
         @Override public String recurrenceRule() { return null; }
-        @Override public Boolean enableLobby() { return null; }
-        @Override public Boolean enableRecording() { return null; }
-        @Override public Boolean enableLiveStreaming() { return null; }
-        @Override public Boolean enableChat() { return null; }
-        @Override public Boolean enableScreenSharing() { return null; }
         @Override public Map<String, Object> jitsiOptions() { return null; }
         @Override public Instant createdAt() { return null; }
-        @Override public String allowedDomain() { return null; }
-        @Override public Boolean waitingRoomEnabled() { return null; }
-        @Override public Boolean requireAuthForAssigned() { return null; }
     }
 
     /**

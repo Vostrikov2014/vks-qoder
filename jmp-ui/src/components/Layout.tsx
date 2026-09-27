@@ -68,6 +68,13 @@ export default function Layout() {
   ) ?? false;
   const isSuperAdmin = user?.roles?.some((role) => role === 'ROLE_SUPER_ADMIN') ?? false;
 
+  // Primary role label for the account block: localize known roles, otherwise fall
+  // back to the raw role name (e.g. SERVICE_ACCOUNT) so nothing renders empty.
+  const primaryRole = user?.roles?.[0]?.replace('ROLE_', '');
+  const primaryRoleLabel = primaryRole
+    ? t(`roles.${primaryRole}`, primaryRole)
+    : t('common.user', 'User');
+
   const filteredMenuItems = menuItems.filter(
     (item) => (!item.requiresAdmin || canManageUsers) && (!item.requiresSuperAdmin || isSuperAdmin)
   );
@@ -522,7 +529,7 @@ export default function Layout() {
                   {user?.firstName} {user?.lastName}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-                  {user?.roles?.[0]?.replace('ROLE_', '') || 'User'}
+                  {primaryRoleLabel}
                 </Typography>
               </Box>
             </Box>

@@ -22,6 +22,7 @@ import {
   OutlinedInput,
   ToggleButton,
   ToggleButtonGroup,
+  Alert,
 } from '@mui/material';
 import {
   Plus,
@@ -39,7 +40,7 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { userApi } from '../services/api';
+import { userApi, extractApiError } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
 import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 
@@ -192,6 +193,7 @@ export default function UsersPage() {
     password: '',
     roleNames: [] as string[],
   });
+  const [formError, setFormError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   // Create/edit dialog fields follow the Recordings (Entries) page look
   const dialogFieldSx = createDialogFieldSx(isDarkMode);
@@ -220,6 +222,7 @@ export default function UsersPage() {
       password: '',
       roleNames: ['ROLE_PARTICIPANT'],
     });
+    setFormError(null);
     setOpenDialog(true);
   };
 
@@ -232,6 +235,7 @@ export default function UsersPage() {
       password: '',
       roleNames: user.roles,
     });
+    setFormError(null);
     setOpenDialog(true);
   };
 
@@ -247,6 +251,16 @@ export default function UsersPage() {
   };
 
   const handleSubmit = async () => {
+    // Mirror the backend Bean Validation locally so the dialog never looks
+    // "frozen" with no explanation (a rejected request used to be swallowed).
+    if (!formData.email.trim() || !formData.firstName.trim() || !formData.lastName.trim()) {
+      setFormError(t('users.requiredFields'));
+      return;
+    }
+    if (!editingUser && formData.password.length < 8) {
+      setFormError(t('users.passwordMin'));
+      return;
+    }
     try {
       if (editingUser) {
         const { password, ...updateData } = formData;
@@ -254,10 +268,12 @@ export default function UsersPage() {
       } else {
         await userApi.createUser(formData);
       }
+      setFormError(null);
       setOpenDialog(false);
       fetchUsers();
     } catch (error) {
       console.error('Failed to save user:', error);
+      setFormError(extractApiError(error, t('users.saveFailed')));
     }
   };
 
@@ -902,6 +918,34 @@ export default function UsersPage() {
           </Typography>
         </DialogTitle>
         <DialogContent>
+          {/* Backend/validation errors shown right inside the dialog */}
+          <AnimatePresence>
+            {formError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <Alert
+                  severity="error"
+                  icon={<AlertCircle size={20} />}
+                  onClose={() => setFormError(null)}
+                  sx={{
+                    mt: 1,
+                    mb: 1,
+                    background: 'rgba(239, 68, 68, 0.06)',
+                    border: '1px solid rgba(239, 68, 68, 0.15)',
+                    borderRadius: 'var(--radius-lg)',
+                    color: '#dc2626',
+                    '& .MuiAlert-icon': { color: '#ef4444' },
+                    '& .MuiIconButton-root': { color: '#dc2626' },
+                  }}
+                >
+                  {formError}
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <TextField
             fullWidth
             label={t('users.email')}

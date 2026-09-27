@@ -121,7 +121,7 @@ public class RecordingController {
     }
 
     @GetMapping("/stats/storage")
-    @PreAuthorize("hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Get storage statistics")
     public ResponseEntity<RecordingDto.StorageStats> getStorageStats(Authentication authentication) {
         UUID tenantId = extractTenantId(authentication);
