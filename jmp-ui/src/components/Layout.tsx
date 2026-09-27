@@ -141,15 +141,15 @@ export default function Layout() {
             <Typography
               variant="h6"
               sx={{
-                fontWeight: 900,
+                fontWeight: 800,
                 color: '#ffffff',
                 // Inter is not bundled and the global stylesheet sets
                 // `font-synthesis: none`, so a bold fallback face may not render;
                 // re-enable synthesis for the wordmark only
                 fontSynthesis: 'weight style',
-                // Fallback fonts rarely ship a real 900 face, so the extra
+                // Fallback fonts rarely ship a real 800 face, so the extra
                 // weight is enforced with a hairline stroke of the same color
-                WebkitTextStroke: '0.6px #ffffff',
+                WebkitTextStroke: '0.4px #ffffff',
                 letterSpacing: '0.01em',
               }}
             >

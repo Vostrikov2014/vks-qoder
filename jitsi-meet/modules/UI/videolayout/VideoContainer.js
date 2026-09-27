@@ -4,9 +4,9 @@
 import Logger from '@jitsi/logger';
 import $ from 'jquery';
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import { browser } from '../../../react/features/base/lib-jitsi-meet';
+import { renderElement } from '../../../react/features/base/react/dom.web';
 import { FILMSTRIP_BREAKPOINT } from '../../../react/features/filmstrip/constants';
 import { setLargeVideoDimensions } from '../../../react/features/large-video/actions.any';
 import { LargeVideoBackground, ORIENTATION } from '../../../react/features/large-video/components/LargeVideoBackground';
@@ -659,7 +659,7 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
-        ReactDOM.render(
+        renderElement(
             <LargeVideoBackground
                 hidden = { this._hideBackground || this._isHidden }
                 mirror = {

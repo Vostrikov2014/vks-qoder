@@ -3,7 +3,6 @@
 import Logger from '@jitsi/logger';
 import $ from 'jquery';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 
@@ -22,6 +21,7 @@ import {
     isLocalScreenshareParticipant,
     isScreenShareParticipant
 } from '../../../react/features/base/participants/functions';
+import { renderElement, unmountElement } from '../../../react/features/base/react/dom.web';
 import { getHideSelfView } from '../../../react/features/base/settings/functions.any';
 import { trackStreamingStatusChanged } from '../../../react/features/base/tracks/actions.any';
 import { getVideoTrackByParticipant } from '../../../react/features/base/tracks/functions.any';
@@ -166,7 +166,7 @@ export default class LargeVideoManager {
 
         this.removePresenceLabel();
 
-        ReactDOM.unmountComponentAtNode(this._dominantSpeakerAvatarContainer);
+        unmountElement(this._dominantSpeakerAvatarContainer);
 
         this.container.style.display = 'none';
     }
@@ -518,7 +518,7 @@ export default class LargeVideoManager {
      * Updates the src of the dominant speaker avatar
      */
     updateAvatar() {
-        ReactDOM.render(
+        renderElement(
             <Provider store = { APP.store }>
                 <Avatar
                     id = "dominantSpeakerAvatar"
@@ -559,7 +559,7 @@ export default class LargeVideoManager {
         const presenceLabelContainer = document.getElementById('remotePresenceMessage');
 
         if (presenceLabelContainer) {
-            ReactDOM.render(
+            renderElement(
                 <Provider store = { APP.store }>
                     <I18nextProvider i18n = { i18next }>
                         <PresenceLabel
@@ -580,7 +580,7 @@ export default class LargeVideoManager {
         const presenceLabelContainer = document.getElementById('remotePresenceMessage');
 
         if (presenceLabelContainer) {
-            ReactDOM.unmountComponentAtNode(presenceLabelContainer);
+            unmountElement(presenceLabelContainer);
         }
     }
 
