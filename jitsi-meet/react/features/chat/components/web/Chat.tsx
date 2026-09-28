@@ -248,7 +248,25 @@ const useStyles = makeStyles<{
         },
 
         privateMessageRecipientsList: {
-            padding: '0 16px 5px'
+            padding: '0 16px 5px',
+
+            // Mirror the Prejoin fields and the chat text inputs: the recipient
+            // select surface is already #2E2E33 (ui02), so on hover/focus
+            // lighten it one step to #3A3A42 (ui04) instead of drawing the
+            // default blue focus frame.
+            '& select': {
+                transition: 'background-color 0.2s ease',
+
+                '&:hover': {
+                    background: theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: theme.palette.ui04
+                }
+            }
         }
     };
 });

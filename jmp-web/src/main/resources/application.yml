@@ -112,10 +112,10 @@ management:
 # Jitsi Configuration
 jitsi:
   # Public address of the Jitsi web deployment: host[:port][/path-prefix]. A per-tenant
-  # value from tenants.jitsi_domain wins over it. Keep the path prefix empty for the
-  # standard layout (Jitsi on its own subdomain) — the signalling of the web container is
-  # proxied at the root of the host.
-  domain: ${JITSI_DOMAIN:meet.slamx.ru}
+  # value from tenants.jitsi_domain wins over it, so it is the only switch that matters for
+  # one tenant. The path prefix is part of the value on purpose: Jitsi shares the platform
+  # host and nginx-proxy.conf routes /meet-legacy to the web container, stripping the prefix again.
+  domain: ${JITSI_DOMAIN:a.slamx.ru/meet-legacy}
   # Scheme used when building room addresses. The value of jitsi.domain may override it
   # by carrying an explicit scheme of its own.
   scheme: ${JITSI_SCHEME:https}

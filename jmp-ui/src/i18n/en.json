@@ -175,6 +175,9 @@
     "firstName": "First Name",
     "lastName": "Last Name",
     "password": "Password",
+    "requiredFields": "Please fill in email, first name and last name",
+    "passwordMin": "Password must be at least 8 characters",
+    "saveFailed": "Failed to save user",
     "deleteConfirm": "Are you sure you want to delete this user?"
   },
   "share": {
@@ -235,7 +238,8 @@
     "TENANT_ADMIN": "Tenant Admin",
     "MODERATOR": "Moderator",
     "PARTICIPANT": "Participant",
-    "AUDITOR": "Auditor"
+    "AUDITOR": "Auditor",
+    "SERVICE_ACCOUNT": "Service Account"
   },
   "tenants": {
     "subtitle": "Manage organizations and their configurations",

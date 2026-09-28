@@ -41,6 +41,25 @@ const styles = (_theme: Theme, { _chatWidth }: IProps) => {
             boxSizing: 'border-box' as const,
             padding: _theme.spacing(4),
             textAlign: 'center' as const,
+        },
+
+        // Mirror the Prejoin name field: the message box surface is already
+        // #2E2E33 (ui02), so on hover/focus lighten it one step to #3A3A42
+        // (ui04) instead of drawing the default blue focus frame.
+        chatInput: {
+            '& textarea': {
+                transition: 'background-color 0.2s ease',
+
+                '&:hover': {
+                    background: _theme.palette.ui04
+                },
+
+                '&:focus': {
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: _theme.palette.ui04
+                }
+            }
         }
     };
 };
@@ -189,7 +208,7 @@ class ChatInput extends Component<IProps, IState> {
                         </div>
                     )}
                     <Input
-                        className = 'chat-input'
+                        className = { `chat-input ${classes.chatInput}` }
                         icon = { this.props._areSmileysDisabled ? undefined : IconFaceSmile }
                         iconClick = { this._toggleSmileysPanel }
                         id = 'chat-input-messagebox'

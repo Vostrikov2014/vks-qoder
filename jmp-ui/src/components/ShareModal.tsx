@@ -9,7 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -28,7 +27,7 @@ import { conferenceLinkApi, extractApiError } from '../services/api';
 import type { ConferenceLink, ConferenceLinkCreateRequest, ConferenceLinkRole } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
-import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
+import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 import type { Conference } from '../types';
 
 interface ShareModalProps {
@@ -394,9 +393,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </>
         )}
 
-        <Divider sx={{ my: 2, borderColor: 'rgba(var(--primary-rgb), 0.12)' }} />
-
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mt: 2, mb: 1.5 }}>
           {t('share.addLinkTitle')}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -453,7 +450,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                   onChange={(e) => setExpiresAt(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   label={t('share.expiresAt')}
-                  sx={{ ...dialogFieldSx, mt: 1 }}
+                  sx={{ ...dialogFieldSx, mt: 2 }}
                 />
               )}
             </Box>
@@ -461,11 +458,12 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           <Box>
             <Button
               variant="outlined"
+              size="small"
               startIcon={saving ? <CircularProgress size={16} /> : <Plus size={18} />}
               onClick={handleCreate}
               disabled={saving || (limited && !expiresAt)}
               sx={{
-                borderRadius: 'var(--radius-lg)',
+                ...dialogButtonSx,
                 borderColor: 'rgba(var(--primary-rgb), 0.4)',
                 color: 'var(--primary-600)',
                 textTransform: 'none',
@@ -480,14 +478,15 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5 }}>
         <Typography variant="caption" sx={{ color: 'var(--text-muted)', mr: 'auto' }}>
           {t('share.policyNote')}
         </Typography>
         <Button
           onClick={handleClose}
+          size="small"
           sx={{
-            borderRadius: 'var(--radius-lg)',
+            ...dialogButtonSx,
             color: 'var(--text-muted)',
             textTransform: 'none',
           }}

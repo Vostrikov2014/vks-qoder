@@ -70,9 +70,10 @@ interface BentoCardProps {
   gradient?: string;
   colSpan?: number;
   rowSpan?: number;
+  padding?: number;
 }
 
-const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1 }: BentoCardProps) => (
+const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1, padding = 3 }: BentoCardProps) => (
   <motion.div
     variants={itemVariants}
     className="bento-card"
@@ -87,7 +88,7 @@ const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1 }: BentoCardPr
         background: gradient || 'var(--glass-bg)',
         backdropFilter: 'blur(20px)',
         borderRadius: 'var(--radius-xl)',
-        p: 3,
+        p: padding,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -111,12 +112,12 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, icon, trend, color, bgGradient, locale = 'en-US' }: StatCardProps) => (
-  <BentoCard gradient={bgGradient}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+  <BentoCard gradient={bgGradient} padding={2}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
       <Box
         sx={{
-          width: 48,
-          height: 48,
+          width: 36,
+          height: 36,
           borderRadius: 'var(--radius-lg)',
           background: `${color}18`,
           display: 'flex',
@@ -143,10 +144,10 @@ const StatCard = ({ title, value, icon, trend, color, bgGradient, locale = 'en-U
         />
       )}
     </Box>
-    <Typography variant="h3" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.5 }}>
+    <Typography variant="h4" sx={{ fontWeight: 700, color: 'var(--text-h)', mb: 0.25, lineHeight: 1.2 }}>
       {value.toLocaleString(locale)}
     </Typography>
-    <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+    <Typography variant="body2" sx={{ color: 'var(--text-muted)', lineHeight: 1.3 }}>
       {title}
     </Typography>
   </BentoCard>

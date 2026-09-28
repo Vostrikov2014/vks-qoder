@@ -27,6 +27,14 @@ interface IProps {
     ariaPressed?: boolean;
 
     /**
+     * Whether the action the button was pressed for is still in progress. Such a
+     * button cannot be pressed again, but it keeps the look of an enabled button
+     * on purpose: switching to the disabled look would only make it flash grey
+     * while the action is running.
+     */
+    busy?: boolean;
+
+    /**
      * Text of the button.
      */
     children: ReactNode;
@@ -133,6 +141,13 @@ const useStyles = makeStyles()(theme => {
                 }
             },
 
+            '&.busy': {
+                // The button has been pressed and its action is in progress: it
+                // keeps the look of the enabled button, only the cursor is turned
+                // off so that it does not invite another press.
+                cursor: 'initial'
+            },
+
 
             [theme.breakpoints.down(400)]: {
                 fontSize: '1rem',
@@ -141,7 +156,9 @@ const useStyles = makeStyles()(theme => {
             }
         },
         options: {
-            borderRadius: Number(theme.shape.borderRadius) / 2,
+            // Same corner radius as the button itself so the hover highlight
+            // of the dropdown area matches the button shape.
+            borderRadius: theme.shape.borderRadius,
             alignItems: 'center',
             display: 'flex',
             height: '100%',
@@ -152,7 +169,9 @@ const useStyles = makeStyles()(theme => {
             width: 36,
 
             '&:hover': {
-                backgroundColor: '#60A5FA'
+                // Match the primary button hover so the dropdown-arrow area blends
+                // seamlessly into the button (single source of truth: the token).
+                backgroundColor: theme.palette.prejoinActionButtonPrimaryHover
             },
 
             '& svg': {
@@ -170,6 +189,7 @@ const useStyles = makeStyles()(theme => {
 function ActionButton({
     children,
     className = '',
+    busy,
     disabled,
     hasOptions,
     OptionsIcon = IconArrowDown,
@@ -204,7 +224,8 @@ function ActionButton({
         classes.actionButton,
         className && className,
         type,
-        disabled && 'disabled'
+        disabled && !busy && 'disabled',
+        busy && 'busy'
     );
 
     return (

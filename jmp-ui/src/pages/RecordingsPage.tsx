@@ -83,6 +83,8 @@ const createFilterSelectSx = (isDarkMode: boolean) => {
       '&.Mui-focused fieldset': {
         border: 'none',
       },
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
     },
     // Hover tint only while the select is still empty (label not floated yet),
     // matching the search field
@@ -212,9 +214,13 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
       '&.Mui-focused fieldset': {
         border: 'none',
       },
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
+      // Compact vertical padding so the text centers inside the fixed 40px root
+      py: 1,
     },
     // Hint is rendered inside the field and disappears once it is filled
     '& .MuiOutlinedInput-input::placeholder': {

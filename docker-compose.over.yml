@@ -44,6 +44,9 @@ services:
 
   # JMP Backend API
   jmp-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: vostrlog/jmp-api
     container_name: jmp-api
     restart: unless-stopped
@@ -90,6 +93,9 @@ services:
 
   # JMP Frontend (React)
   jmp-ui:
+    build:
+      context: ./jmp-ui
+      dockerfile: Dockerfile
     image: vostrlog/jmp-ui
     container_name: jmp-ui
     restart: unless-stopped
@@ -164,11 +170,13 @@ services:
       - jmp-network
 
   # Jitsi meet (Web UI) - Local Build from jitsi-meet project
-  # Build: docker build -t vostrlog/jmp-jitsi-meet ./jitsi-meet   (no build: key here on
-  #   purpose, so `docker compose up` can never rebuild this heavy image by accident)
-  # Push to registry: docker push vostrlog/jmp-jitsi-meet
+  # Build locally: docker compose build jitsi-meet
+  # Push to registry: docker compose push jitsi-meet
   # On remote: docker compose pull jitsi-meet && docker compose up -d jitsi-meet
   jitsi-meet:
+    build:
+      context: ./jitsi-meet
+      dockerfile: Dockerfile
     image: vostrlog/jmp-jitsi-meet
     container_name: jmp-jitsi-meet
     restart: unless-stopped

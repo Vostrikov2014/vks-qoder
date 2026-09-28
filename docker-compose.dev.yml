@@ -358,8 +358,8 @@ volumes:
   prometheus_data:
   grafana_data:
   garage_data:
-  #jitsi_web_config:
-  #jitsi_web_certs:
+  #jitsi_meet_config:
+  #jitsi_meet_certs:
   #jitsi_transcripts:
   jitsi_prosody_config:
   jitsi_prosody_plugins:

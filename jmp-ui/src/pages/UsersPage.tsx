@@ -22,6 +22,7 @@ import {
   OutlinedInput,
   ToggleButton,
   ToggleButtonGroup,
+  Alert,
 } from '@mui/material';
 import {
   Plus,
@@ -39,9 +40,9 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { userApi } from '../services/api';
+import { userApi, extractApiError } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
-import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
+import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 
 interface UserData {
   id: string;
@@ -141,6 +142,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
       borderRadius: 'var(--radius-lg)',
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
       '& fieldset': {
         border: 'none',
       },
@@ -160,6 +163,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
+      // Compact vertical padding so the text centers inside the fixed 40px root
+      py: 1,
     },
     // Hint is rendered inside the field and disappears once it is filled
     '& .MuiOutlinedInput-input::placeholder': {
@@ -188,6 +193,7 @@ export default function UsersPage() {
     password: '',
     roleNames: [] as string[],
   });
+  const [formError, setFormError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   // Create/edit dialog fields follow the Recordings (Entries) page look
   const dialogFieldSx = createDialogFieldSx(isDarkMode);
@@ -216,6 +222,7 @@ export default function UsersPage() {
       password: '',
       roleNames: ['ROLE_PARTICIPANT'],
     });
+    setFormError(null);
     setOpenDialog(true);
   };
 
@@ -228,6 +235,7 @@ export default function UsersPage() {
       password: '',
       roleNames: user.roles,
     });
+    setFormError(null);
     setOpenDialog(true);
   };
 
@@ -243,6 +251,16 @@ export default function UsersPage() {
   };
 
   const handleSubmit = async () => {
+    // Mirror the backend Bean Validation locally so the dialog never looks
+    // "frozen" with no explanation (a rejected request used to be swallowed).
+    if (!formData.email.trim() || !formData.firstName.trim() || !formData.lastName.trim()) {
+      setFormError(t('users.requiredFields'));
+      return;
+    }
+    if (!editingUser && formData.password.length < 8) {
+      setFormError(t('users.passwordMin'));
+      return;
+    }
     try {
       if (editingUser) {
         const { password, ...updateData } = formData;
@@ -250,10 +268,12 @@ export default function UsersPage() {
       } else {
         await userApi.createUser(formData);
       }
+      setFormError(null);
       setOpenDialog(false);
       fetchUsers();
     } catch (error) {
       console.error('Failed to save user:', error);
+      setFormError(extractApiError(error, t('users.saveFailed')));
     }
   };
 
@@ -323,7 +343,8 @@ export default function UsersPage() {
               startIcon={<Plus size={20} />}
               onClick={handleCreate}
               sx={{
-                py: 1.5,
+                py: 0,
+                height: 40,
                 px: 3,
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--primary-600)',
@@ -363,6 +384,9 @@ export default function UsersPage() {
               color: 'var(--text)',
               textTransform: 'none',
               px: 3,
+              // Same 40px height as the rest of the toolbar controls
+              py: 0,
+              height: 40,
             }}
           >
             {t('common.filter')}
@@ -382,6 +406,9 @@ export default function UsersPage() {
                 border: '1px solid var(--border)',
                 borderLeft: '1px solid var(--border) !important',
                 marginLeft: '0 !important',
+                // Match the 40px height of the other toolbar controls
+                // (MUI ToggleButton defaults to min-height 48px)
+                minHeight: 40,
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
@@ -564,57 +591,58 @@ export default function UsersPage() {
                       </Box>
                     </Box>
 
-                    {/* Join Date */}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        p: 1.5,
-                        borderRadius: 'var(--radius-lg)',
-                        background: 'rgba(var(--primary-rgb), 0.08)',
-                        border: '1px solid rgba(var(--primary-rgb), 0.1)',
-                      }}
-                    >
-                      <User size={16} color="var(--primary-600)" />
-                      <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                        {t('users.joined')} {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
-                      </Typography>
-                    </Box>
-
-                    {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<Edit2 size={16} />}
-                        onClick={() => handleEdit(user)}
+                    {/* Join Date and the actions on one line: the date pill
+                        fills the row, the buttons sit to its right, styled as
+                        on the conference cards */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
                         sx={{
-                          py: 1,
+                          flex: 1,
+                          minWidth: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          p: 1.5,
                           borderRadius: 'var(--radius-lg)',
-                          borderColor: 'rgba(var(--primary-rgb), 0.3)',
-                          color: 'var(--text)',
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          '&:hover': {
-                            borderColor: 'var(--primary-600)',
-                            background: 'rgba(var(--primary-rgb), 0.08)',
-                          },
+                          background: 'rgba(var(--primary-rgb), 0.08)',
+                          border: '1px solid rgba(var(--primary-rgb), 0.1)',
                         }}
                       >
-                        {t('common.edit')}
-                      </Button>
+                        <User size={16} color="var(--primary-600)" />
+                        <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
+                          {t('users.joined')} {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
+                        </Typography>
+                      </Box>
+                      <Tooltip title={t('common.edit')}>
+                        <IconButton
+                          onClick={() => handleEdit(user)}
+                          sx={{
+                            // Vertical oval hover background around the icon
+                            p: 0,
+                            width: 30,
+                            height: 40,
+                            borderRadius: 'var(--radius-full)',
+                            color: 'var(--text-muted)',
+                            '&:hover': {
+                              background: 'rgba(var(--primary-rgb), 0.12)',
+                              color: 'var(--primary-600)',
+                            },
+                          }}
+                        >
+                          <Edit2 size={18} />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={t('common.delete')}>
                         <IconButton
                           onClick={() => handleDelete(user.id)}
                           sx={{
-                            p: 1,
-                            borderRadius: 'var(--radius-lg)',
-                            border: '1px solid var(--border)',
+                            p: 0,
+                            width: 30,
+                            height: 40,
+                            borderRadius: 'var(--radius-full)',
                             color: 'var(--text-muted)',
                             '&:hover': {
-                              borderColor: '#ef4444',
-                              background: 'rgba(239, 68, 68, 0.08)',
+                              background: 'rgba(239, 68, 68, 0.1)',
                               color: '#ef4444',
                             },
                           }}
@@ -884,12 +912,40 @@ export default function UsersPage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
+        <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingUser ? t('users.editUser') : t('users.addUser')}
           </Typography>
         </DialogTitle>
         <DialogContent>
+          {/* Backend/validation errors shown right inside the dialog */}
+          <AnimatePresence>
+            {formError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <Alert
+                  severity="error"
+                  icon={<AlertCircle size={20} />}
+                  onClose={() => setFormError(null)}
+                  sx={{
+                    mt: 1,
+                    mb: 1,
+                    background: 'rgba(239, 68, 68, 0.06)',
+                    border: '1px solid rgba(239, 68, 68, 0.15)',
+                    borderRadius: 'var(--radius-lg)',
+                    color: '#dc2626',
+                    '& .MuiAlert-icon': { color: '#ef4444' },
+                    '& .MuiIconButton-root': { color: '#dc2626' },
+                  }}
+                >
+                  {formError}
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <TextField
             fullWidth
             label={t('users.email')}
@@ -969,11 +1025,11 @@ export default function UsersPage() {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               color: 'var(--text)',
               textTransform: 'none',
               fontWeight: 600,
@@ -985,7 +1041,7 @@ export default function UsersPage() {
             onClick={handleSubmit}
             variant="contained"
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,

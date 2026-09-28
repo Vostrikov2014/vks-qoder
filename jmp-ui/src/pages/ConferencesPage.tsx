@@ -23,7 +23,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Divider,
 } from '@mui/material';
 import {
   Plus,
@@ -49,7 +48,7 @@ import {
 } from 'lucide-react';
 import { conferenceApi, participantAssignmentApi } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
-import { createDialogFieldSx, dialogMenuProps } from '../styles/dialogFields';
+import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 import ShareModal from '../components/ShareModal';
 import ParticipantManagementPanel from '../components/ParticipantManagementPanel';
 import type { Conference, ConferenceType, AccessPolicy, ParticipantAssignment } from '../types';
@@ -168,6 +167,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
       borderRadius: 'var(--radius-lg)',
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
       '& fieldset': {
         border: 'none',
       },
@@ -187,6 +188,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
+      // Compact vertical padding so the text centers inside the fixed 40px root
+      py: 1,
     },
     // Hint is rendered inside the field and disappears once it is filled
     '& .MuiOutlinedInput-input::placeholder': {
@@ -467,7 +470,8 @@ export default function ConferencesPage() {
               startIcon={<Plus size={20} />}
               onClick={handleCreate}
               sx={{
-                py: 1.5,
+                py: 0,
+                height: 40,
                 px: 3,
                 borderRadius: 'var(--radius-lg)',
                 background: 'var(--primary-600)',
@@ -507,6 +511,9 @@ export default function ConferencesPage() {
               color: 'var(--text)',
               textTransform: 'none',
               px: 3,
+              // Same 40px height as the rest of the toolbar controls
+              py: 0,
+              height: 40,
             }}
           >
             {t('common.filter')}
@@ -526,6 +533,9 @@ export default function ConferencesPage() {
                 border: '1px solid var(--border)',
                 borderLeft: '1px solid var(--border) !important',
                 marginLeft: '0 !important',
+                // Match the 40px height of the other toolbar controls
+                // (MUI ToggleButton defaults to min-height 48px)
+                minHeight: 40,
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
@@ -765,7 +775,7 @@ export default function ConferencesPage() {
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}
@@ -1188,7 +1198,7 @@ export default function ConferencesPage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
+        <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingConference ? t('conferences.editConference') : t('conferences.createConference')}
           </Typography>
@@ -1247,7 +1257,9 @@ export default function ConferencesPage() {
                   color: 'var(--text-muted)',
                   textTransform: 'none',
                   fontWeight: 500,
-                  py: 1.5,
+                  // Compact: same 40px height as the dialog fields
+                  height: 40,
+                  py: 0,
                   '&.Mui-selected': {
                     background: 'var(--primary-600)',
                     color: '#ffffff',
@@ -1409,7 +1421,6 @@ export default function ConferencesPage() {
 
           {/* Access Control Section */}
           <Box sx={{ mt: 3 }}>
-            <Divider sx={{ borderColor: 'rgba(var(--primary-rgb), 0.15)', mb: 2 }} />
             <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
               {t('conferences.accessControl')}
             </Typography>
@@ -1418,7 +1429,7 @@ export default function ConferencesPage() {
             <FormControl
               fullWidth
               size="small"
-              sx={{ mb: 2, ...dialogFieldSx }}
+              sx={{ mt: 1.5, mb: 2, ...dialogFieldSx }}
             >
               <InputLabel>{t('conferences.accessPolicy')}</InputLabel>
               <Select
@@ -1492,14 +1503,14 @@ export default function ConferencesPage() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
           <Button
             onClick={() => {
               setOpenDialog(false);
               setFormError(null);
             }}
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               color: 'var(--text)',
               textTransform: 'none',
               fontWeight: 600,
@@ -1511,7 +1522,7 @@ export default function ConferencesPage() {
             onClick={handleSubmit}
             variant="contained"
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,

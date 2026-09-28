@@ -19,6 +19,13 @@ import { useThemeStore } from '../store/themeStore';
 
 type Phase = 'ask' | 'resolving' | 'redirecting' | 'blocked';
 
+/**
+ * Generated name of an instant guest room (see InstantMeetingService). Such rooms are
+ * not stored anywhere, so they resolve through the dedicated backend endpoint that
+ * mints a fresh guest token for the name, instead of the link lookup by slug.
+ */
+const VKS_ROOM = /^vks-[0-9a-z]{8}$/;
+
 /** Machine-readable access verdicts mapped to localized messages. */
 const REASON_KEYS: Record<string, string> = {
   link_not_found: 'join.reasons.linkNotFound',
@@ -66,7 +73,9 @@ export default function JoinPage() {
     try {
       setPhase('resolving');
       setFailure(null);
-      const response = await joinApi.resolve(slug);
+      const response = VKS_ROOM.test(slug)
+        ? await joinApi.resolveRoom(slug)
+        : await joinApi.resolve(slug);
       const join = response.data;
       setResult(join);
       if (join.decision === 'REDIRECT' && join.roomUrl) {

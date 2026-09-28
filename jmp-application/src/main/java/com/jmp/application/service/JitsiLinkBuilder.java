@@ -164,6 +164,25 @@ public class JitsiLinkBuilder {
     }
 
     /**
+     * Whitelisted Jitsi hash override carrying the platform share address: the forked
+     * client returns exactly this URL from «Пригласить» instead of the bare Jitsi room
+     * address (see jitsi-meet {@code getInviteURL}), so guests follow a stable
+     * {@code /j/…} link and the backend mints a fresh token for every visit.
+     *
+     * <p>Hash values are decoded with {@code JSON.parse} on the client, so the address
+     * must be quoted — a bare string is invalid JSON and the override would be dropped
+     * silently.
+     *
+     * @param roomUrl  room address to extend; it already carries a config hash of its
+     *                 own, hence the {@code &} separator
+     * @param shareUrl stable join address, see {@link #joinUrl(String)}
+     */
+    public String withShareUrl(String roomUrl, String shareUrl) {
+        String value = URLEncoder.encode("\"" + shareUrl + "\"", StandardCharsets.UTF_8);
+        return roomUrl + "&config.jmpShareUrl=" + value;
+    }
+
+    /**
      * Encode a room name for safe use as a single path segment.
      */
     private static String encodePathSegment(String segment) {

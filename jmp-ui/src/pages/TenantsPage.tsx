@@ -16,7 +16,6 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  Divider,
 } from '@mui/material';
 import {
   Plus,
@@ -36,7 +35,7 @@ import {
 } from 'lucide-react';
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
-import { createDialogFieldSx } from '../styles/dialogFields';
+import { createDialogFieldSx, dialogButtonSx } from '../styles/dialogFields';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -101,6 +100,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
       borderRadius: 'var(--radius-lg)',
       background: fieldSurface,
       transition: 'background-color 0.2s ease',
+      // Toolbar controls share the sidebar main-menu item height (40px)
+      height: 40,
       '& fieldset': {
         border: 'none',
       },
@@ -120,6 +121,8 @@ const createSearchFieldSx = (isDarkMode: boolean) => {
     },
     '& .MuiOutlinedInput-input': {
       color: 'var(--text-h)',
+      // Compact vertical padding so the text centers inside the fixed 40px root
+      py: 1,
     },
     // Hint is rendered inside the field and disappears once it is filled
     '& .MuiOutlinedInput-input::placeholder': {
@@ -284,7 +287,8 @@ export default function TenantsPage() {
             startIcon={<Plus size={20} />}
             onClick={handleCreate}
             sx={{
-              py: 1.5,
+              py: 0,
+              height: 40,
               px: 3,
               borderRadius: 'var(--radius-lg)',
               background: 'var(--primary-600)',
@@ -330,6 +334,9 @@ export default function TenantsPage() {
                 border: '1px solid var(--border)',
                 borderLeft: '1px solid var(--border) !important',
                 marginLeft: '0 !important',
+                // Match the 40px height of the other toolbar controls
+                // (MUI ToggleButton defaults to min-height 48px)
+                minHeight: 40,
                 '&:not(:first-of-type)': {
                   borderLeft: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
@@ -493,7 +500,7 @@ export default function TenantsPage() {
                       )}
 
                       {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+                      <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
                         {tenant.status === 'ACTIVE' && (
                           <Button
                             fullWidth
@@ -860,7 +867,7 @@ export default function TenantsPage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
+        <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {editingTenant ? t('tenants.editTenant') : t('tenants.addTenant')}
           </Typography>
@@ -881,8 +888,9 @@ export default function TenantsPage() {
             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             margin="normal"
             disabled={!!editingTenant}
-            helperText={editingTenant ? undefined : t('tenants.slugHelp')}
-            FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
+            // The hint lives inside the field like the other dialog fields,
+            // both when adding and when editing
+            placeholder={t('tenants.slugHelp')}
             sx={dialogFieldSx}
           />
           <TextField
@@ -912,12 +920,13 @@ export default function TenantsPage() {
 
           {/* Quotas Section */}
           <Box sx={{ mt: 3 }}>
-            <Divider sx={{ borderColor: 'rgba(var(--primary-rgb), 0.15)', mb: 2 }} />
-            <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
+            <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 2.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.75rem' }}>
               {t('tenants.quotas')}
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            {/* Roomy gaps: the labels float above the fields, so the vertical
+                spacing also has to fit them */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                 <TextField
                   label={t('tenants.maxConferences')}
                   type="number"
@@ -933,14 +942,24 @@ export default function TenantsPage() {
                   sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                 <TextField
                   label={t('tenants.maxStorage')}
                   type="number"
                   value={formData.maxRecordingStorageMb}
                   onChange={(e) => setFormData({ ...formData, maxRecordingStorageMb: e.target.value })}
-                  helperText="MB"
-                  FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
+                  // Unit sits inside the field on the same line instead of a
+                  // helper text below it
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment
+                        position="end"
+                        sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mr: -1.5 }}
+                      >
+                        MB
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
                 <TextField
@@ -948,8 +967,17 @@ export default function TenantsPage() {
                   type="number"
                   value={formData.maxConferenceDurationMinutes}
                   onChange={(e) => setFormData({ ...formData, maxConferenceDurationMinutes: e.target.value })}
-                  helperText={t('tenants.minutes')}
-                  FormHelperTextProps={{ sx: { color: 'var(--text-muted)' } }}
+                  // Unit sits inside the field on the same line, like the MB one
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment
+                        position="end"
+                        sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mr: -1.5 }}
+                      >
+                        {t('tenants.minutes')}
+                      </InputAdornment>
+                    ),
+                  }}
                   sx={{ flex: 1, minWidth: 200, ...dialogFieldSx }}
                 />
               </Box>
@@ -965,11 +993,11 @@ export default function TenantsPage() {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid rgba(var(--primary-rgb), 0.12)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               color: 'var(--text)',
               textTransform: 'none',
               fontWeight: 600,
@@ -981,7 +1009,7 @@ export default function TenantsPage() {
             onClick={handleSubmit}
             variant="contained"
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
@@ -1011,7 +1039,7 @@ export default function TenantsPage() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 1, borderBottom: '1px solid rgba(var(--primary-rgb), 0.15)' }}>
+        <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="span" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
             {t('tenants.suspendTenant')}
           </Typography>
@@ -1034,7 +1062,7 @@ export default function TenantsPage() {
           <Button
             onClick={() => setOpenSuspendDialog(false)}
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               color: 'var(--text)',
               textTransform: 'none',
               fontWeight: 600,
@@ -1046,7 +1074,7 @@ export default function TenantsPage() {
             variant="contained"
             onClick={handleSuspendConfirm}
             sx={{
-              borderRadius: 'var(--radius-lg)',
+              ...dialogButtonSx,
               background: '#f59e0b',
               color: 'white',
               fontWeight: 600,

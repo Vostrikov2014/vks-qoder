@@ -38,6 +38,10 @@ FROM nginx:alpine AS runtime
 #   fonts/, images/, sounds/, lang/, static/ — static assets
 COPY --from=builder /app/*.html /usr/share/nginx/html/
 COPY --from=builder /app/*.js /usr/share/nginx/html/
+# index.html points `rel=manifest` at <contextRoot>manifest.json, and 55-jmp-config.sh
+# rewrites its start_url/scope: under a path prefix a manifest served from the host root
+# would install the PWA over the whole platform.
+COPY --from=builder /app/manifest.json /usr/share/nginx/html/
 COPY --from=builder /app/libs /usr/share/nginx/html/libs
 COPY --from=builder /app/css /usr/share/nginx/html/css
 COPY --from=builder /app/fonts /usr/share/nginx/html/fonts

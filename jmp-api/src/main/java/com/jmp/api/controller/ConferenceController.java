@@ -48,7 +48,7 @@ public class ConferenceController {
     private final ConferenceLinkService conferenceLinkService;
 
     @PostMapping
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Create a new conference")
     public ResponseEntity<ConferenceDto.Response> createConference(
             @Valid @RequestBody ConferenceDto.CreateRequest request,
@@ -117,7 +117,7 @@ public class ConferenceController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Update conference")
     public ResponseEntity<ConferenceDto.Response> updateConference(
             @PathVariable UUID id,
@@ -131,7 +131,7 @@ public class ConferenceController {
     }
 
     @PostMapping("/{id}/start")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Start a conference")
     public ResponseEntity<ConferenceDto.Response> startConference(@PathVariable UUID id, Authentication authentication) {
         UUID userId = extractUserId(authentication);
@@ -140,7 +140,7 @@ public class ConferenceController {
     }
 
     @PostMapping("/{id}/end")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "End a conference")
     public ResponseEntity<ConferenceDto.Response> endConference(@PathVariable UUID id, Authentication authentication) {
         UUID userId = extractUserId(authentication);
@@ -149,7 +149,7 @@ public class ConferenceController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PARTICIPANT') or hasRole('MODERATOR') or hasRole('TENANT_ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Delete conference")
     public ResponseEntity<Void> deleteConference(@PathVariable UUID id, Authentication authentication) {
         UUID userId = extractUserId(authentication);

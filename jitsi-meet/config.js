@@ -5,7 +5,7 @@
  * https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-configuration
  */
 
-var subdir = '<!--# echo var="subdir" default="" -->';
+var subdir = '<!--# echo var="subdir" default="/" -->';
 var subdomain = '<!--# echo var="subdomain" default="" -->';
 
 if (subdomain) {
@@ -14,9 +14,14 @@ if (subdomain) {
         .toLowerCase() + '.';
 }
 
-// In case of no ssi provided by the webserver, use empty strings
+// In case of no ssi provided by the webserver, use empty strings. subdir is the one
+// exception: bosh/websocket are built as `//host + subdir + 'http-bind'`, so an empty
+// value there does not fall back to the root, it welds the prefix to the host name.
+// Inside the Docker image the line above is replaced with the literal prefix at container
+// start (docker/55-jmp-config.sh), so the two fallbacks below matter only when the file is
+// served by something that does not run that script (webpack dev server, source checkout).
 if (subdir.startsWith('<!--')) {
-    subdir = '';
+    subdir = '/';
 }
 if (subdomain.startsWith('<!--')) {
     subdomain = '';
@@ -1303,6 +1308,16 @@ var config = {
     // disableDeepLinking: false,
 
     // The deeplinking config.
+    deeplinking: {
+        // If true, any checks to handoff to another application will be prevented
+        // and instead the app will continue to display in the current browser.
+        // Enabled for this deployment: on mobile browsers (Android/iOS) the
+        // conference opens directly in the browser, without the
+        // "download the mobile app" interstitial page.
+        disabled: true,
+    },
+
+    // Upstream reference for the remaining deeplinking options (inactive):
     // deeplinking: {
     //
     //     // The desktop deeplinking config, disabled by default.

@@ -41,6 +41,19 @@ export function getCurrentConferenceUrl(stateful: IStateful) {
  */
 export function getInviteURL(stateOrGetState: IStateful): string {
     const state = toState(stateOrGetState);
+
+    // JMP: a room opened through the platform carries its stable share address in the
+    // config. Invitations must use it — the bare Jitsi URL contains no credential, so a
+    // guest would be refused by the JWT-authenticated Prosody instead of being sent to
+    // the platform page that mints a fresh token.
+    if (!(state instanceof URL)) {
+        const { jmpShareUrl } = state['features/base/config'];
+
+        if (jmpShareUrl) {
+            return jmpShareUrl;
+        }
+    }
+
     let locationURL
         = state instanceof URL
             ? state

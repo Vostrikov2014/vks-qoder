@@ -15,8 +15,8 @@ import './HomePage.css';
  * see HomePage.css - no theme toggle on this page):
  * - left side panel, pinned to the viewport (always screen height):
  *   sign in / meetings / language
- * - 2x2 action grid: big blue "create meeting" tile, "schedule" tile,
- *   "connect by code" tile (expands inline), "sign in" tile
+ * - 2x2 action grid: big blue "create meeting" tile, compact "schedule" tile,
+ *   tall "connect by code" tile (the join input lives inside it), "sign in" tile
  * - right hero: call-to-action for authenticated users + decorative line-art SVG
  *
  * Features kept from the previous design:
@@ -63,6 +63,26 @@ const JITSI_BASE_URL = import.meta.env.VITE_JITSI_URL || 'http://localhost:8000'
  * whitelisted config overrides (jitsi-meet configWhitelist.ts).
  */
 const JOIN_IMMEDIATE_HASH = '#config.prejoinConfig.enabled=false&config.requireDisplayName=false';
+
+/**
+ * Human-readable title shown on the Jitsi prejoin screen for instant meetings.
+ * Appended to the server-built link as the whitelisted `config.subject` override: the
+ * room name stays the unique technical `vks-...` id, only the displayed header changes.
+ */
+const INSTANT_MEETING_SUBJECT = 'Новая видеовстреча';
+
+/** Slug inside a platform join link (mirrors JoinController.SLUG_PATTERN). */
+const JOIN_LINK_PATTERN = /\/j\/([A-Za-z0-9_-]{22,32})(?:[/?#]|$)/;
+
+/** Generated name of an instant guest room, entered as a bare code. */
+const INSTANT_ROOM_PATTERN = /^vks-[0-9a-z]{8}$/;
+
+/**
+ * The same room name anywhere inside a pasted Jitsi address, e.g.
+ * `https://a.slamx.ru/meet-legacy/vks-xxxxxxxx`. Such an address carries no token, so it
+ * must be resolved through the platform page that mints a fresh one.
+ */
+const INSTANT_ROOM_IN_URL_PATTERN = /(?:^|[/%])(vks-[0-9a-z]{8})(?:[/?#]|$)/;
 
 /**
  * HeroHills - decorative line-art illustration (lock / video / servers / shield
@@ -177,8 +197,7 @@ export default function HomePage() {
     i18n.changeLanguage(newLang);
   };
 
-  // State for the "Connect" tile - controls visibility of the meeting code input
-  const [isConnectExpanded, setIsConnectExpanded] = useState(false);
+  // Meeting code / link typed into the always-visible input of the "Connect" tile
   const [meetingCode, setMeetingCode] = useState('');
 
   // State of the in-flight "create instant meeting" request + errors
@@ -202,7 +221,13 @@ export default function HomePage() {
     try {
       const { data } = await joinApi.createInstant();
       if (data.roomUrl) {
-        window.open(data.roomUrl, '_blank', 'noopener');
+        // roomUrl already ends with a "#config...." fragment, so we extend it (not start a new one).
+        // Jitsi parses every hash value through JSON (parseURLParams -> safeJsonParse), and a bare
+        // string is invalid JSON -> the param would be silently dropped. JSON.stringify wraps the
+        // title in quotes so it decodes back to the plain string.
+        const subject = encodeURIComponent(JSON.stringify(INSTANT_MEETING_SUBJECT));
+        const url = `${data.roomUrl}&config.subject=${subject}`;
+        window.open(url, '_blank', 'noopener');
       } else {
         setCreateError(t('home.createFailed'));
       }
@@ -224,6 +249,25 @@ export default function HomePage() {
     }
 
     const trimmedCode = code.trim();
+
+    // A platform share link resolves through the join page: the backend mints a fresh
+    // token there, and opening the link "as is" would only work by accident.
+    const joinLink = trimmedCode.match(JOIN_LINK_PATTERN);
+    if (joinLink) {
+      navigate(`/j/${joinLink[1]}`);
+      return;
+    }
+
+    // An instant room: either the bare generated name or a room name inside a pasted
+    // Jitsi address. Such a room lives only in Jitsi and is not stored in the platform,
+    // so the join page has to ask the backend for a fresh guest token.
+    const roomCode = INSTANT_ROOM_PATTERN.test(trimmedCode)
+      ? trimmedCode
+      : trimmedCode.match(INSTANT_ROOM_IN_URL_PATTERN)?.[1];
+    if (roomCode) {
+      navigate(`/j/${roomCode}`);
+      return;
+    }
 
     // If it's a full URL (starts with http:// or https://), open it directly
     if (trimmedCode.startsWith('http://') || trimmedCode.startsWith('https://')) {
@@ -257,6 +301,18 @@ export default function HomePage() {
    */
   const handleJoinSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    joinMeeting(meetingCode);
+  };
+
+  /**
+   * Clicking anywhere on the connect tile (except the input itself) joins the
+   * meeting - but only once a code or link has been typed into the field
+   */
+  const handleConnectClick = (e: React.MouseEvent<HTMLFormElement>) => {
+    if (!meetingCode.trim() || e.target instanceof HTMLInputElement) {
+      return;
+    }
+
     joinMeeting(meetingCode);
   };
 
@@ -342,10 +398,10 @@ export default function HomePage() {
               <span className="tile-title">{t('home.createMeeting')}</span>
             </motion.button>
 
-            {/* Tile 2: Meetings list / scheduling (requires an account) */}
+            {/* Tile 2: Meetings list / scheduling (requires an account), compact row */}
             <motion.button
               type="button"
-              className="tile tile-dark"
+              className="tile tile-dark tile-schedule"
               variants={itemVariants}
               whileTap={{ scale: 0.99 }}
               onClick={handleMeetings}
@@ -358,55 +414,29 @@ export default function HomePage() {
               <span className="tile-subtitle">{t('home.scheduleMeetingDesc')}</span>
             </motion.button>
 
-            {/* Tile 3: Connect by code or link (expands inline) */}
-            <motion.div
-              className={`tile tile-dark tile-connect ${isConnectExpanded ? 'expanded' : ''}`}
+            {/* Tile 3: Connect by code or link - the tile itself is the join form */}
+            <motion.form
+              className={`tile tile-dark tile-connect ${meetingCode.trim() ? 'tile-connect-active' : ''}`}
               variants={itemVariants}
+              onSubmit={handleJoinSubmit}
+              onClick={handleConnectClick}
+              aria-label={t('home.connectAria')}
             >
-              <button
-                type="button"
-                className="tile-button"
-                onClick={() => setIsConnectExpanded(!isConnectExpanded)}
-                aria-expanded={isConnectExpanded}
-                aria-label={t('home.connectAria')}
-              >
-                <span className="tile-icon tile-icon-arrow">
-                  <ArrowRight size={52} strokeWidth={1.8} />
-                </span>
-                <span className="tile-title">{t('home.connect')}</span>
-              </button>
+              <span className="tile-icon tile-icon-arrow">
+                <ArrowRight size={52} strokeWidth={1.8} />
+              </span>
 
-              <AnimatePresence>
-                {isConnectExpanded && (
-                  <motion.form
-                    className="connect-form"
-                    onSubmit={handleJoinSubmit}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <input
-                      type="text"
-                      className="meeting-input"
-                      placeholder={t('home.enterMeetingCode')}
-                      value={meetingCode}
-                      onChange={(e) => setMeetingCode(e.target.value)}
-                      autoFocus
-                      aria-label={t('home.enterMeetingCode')}
-                    />
-                    <button
-                      type="submit"
-                      className="join-button"
-                      disabled={!meetingCode.trim()}
-                      aria-label={t('common.join')}
-                    >
-                      {t('common.join')}
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              <input
+                type="text"
+                className="meeting-input"
+                placeholder={t('home.enterMeetingCode')}
+                value={meetingCode}
+                onChange={(e) => setMeetingCode(e.target.value)}
+                aria-label={t('home.enterMeetingCode')}
+              />
+
+              <span className="tile-title">{t('home.connect')}</span>
+            </motion.form>
 
             {/* Backend errors of the "create meeting" tile */}
             <AnimatePresence>

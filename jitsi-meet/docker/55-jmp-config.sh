@@ -8,24 +8,34 @@
 # templates) but without extra dependencies: busybox sed on the two baked files.
 #
 # The patterns this script rewrites are single lines with unique keys in the sources
-# (config.js: domain/muc/disableP2P/stunServers, nginx.conf: the `set $jmp_*` lines), so
-# re-running the script is idempotent — it always replaces by key, never by previous value.
+# (config.js: subdir/domain/muc/disableP2P/stunServers, nginx.conf: the `set $jmp_*` lines,
+# base.html: the `<base href>` tag, manifest.json: start_url/scope), so re-running the
+# script is idempotent — it always replaces by key, never by previous value.
 #
 # Recognised environment variables (defaults = local contour):
 #   XMPP_DOMAIN       Prosody virtual host the client connects to        (meet.jitsi)
 #   XMPP_MUC_DOMAIN   Prosody MUC component, must match `main_muc`       (muc.meet.jitsi)
 #   PROSODY_URL       where this container proxies /http-bind            (http://jitsi-prosody:5280)
 #   JVB_WS_URL        where this container proxies /colibri-ws/*         (http://jitsi-jvb:9090)
-#   APP_PREFIX        path prefix the app is served under, e.g. /jitsi   ("")
+#   APP_PREFIX        path prefix served under, e.g. /meet-legacy       ("")
 #   DISABLE_P2P       route two-person media over the JVB (no TURN yet)  (false)
 #   P2P_STUN_SERVERS  comma separated stun: urls for the p2p ICE config  (unchanged if empty)
 #   LEAVE_REDIRECT_URL  platform UI address to return to after the conference
 #                        (explicitly empty = stock Jitsi behaviour)
+#
+# APP_PREFIX is the public path the app is reached on, not a path this container serves:
+# the outer proxy strips it, so the rewrites below (`var subdir` in config.js, the `$subdir`
+# SSI fallback in nginx.conf, `<base href>` in base.html, start_url/scope in manifest.json)
+# are the only places that have to know about it. Together they cover the two independent
+# ways the app builds a URL — from `location.host + subdir`, and by resolving a relative
+# reference against the document base.
 
 set -eu
 
 CONFIG_JS="${CONFIG_JS:-/usr/share/nginx/html/config.js}"
 NGINX_CONF="${NGINX_CONF:-/etc/nginx/conf.d/default.conf}"
+BASE_HTML="${BASE_HTML:-$(dirname "$CONFIG_JS")/base.html}"
+MANIFEST_JSON="${MANIFEST_JSON:-$(dirname "$CONFIG_JS")/manifest.json}"
 
 XMPP_DOMAIN="${XMPP_DOMAIN:-meet.jitsi}"
 XMPP_MUC_DOMAIN="${XMPP_MUC_DOMAIN:-muc.meet.jitsi}"
@@ -35,6 +45,15 @@ DISABLE_P2P="${DISABLE_P2P:-false}"
 P2P_STUN_SERVERS="${P2P_STUN_SERVERS:-}"
 LEAVE_REDIRECT_URL="${LEAVE_REDIRECT_URL-http://localhost:5173/}"
 APP_PREFIX="${APP_PREFIX:-}"
+
+# Every consumer wants the prefix with BOTH surrounding slashes: '/' at the root,
+# '/meet-legacy/' under a prefix. config.js glues `location.host + subdir + 'http-bind'`,
+# so an empty value there would produce the host `a.slamx.ruhttp-bind`.
+if [ -n "${APP_PREFIX}" ]; then
+    _prefix="/$(echo "${APP_PREFIX}" | sed -e 's|^/*||' -e 's|/*$||')/"
+else
+    _prefix="/"
+fi
 
 # replace_by_key <file> <bre> <replacement line>
 # The replacement is taken literally; values are hosts, urls and booleans, so no sed
@@ -88,7 +107,49 @@ replace_by_key "$CONFIG_JS" \
     "    leaveRedirectUrl: '${LEAVE_REDIRECT_URL}',"
 
 # ---------------------------------------------------------------------------
-# 2. Reverse proxy of this container
+# 2. The public prefix as the client sees it
+# ---------------------------------------------------------------------------
+# `bosh` and `websocket` in config.js are built as `//host + subdir + 'http-bind'`, so the
+# placeholder at the top of that file is replaced here, at container start, with the literal
+# prefix. The value must not depend on request-time SSI: the filter processes a response
+# only when its MIME type is listed in `ssi_types` (text/html alone by default), and a JS
+# file served unexpanded makes the client silently fall back to `subdir = '/'` — the XMPP
+# websocket is then dialed at the host root, where the platform SPA answers the upgrade with
+# an HTML page, and the conference dies with "WebSocket connection failed" while the
+# container logs stay clean.
+replace_by_key "$CONFIG_JS" \
+    "^var subdir = '.*';$" \
+    "var subdir = '${_prefix}';"
+
+# index.html loads css/all.css, libs/*.js, images and sounds relatively, and so do the
+# i18n loadPath and the watermarks. All of it resolves against <base href>, which therefore
+# has to carry the public prefix: left at '/' the browser asks the shared host root for
+# /css/all.css, gets the platform SPA back with status 200 and content-type text/html, and
+# nothing visibly fails except the conference.
+replace_by_key "$BASE_HTML" \
+    "^<base href=.*$" \
+    "<base href=\"${_prefix}\" />"
+
+# The manifest is fetched from the context root (index.html), but its members resolve
+# against the manifest URL, so start_url/scope of '/' would install the PWA over the whole
+# host and launch the platform instead of the meeting. Unlike the rewrites above this one
+# is skipped rather than fatal when the file is absent: an image that does not ship a
+# manifest loses a home-screen icon, whereas exiting here stops the container from
+# starting at all — and the entrypoints of the base image do not tolerate that.
+if [ -f "$MANIFEST_JSON" ]; then
+    replace_by_key "$MANIFEST_JSON" \
+        '^ *"start_url": ".*",$' \
+        "  \"start_url\": \"${_prefix}\","
+
+    replace_by_key "$MANIFEST_JSON" \
+        '^ *"scope": ".*",$' \
+        "  \"scope\": \"${_prefix}\","
+else
+    echo "jmp-config: no $MANIFEST_JSON in the image, PWA start_url/scope left as built" >&2
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Reverse proxy of this container
 # ---------------------------------------------------------------------------
 replace_by_key "$NGINX_CONF" \
     "^ *set \$jmp_prosody .*$" \
@@ -98,16 +159,12 @@ replace_by_key "$NGINX_CONF" \
     "^ *set \$jmp_jvb .*$" \
     "    set \$jmp_jvb \"${JVB_WS_URL}\";"
 
-# config.js builds bosh/websocket urls as `//host + subdir + 'http-bind'`, therefore subdir
-# must always carry both surrounding slashes: '/' at the root, '/jitsi/' under a prefix.
-# (Serving under a non-root prefix additionally requires the nginx `location` blocks to
-# match that prefix; both shipped contours run at the root, so the common case is '/'.)
-if [ -n "${APP_PREFIX}" ]; then
-    _prefix="/$(echo "${APP_PREFIX}" | sed -e 's|^/*||' -e 's|/*$||')/"
-else
-    _prefix="/"
-fi
-
+# `$subdir` is no longer the primary source of the prefix for the client — config.js is
+# rewritten in section 2 — but the variable stays as the SSI fallback: should a placeholder
+# ever survive to a request, `<!--# echo var="subdir" -->` must still yield the
+# both-slashes form, the same one `<base href>` carries above. This is only the value the
+# client sees; the container itself is served from its own root, because the outer proxy
+# strips the prefix.
 replace_by_key "$NGINX_CONF" \
     "^ *set \$subdir .*$" \
     "    set \$subdir \"${_prefix}\";"

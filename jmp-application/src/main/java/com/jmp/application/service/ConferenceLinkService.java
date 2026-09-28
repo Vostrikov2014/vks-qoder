@@ -66,11 +66,7 @@ public class ConferenceLinkService {
 
         List<ConferenceLink> links = linkRepository.findByConferenceIdOrderByCreatedAtAsc(conferenceId);
         if (links.isEmpty()) {
-            User actor = loadUser(actorId);
-            ConferenceLink primary = linkRepository.save(
-                ConferenceLink.create(conference, actor, ConferenceLink.LinkRole.MODERATOR, null, null));
-            links = List.of(primary);
-            log.info("Created primary join link for conference: {}", conferenceId);
+            links = List.of(createPrimaryLink(conference, actorId));
         }
 
         return links.stream()
@@ -135,6 +131,10 @@ public class ConferenceLinkService {
      *
      * <p>The caller's tenant must own the conference, and moderator rights are derived
      * from the caller's identity rather than from a request parameter.
+     *
+     * <p>The address also carries the conference's share link, so «Пригласить» inside the
+     * conference hands out a stable {@code /j/…} address that mints a fresh token for
+     * every guest, instead of the bare Jitsi room URL nobody else could open.
      */
     @Transactional
     public ConferenceDto.TokenResponse mintPersonalToken(UUID conferenceId, UUID actorTenantId,
@@ -150,8 +150,12 @@ public class ConferenceLinkService {
         log.info("Issued a personal Jitsi token for user: {} in conference: {} ({})",
             actorId, conferenceId, moderator ? "moderator" : "participant");
 
+        ConferenceLink primary = primaryLink(conference, actorId);
+        String roomUrl = linkBuilder.withShareUrl(
+            linkBuilder.roomUrlWithPrejoin(conference, token), linkBuilder.joinUrl(primary.getSlug()));
+
         return new ConferenceDto.TokenResponse(
-            linkBuilder.roomUrlWithPrejoin(conference, token),
+            roomUrl,
             jwtService.jitsiTokenExpiration()
         );
     }
@@ -217,7 +221,8 @@ public class ConferenceLinkService {
         link.registerVisit();
         linkRepository.save(link);
 
-        String roomUrl = linkBuilder.roomUrlWithPrejoin(conference, token);
+        String roomUrl = linkBuilder.withShareUrl(
+            linkBuilder.roomUrlWithPrejoin(conference, token), linkBuilder.joinUrl(slug));
         log.info("Granted access via join link {} to conference {} ({})",
             slug, conference.getId(), moderator ? "moderator" : "participant");
 
@@ -247,6 +252,33 @@ public class ConferenceLinkService {
     private User loadUser(UUID userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+    }
+
+    /**
+     * Create the primary moderator link of a conference and report it, so a conference
+     * that never had one still gets an address that can be shared.
+     */
+    private ConferenceLink createPrimaryLink(Conference conference, UUID actorId) {
+        ConferenceLink primary = linkRepository.save(
+            ConferenceLink.create(conference, loadUser(actorId), ConferenceLink.LinkRole.MODERATOR, null, null));
+        log.info("Created primary join link for conference: {}", conference.getId());
+        return primary;
+    }
+
+    /**
+     * The address a conference is shared by: the first link that still resolves, or a
+     * freshly created primary link when none does. Extracted from
+     * {@link #listOrCreatePrimary} so the personal entry point ({@code mintPersonalToken})
+     * can point «Пригласить» at the same stable address the conference offers.
+     *
+     * <p>A revoked or expired link is skipped on purpose: inviting people to a dead
+     * address would only produce a «link_not_found» screen for them.
+     */
+    private ConferenceLink primaryLink(Conference conference, UUID actorId) {
+        return linkRepository.findByConferenceIdOrderByCreatedAtAsc(conference.getId()).stream()
+            .filter(ConferenceLink::isActive)
+            .findFirst()
+            .orElseGet(() -> createPrimaryLink(conference, actorId));
     }
 
     private boolean canModerate(Conference conference, UUID actorId, boolean isAdmin) {

@@ -72,8 +72,8 @@
     "meetingsAria": "Перейти к списку встреч",
     "theme": "Тема",
     "signInShort": "Войти",
-    "heroTitle": "Войдите, чтобы",
-    "heroTitleAccent": "управлять своими встречами",
+    "heroTitle": "Войдите, чтобы управлять",
+    "heroTitleAccent": "своими встречами",
     "heroTitleSuffix": "и видеть их историю",
     "signInAsEmployee": "Войти как сотрудник",
     "createHangout": "Создать встречу",
@@ -175,6 +175,9 @@
     "firstName": "Имя",
     "lastName": "Фамилия",
     "password": "Пароль",
+    "requiredFields": "Заполните эл. почту, имя и фамилию",
+    "passwordMin": "Пароль должен содержать не менее 8 символов",
+    "saveFailed": "Не удалось сохранить пользователя",
     "deleteConfirm": "Вы уверены, что хотите удалить этого пользователя?"
   },
   "share": {
@@ -235,7 +238,8 @@
     "TENANT_ADMIN": "Администратор",
     "MODERATOR": "Модератор",
     "PARTICIPANT": "Участник",
-    "AUDITOR": "Аудитор"
+    "AUDITOR": "Аудитор",
+    "SERVICE_ACCOUNT": "Сервисный аккаунт"
   },
   "tenants": {
     "subtitle": "Управление организациями и их конфигурацией",
