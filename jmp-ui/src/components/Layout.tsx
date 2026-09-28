@@ -248,7 +248,7 @@ export default function Layout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100dvh', overflow: 'hidden' }}>
       {/* Aurora Background */}
       <div className="aurora-bg" />
 
@@ -555,12 +555,15 @@ export default function Layout() {
         >
           {/* Page Content: its height tracks the header band exactly, so the
               scrollbar starts right below the band instead of running up
-              over it */}
+              over it. overscroll-behavior: contain stops scroll chaining to
+              the document, so no bare background strip can be "pulled in"
+              below the content on mobile */}
           <Box
             sx={{
               height: `calc(100dvh - ${HEADER_HEIGHT}px)`,
               p: { xs: 2, sm: 4 },
               overflow: 'auto',
+              overscrollBehavior: 'contain',
             }}
           >
             <motion.div

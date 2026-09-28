@@ -993,39 +993,153 @@ export default function ConferencesPage() {
                         {conference.roomName}
                       </Typography>
 
-                      {/* Type Badge */}
-                      <Chip
-                        size="small"
-                        icon={typeConfig.icon || undefined}
-                        label={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}
+                      {/* Badges + actions: on phones one compact secondary
+                          row (icon-only badges without tinted backgrounds,
+                          edit/delete next to the other actions); on sm+ the
+                          original grid cells (badges in colored pills, the
+                          action buttons in their own column) */}
+                      <Box
                         sx={{
-                          background: typeConfig.bgColor,
-                          color: typeConfig.color,
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          height: 24,
-                          '& .MuiChip-icon': {
-                            color: 'inherit',
-                          },
+                          display: { xs: 'flex', sm: 'none' },
+                          alignItems: 'center',
+                          gap: 0.5,
+                          minWidth: 0,
                         }}
-                      />
+                      >
+                        {/* Bare icon on xs (no Chip wrapper: an empty label
+                            drops the icon), but the tinted background pill is
+                            kept — just tighter than the full-size badge */}
+                        {typeConfig.icon && (
+                          <Tooltip title={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 24,
+                                px: 0.75,
+                                borderRadius: 'var(--radius-full)',
+                                background: typeConfig.bgColor,
+                                color: typeConfig.color,
+                                '& svg': { display: 'block' },
+                              }}
+                            >
+                              {typeConfig.icon}
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {statusConfig.icon && (
+                          <Tooltip title={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 24,
+                                px: 0.75,
+                                borderRadius: 'var(--radius-full)',
+                                background: statusConfig.bgColor,
+                                color: statusConfig.color,
+                                '& svg': { display: 'block' },
+                              }}
+                            >
+                              {statusConfig.icon}
+                            </Box>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}>
+                          <IconButton
+                            size="small"
+                            aria-label={conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}
+                            onClick={() => handleStart(conference.id, conference.status)}
+                            sx={{ p: 0.5, color: 'var(--primary-700)' }}
+                          >
+                            <Play size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.end')}>
+                          <IconButton
+                            size="small"
+                            aria-label={t('common.end')}
+                            onClick={() => handleEnd(conference.id)}
+                            disabled={conference.status !== 'ACTIVE'}
+                            sx={{
+                              p: 0.5,
+                              color: conference.status === 'ACTIVE' ? '#6b7280' : 'var(--text-muted)',
+                              opacity: conference.status === 'ACTIVE' ? 1 : 0.35,
+                            }}
+                          >
+                            <Square size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.share')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleShare(conference)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                          >
+                            <Share2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(conference)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                          >
+                            <Edit2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(conference.id)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
 
-                      {/* Status Badge */}
-                      <Chip
-                        size="small"
-                        icon={statusConfig.icon || undefined}
-                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
-                        sx={{
-                          background: statusConfig.bgColor,
-                          color: statusConfig.color,
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          height: 24,
-                          '& .MuiChip-icon': {
-                            color: 'inherit',
-                          },
-                        }}
-                      />
+                      {/* Type Badge (sm+): colored pill with the text label */}
+                      <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0 }}>
+                        <Tooltip title={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}>
+                          <Chip
+                            size="small"
+                            icon={typeConfig.icon || undefined}
+                            label={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}
+                            sx={{
+                              background: typeConfig.bgColor,
+                              color: typeConfig.color,
+                              fontWeight: 600,
+                              fontSize: '0.7rem',
+                              height: 24,
+                              '& .MuiChip-icon': {
+                                color: 'inherit',
+                              },
+                            }}
+                          />
+                        </Tooltip>
+                      </Box>
+
+                      {/* Status Badge (sm+): colored pill with the text label */}
+                      <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0 }}>
+                        <Tooltip title={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}>
+                          <Chip
+                            size="small"
+                            icon={statusConfig.icon || undefined}
+                            label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                            sx={{
+                              background: statusConfig.bgColor,
+                              color: statusConfig.color,
+                              fontWeight: 600,
+                              fontSize: '0.7rem',
+                              height: 24,
+                              '& .MuiChip-icon': {
+                                color: 'inherit',
+                              },
+                            }}
+                          />
+                        </Tooltip>
+                      </Box>
 
                       {/* Participants */}
                       <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
@@ -1060,8 +1174,9 @@ export default function ConferencesPage() {
                         )}
                       </Box>
 
-                      {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                      {/* Actions (sm+): own grid column; Play/Stop keep their
+                          tinted backgrounds here */}
+                      <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5, justifyContent: 'flex-end' }}>
                           <Tooltip title={conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}>
                             <IconButton
                               size="small"

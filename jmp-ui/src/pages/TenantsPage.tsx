@@ -597,11 +597,13 @@ export default function TenantsPage() {
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
-                  xs: '40px 1fr 100px',
+                  // xs: a single line — initials, flexible name, then the
+                  // status pill and action icons packed to the right
+                  xs: '32px minmax(0, 1fr) auto',
                   sm: '40px 1.5fr 1fr 100px 100px 120px',
                   md: '40px 1.5fr 1fr 1fr 100px 100px 140px',
                 },
-                gap: 2,
+                gap: { xs: 1, sm: 2 },
                 p: 2,
                 borderBottom: '1px solid var(--border)',
                 background: 'rgba(var(--primary-rgb), 0.04)',
@@ -623,7 +625,7 @@ export default function TenantsPage() {
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 {t('tenants.slug')}
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 Actions
               </Typography>
             </Box>
@@ -645,11 +647,11 @@ export default function TenantsPage() {
                       sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                          xs: '40px 1fr 100px',
+                          xs: '32px minmax(0, 1fr) auto',
                           sm: '40px 1.5fr 1fr 100px 100px 120px',
                           md: '40px 1.5fr 1fr 1fr 100px 100px 140px',
                         },
-                        gap: 2,
+                        gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
                         borderBottom: '1px solid var(--border)',
@@ -685,6 +687,77 @@ export default function TenantsPage() {
                         </Typography>
                       </Box>
 
+                      {/* Single mobile line: status pill + action icons packed
+                          into the trailing auto column; on sm+ the original
+                          grid cells (labeled chip, own actions column) */}
+                      <Box
+                        sx={{
+                          display: { xs: 'flex', sm: 'none' },
+                          alignItems: 'center',
+                          gap: 0.5,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {statusConfig.icon && (
+                          <Tooltip title={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 24,
+                                px: 0.75,
+                                borderRadius: 'var(--radius-full)',
+                                background: statusConfig.bgColor,
+                                color: statusConfig.color,
+                                '& svg': { display: 'block' },
+                              }}
+                            >
+                              {statusConfig.icon}
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {tenant.status === 'ACTIVE' && (
+                          <Tooltip title={t('tenants.suspendTenant')}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSuspendOpen(tenant)}
+                              sx={{ p: 0.5, color: 'var(--primary-600)', '&:hover': { color: 'var(--primary-700)' } }}
+                            >
+                              <Pause size={14} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {tenant.status === 'SUSPENDED' && (
+                          <Tooltip title={t('tenants.activateTenant')}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleActivate(tenant.id)}
+                              sx={{ p: 0.5, color: '#22c55e', '&:hover': { color: '#16a34a' } }}
+                            >
+                              <Play size={14} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(tenant)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                          >
+                            <Edit2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(tenant.id)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+
                       {/* Domain */}
                       <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5, minWidth: 0 }}>
                         {tenant.domain ? (
@@ -713,28 +786,30 @@ export default function TenantsPage() {
                         )}
                       </Box>
 
-                      {/* Status Badge */}
-                      <Chip
-                        size="small"
-                        icon={statusConfig.icon || undefined}
-                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
-                        sx={{
-                          background: statusConfig.bgColor,
-                          color: statusConfig.color,
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          height: 24,
-                          '& .MuiChip-icon': { color: 'inherit' },
-                        }}
-                      />
+                      {/* Status Badge (sm+): colored pill with the text label */}
+                      <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0 }}>
+                        <Chip
+                          size="small"
+                          icon={statusConfig.icon || undefined}
+                          label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                          sx={{
+                            background: statusConfig.bgColor,
+                            color: statusConfig.color,
+                            fontWeight: 600,
+                            fontSize: '0.7rem',
+                            height: 24,
+                            '& .MuiChip-icon': { color: 'inherit' },
+                          }}
+                        />
+                      </Box>
 
                       {/* Slug */}
                       <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: { xs: 'none', sm: 'block' } }}>
                         {tenant.slug}
                       </Typography>
 
-                      {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                      {/* Actions (sm+) */}
+                      <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5, justifyContent: 'flex-end' }}>
                         {tenant.status === 'ACTIVE' && (
                           <Tooltip title={t('tenants.suspendTenant')}>
                             <IconButton
@@ -743,9 +818,9 @@ export default function TenantsPage() {
                               sx={{
                                 p: 0.75,
                                 borderRadius: 'var(--radius-md)',
-                                background: 'rgba(245, 158, 11, 0.1)',
-                                color: '#f59e0b',
-                                '&:hover': { background: 'rgba(245, 158, 11, 0.2)' },
+                                background: 'rgba(var(--primary-rgb), 0.1)',
+                                color: 'var(--primary-600)',
+                                '&:hover': { background: 'rgba(var(--primary-rgb), 0.2)' },
                               }}
                             >
                               <Pause size={14} />

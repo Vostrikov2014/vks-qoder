@@ -693,11 +693,13 @@ export default function UsersPage() {
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
-                  xs: '1fr 100px',
+                  // xs: a single line — avatar, flexible name, then the
+                  // status pill and action icons packed to the right
+                  xs: '32px minmax(0, 1fr) auto',
                   sm: '50px 1.5fr 1fr 120px 100px 100px',
                   md: '50px 1.5fr 1.5fr 150px 100px 100px 100px',
                 },
-                gap: 2,
+                gap: { xs: 1, sm: 2 },
                 p: 2,
                 borderBottom: '1px solid var(--border)',
                 background: 'rgba(var(--primary-rgb), 0.04)',
@@ -719,7 +721,9 @@ export default function UsersPage() {
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 {t('users.joined')}
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {/* Hidden on xs: the mobile rows put actions in the secondary
+                  line, and the caption would spill the 2-column grid */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 Actions
               </Typography>
             </Box>
@@ -740,11 +744,11 @@ export default function UsersPage() {
                       sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                          xs: '1fr 100px',
+                          xs: '32px minmax(0, 1fr) auto',
                           sm: '50px 1.5fr 1fr 120px 100px 100px',
                           md: '50px 1.5fr 1.5fr 150px 100px 100px 100px',
                         },
-                        gap: 2,
+                        gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
                         borderBottom: '1px solid var(--border)',
@@ -807,30 +811,81 @@ export default function UsersPage() {
                         )}
                       </Box>
 
-                      {/* Status */}
-                      <Chip
-                        size="small"
-                        icon={statusConfig.icon || undefined}
-                        label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                      {/* Single mobile line: status pill + action icons sit
+                          right after the truncated name; on sm+ the original
+                          grid cells (labeled chip, own actions column) */}
+                      <Box
                         sx={{
-                          background: statusConfig.bgColor,
-                          color: statusConfig.color,
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          height: 24,
-                          '& .MuiChip-icon': {
-                            color: 'inherit',
-                          },
+                          display: { xs: 'flex', sm: 'none' },
+                          alignItems: 'center',
+                          gap: 0.5,
+                          flexShrink: 0,
                         }}
-                      />
+                      >
+                        {statusConfig.icon && (
+                          <Tooltip title={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 24,
+                                px: 0.75,
+                                borderRadius: 'var(--radius-full)',
+                                background: statusConfig.bgColor,
+                                color: statusConfig.color,
+                                '& svg': { display: 'block' },
+                              }}
+                            >
+                              {statusConfig.icon}
+                            </Box>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(user)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                          >
+                            <Edit2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t('common.delete')}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(user.id)}
+                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+
+                      {/* Status (sm+): colored pill with the text label */}
+                      <Box sx={{ display: { xs: 'none', sm: 'block' }, minWidth: 0 }}>
+                        <Chip
+                          size="small"
+                          icon={statusConfig.icon || undefined}
+                          label={statusConfig.labelKey ? t(statusConfig.labelKey) : ''}
+                          sx={{
+                            background: statusConfig.bgColor,
+                            color: statusConfig.color,
+                            fontWeight: 600,
+                            fontSize: '0.7rem',
+                            height: 24,
+                            '& .MuiChip-icon': {
+                              color: 'inherit',
+                            },
+                          }}
+                        />
+                      </Box>
 
                       {/* Joined Date */}
                       <Typography variant="body2" sx={{ color: 'var(--text-muted)', display: { xs: 'none', sm: 'block' } }}>
                         {new Date(user.createdAt).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                       </Typography>
 
-                      {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                      {/* Actions (sm+) */}
+                      <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5, justifyContent: 'flex-end' }}>
                         <Tooltip title={t('common.edit')}>
                           <IconButton
                             size="small"
