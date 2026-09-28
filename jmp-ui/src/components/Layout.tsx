@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -31,16 +31,12 @@ import {
   BarChart3,
   HardDrive,
 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
 const DRAWER_WIDTH = 280;
 const HEADER_HEIGHT = 52;
-// Compact height: applied once the page content is scrolled past SCROLL_THRESHOLD
-const HEADER_HEIGHT_COMPACT = 44;
-// Scroll offset (in the page content container) after which the band collapses
-const HEADER_SCROLL_THRESHOLD = 24;
 // Top panel background, matched to the HomePage "Создать видео-встречу" tile (--lp-blue)
 const HEADER_BLUE = '#2563eb';
 
@@ -75,15 +71,6 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [collapsed] = useState(false);
-  // Scroll-adaptive header: the band shrinks to compact height and the title
-  // block fades out once the page content is scrolled
-  const [compact, setCompact] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  // Track the page content scroll to toggle the compact header state
-  const handleContentScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    setCompact(event.currentTarget.scrollTop > HEADER_SCROLL_THRESHOLD);
-  };
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -277,16 +264,14 @@ export default function Layout() {
           zIndex: 1300,
           px: { xs: 2, sm: 4 },
           flexShrink: 0,
-          height: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
+          height: HEADER_HEIGHT,
           display: 'flex',
           alignItems: 'center',
           gap: { xs: 1, sm: 2 },
           background: HEADER_BLUE,
-          transition: 'height 0.3s ease',
           // Decorative "aurora" layer: faint white radial gradients over the
           // brand blue, echoing the .aurora-bg on the login/landing pages
-          // without introducing new colors. Layered after the shadow: scroll
-          // state must not erase the pattern
+          // without introducing new colors
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -298,15 +283,10 @@ export default function Layout() {
               'radial-gradient(ellipse 24% 150% at 88% 130%, rgba(255, 255, 255, 0.10) 0%, transparent 70%)',
             ].join(', '),
           },
-          // Elevation only while scrolled: at rest the band sits flush with the content
-          ...(compact && {
-            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.18)',
-          }),
         }}
       >
           {/* Mobile menu toggle: below sm the docked sidebar is hidden, so the
-              temporary drawer is the only entry point to the main menu - the
-              hamburger must stay visible even when the band is not compact */}
+              temporary drawer is the only entry point to the main menu */}
           <IconButton
             onClick={handleDrawerToggle}
             aria-label={t('common.mainMenu')}
@@ -320,11 +300,9 @@ export default function Layout() {
           </IconButton>
 
         {/* Brand block: hidden on phones (below sm) - the band there keeps
-            only the menu toggle, page title and controls. The white chip
-            inverts on the compact band so the logo keeps reading as "raised"
-            when the panel shrinks. The block is sized to the sidebar column
-            so the page title after it can be offset to the content column's
-            left edge */}
+            only the menu toggle, page title and controls. The block is sized
+            to the sidebar column so the page title after it can be offset to
+            the content column's left edge */}
         <Box
           sx={{
             display: { xs: 'none', sm: 'flex' },
@@ -336,69 +314,49 @@ export default function Layout() {
         >
           <Box
             sx={{
-              width: compact ? 24 : 32,
-              height: compact ? 24 : 32,
+              width: 32,
+              height: 32,
               // Scaled-down rounding to match the smaller plate
               borderRadius: '0.375rem',
-              background: compact ? 'rgba(255, 255, 255, 0.16)' : '#ffffff',
-              color: compact ? '#ffffff' : HEADER_BLUE,
+              // Inverted tile: white plate with the brand glyph, since the block itself is blue
+              background: '#ffffff',
+              color: HEADER_BLUE,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.3s ease',
             }}
           >
-            <Video size={compact ? 14 : 18} color="currentColor" />
+            <Video size={18} color="currentColor" />
           </Box>
-          <AnimatePresence initial={false}>
-            {!compact && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 800,
-                    color: '#ffffff',
-                    // Inter is not bundled and the global stylesheet sets
-                    // `font-synthesis: none`, so a bold fallback face may not render;
-                    // re-enable synthesis for the wordmark only
-                    fontSynthesis: 'weight style',
-                    // Fallback fonts rarely ship a real 800 face, so the extra
-                    // weight is enforced with a hairline stroke of the same color
-                    WebkitTextStroke: '0.4px #ffffff',
-                    letterSpacing: '0.01em',
-                    display: { xs: 'none', sm: 'block' },
-                  }}
-                >
-                  {t('common.appName')}
-                </Typography>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 800,
+              color: '#ffffff',
+              // Inter is not bundled and the global stylesheet sets
+              // `font-synthesis: none`, so a bold fallback face may not render;
+              // re-enable synthesis for the wordmark only
+              fontSynthesis: 'weight style',
+              // Fallback fonts rarely ship a real 800 face, so the extra
+              // weight is enforced with a hairline stroke of the same color
+              WebkitTextStroke: '0.4px #ffffff',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {t('common.appName')}
+          </Typography>
         </Box>
 
-        {/* Page title block: hidden while the band is compact. The sm left
-            padding lands the title on the same vertical line as the page
-            content (cards) below: 32 (band px) + 216 (brand block) +
-            16 (flex gap) + 48 = 312 = 280 (sidebar) + 32 (content padding) */}
-        <motion.div
-          initial={false}
-          animate={{ opacity: compact ? 0 : 1, height: compact ? 0 : 'auto' }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          style={{ overflow: 'hidden', minWidth: 0 }}
-        >
-          <Box sx={{ pl: { xs: 0, sm: 6 }, minWidth: 0 }}>
-            {/* noWrap + ellipsis: long titles truncate on phones instead of clipping */}
-            <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
-              {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
-            </Typography>
-          </Box>
-        </motion.div>
+        {/* Page title block. The sm left padding lands the title on the same
+            vertical line as the page content (cards) below: 32 (band px) +
+            216 (brand block) + 16 (flex gap) + 48 = 312 = 280 (sidebar) +
+            32 (content padding) */}
+        <Box sx={{ pl: { xs: 0, sm: 6 }, minWidth: 0 }}>
+          {/* noWrap + ellipsis: long titles truncate on phones instead of clipping */}
+          <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
+            {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 }, ml: 'auto' }}>
           {/* Language Toggle */}
@@ -537,14 +495,14 @@ export default function Layout() {
           PaperProps={{
             sx: {
               position: 'fixed',
-              top: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
+              top: HEADER_HEIGHT,
               bottom: 0,
               height: 'auto',
               width: collapsed ? 80 : DRAWER_WIDTH,
               boxSizing: 'border-box',
               background: 'var(--sidebar-bg)',
               borderRight: 'none',
-              transition: 'width 0.3s ease, top 0.3s ease',
+              transition: 'width 0.3s ease',
             },
           }}
         >
@@ -570,7 +528,7 @@ export default function Layout() {
           sx={{
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': {
-              top: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
+              top: HEADER_HEIGHT,
               bottom: 0,
               height: 'auto',
               width: DRAWER_WIDTH,
@@ -595,15 +553,12 @@ export default function Layout() {
             minHeight: 0,
           }}
         >
-          {/* Page Content: the scroll container driving the compact header state.
-              Its height tracks the header band exactly, so the scrollbar starts
-              right below the band instead of running up over it */}
+          {/* Page Content: its height tracks the header band exactly, so the
+              scrollbar starts right below the band instead of running up
+              over it */}
           <Box
-            ref={contentRef}
-            onScroll={handleContentScroll}
             sx={{
-              height: `calc(100dvh - ${compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT}px)`,
-              transition: 'height 0.3s ease',
+              height: `calc(100dvh - ${HEADER_HEIGHT}px)`,
               p: { xs: 2, sm: 4 },
               overflow: 'auto',
             }}
