@@ -127,15 +127,17 @@
   text-align: center;
 }
 
+/* Same square plate as .rail-icon, so the language button matches the
+   "sign in" / "meetings" buttons */
 .language-tile {
-  width: 56px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--lp-tile);
   color: var(--lp-text);
-  border-radius: 10px;
+  border-radius: 14px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;

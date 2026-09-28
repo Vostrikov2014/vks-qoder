@@ -169,6 +169,18 @@ export default function LoginPage() {
         overflow: 'hidden',
         p: 2,
         background: isDarkMode ? '#000' : 'transparent',
+        // Phones: mirror the HomePage layout - the rail turns into a
+        // normal-flow top bar, while the form keeps its own padding and is
+        // centred in the space left below the bar (auto margins absorb it)
+        '@media (max-width: 760px)': {
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          p: 0,
+          '& .login-content': {
+            p: 2,
+            my: 'auto',
+          },
+        },
       }}
     >
       {/* Left icon rail - same placement as on HomePage */}
@@ -187,6 +199,19 @@ export default function LoginPage() {
           py: 2.5,
           boxSizing: 'border-box',
           zIndex: 10,
+          // Phones: the panel turns into a normal-flow top bar (mirrors
+          // .home-rail at max-width 760px on HomePage) - buttons in a row,
+          // the language button pushed to the right edge by the spacer
+          '@media (max-width: 760px)': {
+            position: 'static',
+            width: '100%',
+            height: 'auto',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            gap: 2,
+            py: 1.5,
+            px: 2,
+          },
         }}
       >
         <Box
@@ -235,7 +260,13 @@ export default function LoginPage() {
           >
             <ArrowLeft size={20} />
           </Box>
-          <Box component="span" sx={{ fontSize: '0.6875rem', lineHeight: 1.2, textAlign: 'center' }}>
+          {/* Longest label on the rail ("Back to Home"/"На главную"): it is
+              wider than the 64px button, so nowrap keeps it from breaking onto
+              two lines */}
+          <Box
+            component="span"
+            sx={{ fontSize: '0.6875rem', lineHeight: 1.2, textAlign: 'center', whiteSpace: 'nowrap' }}
+          >
             {t('common.backToHome')}
           </Box>
         </Box>
@@ -333,9 +364,10 @@ export default function LoginPage() {
           <Box
             className="rail-tile"
             sx={{
-              width: 56,
-              height: 36,
-              borderRadius: '10px',
+              // Same square plate as the two buttons above (44x44, 14px radius)
+              width: 44,
+              height: 44,
+              borderRadius: '14px',
               background: railTileBg,
               display: 'flex',
               alignItems: 'center',
@@ -357,6 +389,7 @@ export default function LoginPage() {
 
       {/* Login Content */}
       <motion.div
+        className="login-content"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
