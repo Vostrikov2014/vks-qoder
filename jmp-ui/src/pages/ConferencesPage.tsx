@@ -1184,10 +1184,14 @@ export default function ConferencesPage() {
       {/* Create/Edit Dialog */}
       <Dialog
         open={openDialog}
-        onClose={() => {
-          setOpenDialog(false);
-          setFormError(null);
+        onClose={(_, reason) => {
+          // Закрываем только кнопками «Отмена»/«Создать» — клик вне формы не закрывает
+          if (reason !== 'backdropClick') {
+            setOpenDialog(false);
+            setFormError(null);
+          }
         }}
+        disableEscapeKeyDown
         maxWidth="md"
         fullWidth
         PaperProps={{

@@ -856,7 +856,11 @@ export default function TenantsPage() {
       {/* Create/Edit Dialog */}
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={(_, reason) => {
+          // Закрываем только кнопками «Отмена»/«Сохранить» — клик вне формы не закрывает
+          if (reason !== 'backdropClick') setOpenDialog(false);
+        }}
+        disableEscapeKeyDown
         maxWidth="md"
         fullWidth
         PaperProps={{
@@ -954,9 +958,14 @@ export default function TenantsPage() {
                     endAdornment: (
                       <InputAdornment
                         position="end"
-                        sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mr: -1.5 }}
+                        sx={{ fontSize: '0.8rem', mr: -1.5 }}
                       >
-                        MB
+                        {/* Color lives on a child: raw text would otherwise
+                            inherit MUI's near-black adornment color (the palette
+                            is fixed to the light mode), unreadable in the dark theme */}
+                        <Box component="span" sx={{ color: 'var(--text-muted)' }}>
+                          MB
+                        </Box>
                       </InputAdornment>
                     ),
                   }}
@@ -972,9 +981,11 @@ export default function TenantsPage() {
                     endAdornment: (
                       <InputAdornment
                         position="end"
-                        sx={{ color: 'var(--text-muted)', fontSize: '0.8rem', mr: -1.5 }}
+                        sx={{ fontSize: '0.8rem', mr: -1.5 }}
                       >
-                        {t('tenants.minutes')}
+                        <Box component="span" sx={{ color: 'var(--text-muted)' }}>
+                          {t('tenants.minutes')}
+                        </Box>
                       </InputAdornment>
                     ),
                   }}
@@ -1028,7 +1039,10 @@ export default function TenantsPage() {
       {/* Suspend Dialog */}
       <Dialog
         open={openSuspendDialog}
-        onClose={() => setOpenSuspendDialog(false)}
+        onClose={(_, reason) => {
+          if (reason !== 'backdropClick') setOpenSuspendDialog(false);
+        }}
+        disableEscapeKeyDown
         maxWidth="xs"
         fullWidth
         PaperProps={{

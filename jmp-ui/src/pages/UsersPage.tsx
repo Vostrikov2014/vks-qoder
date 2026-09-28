@@ -901,7 +901,11 @@ export default function UsersPage() {
       {/* Create/Edit Dialog */}
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={(_, reason) => {
+          // Закрываем только кнопками «Отмена»/«Сохранить» — клик вне формы не закрывает
+          if (reason !== 'backdropClick') setOpenDialog(false);
+        }}
+        disableEscapeKeyDown
         maxWidth="sm"
         fullWidth
         PaperProps={{

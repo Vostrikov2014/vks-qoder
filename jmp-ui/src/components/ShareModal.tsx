@@ -298,7 +298,11 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={(_, reason) => {
+        // Клик вне формы не закрывает окно — только кнопки «Закрыть»/«×»
+        if (reason !== 'backdropClick') handleClose();
+      }}
+      disableEscapeKeyDown
       maxWidth="sm"
       fullWidth
       PaperProps={{
