@@ -609,6 +609,9 @@ export default function ConferencesPage() {
                 lg: 'repeat(3, 1fr)',
               },
               gap: 3,
+              // Phones: the auto minimum of the card contents must never
+              // stretch the single 1fr column past the viewport
+              minWidth: 0,
             }}
           >
           <AnimatePresence>
@@ -620,6 +623,8 @@ export default function ConferencesPage() {
                   key={conference.id}
                   variants={itemVariants}
                   layout
+                  // 0 instead of "auto": long room names/chips can't widen the track
+                  style={{ minWidth: 0 }}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -639,8 +644,8 @@ export default function ConferencesPage() {
                     }}
                   >
                     {/* Header */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                         <Box
                           sx={{
                             width: 44,
@@ -655,16 +660,16 @@ export default function ConferencesPage() {
                         >
                           <Video size={22} />
                         </Box>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
                             {conference.displayName}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)' }}>
+                          <Typography variant="caption" noWrap sx={{ color: 'var(--text-muted)', fontFamily: 'var(--mono)', display: 'block' }}>
                             {conference.roomName}
                           </Typography>
                         </Box>
                       </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
                         {/* Type Badge */}
                         <Chip
                           size="small"
@@ -775,7 +780,7 @@ export default function ConferencesPage() {
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 1, flexWrap: 'wrap' }}>
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}

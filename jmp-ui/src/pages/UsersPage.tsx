@@ -482,6 +482,9 @@ export default function UsersPage() {
                 lg: 'repeat(3, 1fr)',
               },
               gap: 3,
+              // Phones: the auto minimum of the card contents must never
+              // stretch the single 1fr column past the viewport
+              minWidth: 0,
             }}
           >
           <AnimatePresence>
@@ -492,6 +495,8 @@ export default function UsersPage() {
                   key={user.id}
                   variants={itemVariants}
                   layout
+                  // 0 instead of "auto": long emails/names can't widen the track
+                  style={{ minWidth: 0 }}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -506,10 +511,13 @@ export default function UsersPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 2.5,
+                      // Same guard as the tenant cards: never let content
+                      // push the card past its grid column on phones
+                      overflow: 'hidden',
                     }}
                   >
                     {/* Header with Avatar */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
                       <Avatar
                         sx={{
                           width: 56,
@@ -549,8 +557,17 @@ export default function UsersPage() {
                           background: statusConfig.bgColor,
                           color: statusConfig.color,
                           fontWeight: 600,
+                          // Shrinks with ellipsis on narrow screens instead of
+                          // widening the card
+                          flexShrink: 1,
+                          minWidth: 0,
                           '& .MuiChip-icon': {
                             color: 'inherit',
+                          },
+                          '& .MuiChip-label': {
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           },
                         }}
                       />
