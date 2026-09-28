@@ -802,16 +802,18 @@ export default function ConferencesPage() {
                       </Button>
                       <Button
                         variant="contained"
-                        startIcon={<Square size={16} />}
+                        startIcon={<Square size={14} />}
                         onClick={() => handleEnd(conference.id)}
                         disabled={conference.status !== 'ACTIVE'}
                         sx={{
                           py: 1,
+                          px: 1.5,
                           flex: '1 1 auto',
                           borderRadius: 'var(--radius-lg)',
                           background: conference.status === 'ACTIVE' ? '#4b5563' : 'rgba(107, 114, 128, 0.2)',
                           color: 'white',
                           fontWeight: 600,
+                          fontSize: '0.8125rem',
                           textTransform: 'none',
                           '&:hover': {
                             background: conference.status === 'ACTIVE' ? '#374151' : 'rgba(107, 114, 128, 0.2)',
@@ -823,7 +825,7 @@ export default function ConferencesPage() {
                           },
                         }}
                       >
-                        {t('common.end')}
+                        {t('common.stop')}
                       </Button>
                       <Tooltip title={t('common.share')}>
                         <IconButton
