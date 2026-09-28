@@ -121,7 +121,7 @@ export default function Layout() {
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Navigation: the logo band moved into the unified full-width header,
-          so the menu starts right at the top of the sidebar */}
+          so the menu starts right at the top of the sidebar (no caption) */}
       <Box
         sx={{
           flex: 1,
@@ -130,21 +130,6 @@ export default function Layout() {
           borderRight: '1px solid var(--sidebar-border-right)',
         }}
       >
-        <Typography
-          variant="caption"
-          sx={{
-            px: collapsed ? 0 : 2,
-            py: 1,
-            color: 'var(--sidebar-caption)',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontSize: '0.7rem',
-            display: collapsed ? 'none' : 'block',
-          }}
-        >
-          {t('common.mainMenu')}
-        </Typography>
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {filteredMenuItems.map((item, index) => {
             const isActive = location.pathname === item.path;
@@ -343,8 +328,8 @@ export default function Layout() {
 
         {/* Brand block: the white chip inverts on the compact band so the
             logo keeps reading as "raised" when the panel shrinks. On sm+ the
-            block is sized to the sidebar column, so the page title starts
-            exactly above the menu panel's right edge */}
+            block is sized to the sidebar column so the page title after it
+            can be offset to the content column's left edge */}
         <Box
           sx={{
             display: 'flex',
@@ -402,14 +387,17 @@ export default function Layout() {
           </AnimatePresence>
         </Box>
 
-        {/* Page title block: hidden while the band is compact */}
+        {/* Page title block: hidden while the band is compact. The sm left
+            padding lands the title on the same vertical line as the page
+            content (cards) below: 32 (band px) + 216 (brand block) +
+            16 (flex gap) + 48 = 312 = 280 (sidebar) + 32 (content padding) */}
         <motion.div
           initial={false}
           animate={{ opacity: compact ? 0 : 1, height: compact ? 0 : 'auto' }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           style={{ overflow: 'hidden' }}
         >
-          <Box sx={{ pl: { xs: 0, sm: 3 } }}>
+          <Box sx={{ pl: { xs: 0, sm: 6 } }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
               {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
