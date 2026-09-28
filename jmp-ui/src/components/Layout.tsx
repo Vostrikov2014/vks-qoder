@@ -68,13 +68,6 @@ export default function Layout() {
   ) ?? false;
   const isSuperAdmin = user?.roles?.some((role) => role === 'ROLE_SUPER_ADMIN') ?? false;
 
-  // Primary role label for the account block: localize known roles, otherwise fall
-  // back to the raw role name (e.g. SERVICE_ACCOUNT) so nothing renders empty.
-  const primaryRole = user?.roles?.[0]?.replace('ROLE_', '');
-  const primaryRoleLabel = primaryRole
-    ? t(`roles.${primaryRole}`, primaryRole)
-    : t('common.user', 'User');
-
   const filteredMenuItems = menuItems.filter(
     (item) => (!item.requiresAdmin || canManageUsers) && (!item.requiresSuperAdmin || isSuperAdmin)
   );
@@ -146,7 +139,12 @@ export default function Layout() {
                   <Tooltip title={collapsed ? t(item.textKey) : ''} placement="right">
                     <ListItemButton
                       selected={isActive}
-                      onClick={() => navigate(item.path)}
+                      onClick={() => {
+                        navigate(item.path);
+                        // The same content feeds the temporary (mobile) drawer:
+                        // close it so the selected page becomes visible
+                        setMobileOpen(false);
+                      }}
                       sx={{
                         borderRadius: 'var(--radius-lg)',
                         mx: collapsed ? 0.5 : 0,
@@ -282,7 +280,7 @@ export default function Layout() {
           height: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          gap: { xs: 1, sm: 2 },
           background: HEADER_BLUE,
           transition: 'height 0.3s ease',
           // Decorative "aurora" layer: faint white radial gradients over the
@@ -304,38 +302,35 @@ export default function Layout() {
           ...(compact && {
             boxShadow: '0 6px 16px rgba(0, 0, 0, 0.18)',
           }),
-          // The compact-state menu toggle only exists on mobile breakpoints
-          '& .mobile-menu-toggle': { display: { xs: 'block', sm: 'none' } },
         }}
       >
-          {/* Mobile menu toggle lives inside the unified band now */}
-          <AnimatePresence initial={false}>
-            {compact && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 40 }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ overflow: 'hidden', display: 'none' }}
-                className="mobile-menu-toggle"
-              >
-                <IconButton onClick={handleDrawerToggle} sx={{ color: '#ffffff' }}>
-                  <MenuIcon size={24} color="currentColor" />
-                </IconButton>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Mobile menu toggle: below sm the docked sidebar is hidden, so the
+              temporary drawer is the only entry point to the main menu - the
+              hamburger must stay visible even when the band is not compact */}
+          <IconButton
+            onClick={handleDrawerToggle}
+            aria-label={t('common.mainMenu')}
+            sx={{
+              display: { xs: 'inline-flex', sm: 'none' },
+              color: '#ffffff',
+              ml: -1,
+            }}
+          >
+            <MenuIcon size={24} color="currentColor" />
+          </IconButton>
 
-        {/* Brand block: the white chip inverts on the compact band so the
-            logo keeps reading as "raised" when the panel shrinks. On sm+ the
-            block is sized to the sidebar column so the page title after it
-            can be offset to the content column's left edge */}
+        {/* Brand block: hidden on phones (below sm) - the band there keeps
+            only the menu toggle, page title and controls. The white chip
+            inverts on the compact band so the logo keeps reading as "raised"
+            when the panel shrinks. The block is sized to the sidebar column
+            so the page title after it can be offset to the content column's
+            left edge */}
         <Box
           sx={{
-            display: 'flex',
+            display: { xs: 'none', sm: 'flex' },
             alignItems: 'center',
-            gap: { xs: 1.5, sm: 1 },
-            width: { sm: `calc(${DRAWER_WIDTH}px - 64px)` },
+            gap: 1,
+            width: `calc(${DRAWER_WIDTH}px - 64px)`,
             flexShrink: 0,
           }}
         >
@@ -395,16 +390,17 @@ export default function Layout() {
           initial={false}
           animate={{ opacity: compact ? 0 : 1, height: compact ? 0 : 'auto' }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          style={{ overflow: 'hidden' }}
+          style={{ overflow: 'hidden', minWidth: 0 }}
         >
-          <Box sx={{ pl: { xs: 0, sm: 6 } }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
+          <Box sx={{ pl: { xs: 0, sm: 6 }, minWidth: 0 }}>
+            {/* noWrap + ellipsis: long titles truncate on phones instead of clipping */}
+            <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
               {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
           </Box>
         </motion.div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 }, ml: 'auto' }}>
           {/* Language Toggle */}
           <Tooltip title={t('common.language')}>
               <IconButton
@@ -483,9 +479,6 @@ export default function Layout() {
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {user?.firstName} {user?.lastName}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-                  {primaryRoleLabel}
                 </Typography>
               </Box>
             </Box>
@@ -581,6 +574,8 @@ export default function Layout() {
               bottom: 0,
               height: 'auto',
               width: DRAWER_WIDTH,
+              // Narrow phones: keep the drawer from covering the whole viewport
+              maxWidth: '85vw',
               background: 'var(--sidebar-bg)',
               borderRight: 'none',
             },
