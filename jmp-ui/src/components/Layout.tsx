@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -14,7 +14,6 @@ import {
   Avatar,
   Menu as MuiMenu,
   MenuItem,
-  Divider,
   Tooltip,
 } from '@mui/material';
 import {
@@ -32,15 +31,16 @@ import {
   BarChart3,
   HardDrive,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
 const DRAWER_WIDTH = 280;
-// The sidebar logo block is matched to the header height,
-// so both horizontal divider lines run on the same level
 const HEADER_HEIGHT = 52;
-const MOBILE_HEADER_HEIGHT = 48;
+// Compact height: applied once the page content is scrolled past SCROLL_THRESHOLD
+const HEADER_HEIGHT_COMPACT = 44;
+// Scroll offset (in the page content container) after which the band collapses
+const HEADER_SCROLL_THRESHOLD = 24;
 // Top panel background, matched to the HomePage "Создать видео-встречу" tile (--lp-blue)
 const HEADER_BLUE = '#2563eb';
 
@@ -82,6 +82,15 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [collapsed] = useState(false);
+  // Scroll-adaptive header: the band shrinks to compact height and the title
+  // block fades out once the page content is scrolled
+  const [compact, setCompact] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Track the page content scroll to toggle the compact header state
+  const handleContentScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    setCompact(event.currentTarget.scrollTop > HEADER_SCROLL_THRESHOLD);
+  };
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -111,63 +120,8 @@ export default function Layout() {
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo Section: same blue as the top header, so both form one continuous band */}
-      <Box
-        sx={{
-          px: 3,
-          height: { xs: MOBILE_HEADER_HEIGHT, sm: HEADER_HEIGHT },
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          background: HEADER_BLUE,
-          // No bottom border: the block must blend into the header band without a seam
-        }}
-      >
-        <Box
-          sx={{
-            width: 32,
-            height: 32,
-            // Scaled-down rounding to match the smaller plate
-            borderRadius: '0.375rem',
-            // Inverted tile: white plate with the brand glyph, since the block itself is blue
-            background: '#ffffff',
-            color: HEADER_BLUE,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Video size={18} color="currentColor" />
-        </Box>
-        {!collapsed && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 800,
-                color: '#ffffff',
-                // Inter is not bundled and the global stylesheet sets
-                // `font-synthesis: none`, so a bold fallback face may not render;
-                // re-enable synthesis for the wordmark only
-                fontSynthesis: 'weight style',
-                // Fallback fonts rarely ship a real 800 face, so the extra
-                // weight is enforced with a hairline stroke of the same color
-                WebkitTextStroke: '0.4px #ffffff',
-                letterSpacing: '0.01em',
-              }}
-            >
-              {t('common.appName')}
-            </Typography>
-          </motion.div>
-        )}
-      </Box>
-
-      {/* Navigation: carries the sidebar/content divider, so the line starts
-          below the blue logo band instead of crossing it */}
+      {/* Navigation: the logo band moved into the unified full-width header,
+          so the menu starts right at the top of the sidebar */}
       <Box
         sx={{
           flex: 1,
@@ -324,131 +278,147 @@ export default function Layout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', minHeight: '100vh' }}>
       {/* Aurora Background */}
       <div className="aurora-bg" />
 
-      {/* Mobile Header */}
+      {/* Top Header: one band across the full viewport width - brand on the
+          left, page title and controls to the right. The sidebar sits below,
+          so the band forms a single continuous frame edge */}
       <Box
         sx={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: 0,
-          right: 0,
-          height: MOBILE_HEADER_HEIGHT,
-          display: { xs: 'flex', sm: 'none' },
-          alignItems: 'center',
-          px: 2,
-          background: HEADER_BLUE,
-          zIndex: 1200,
-        }}
-      >
-        <IconButton onClick={handleDrawerToggle} sx={{ color: '#ffffff' }}>
-          <MenuIcon size={24} color="currentColor" />
-        </IconButton>
-        <Typography
-          variant="h6"
-          sx={{
-            ml: 2,
-            fontWeight: 900,
-            color: '#ffffff',
-            // Same wordmark bolding rules as the sidebar logo band
-            fontSynthesis: 'weight style',
-            WebkitTextStroke: '0.6px #ffffff',
-            letterSpacing: '0.01em',
-          }}
-        >
-          {t('common.appName')}
-        </Typography>
-      </Box>
-
-      {/* Desktop Sidebar */}
-      <Box
-        component="nav"
-        sx={{
-          width: { sm: collapsed ? 80 : DRAWER_WIDTH },
-          flexShrink: { sm: 0 },
-          display: { xs: 'none', sm: 'block' },
-          transition: 'width 0.3s ease',
-        }}
-      >
-        <Drawer
-          variant="permanent"
-          sx={{
-            '& .MuiDrawer-paper': {
-              width: collapsed ? 80 : DRAWER_WIDTH,
-              boxSizing: 'border-box',
-              background: 'var(--sidebar-bg)',
-              // The divider is rendered per section inside drawerContent, so the
-              // blue logo band stays seamless
-              borderRight: 'none',
-              transition: 'width 0.3s ease',
-            },
-          }}
-          open
-        >
-          {drawerContent}
-        </Drawer>
-      </Box>
-
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            background: 'var(--sidebar-bg)',
-            borderRight: 'none',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
+          // Above the drawer paper (z-index 1200): the band must stay on top
+          // when the mobile menu opens over the sidebar column
+          zIndex: 1300,
+          px: { xs: 2, sm: 4 },
+          flexShrink: 0,
+          height: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
           display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
+          alignItems: 'center',
+          gap: 2,
+          background: HEADER_BLUE,
+          transition: 'height 0.3s ease',
+          // Decorative "aurora" layer: faint white radial gradients over the
+          // brand blue, echoing the .aurora-bg on the login/landing pages
+          // without introducing new colors. Layered after the shadow: scroll
+          // state must not erase the pattern
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background: [
+              'radial-gradient(ellipse 42% 130% at 30% 120%, rgba(255, 255, 255, 0.14) 0%, transparent 70%)',
+              'radial-gradient(ellipse 30% 150% at 62% -40%, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
+              'radial-gradient(ellipse 24% 150% at 88% 130%, rgba(255, 255, 255, 0.10) 0%, transparent 70%)',
+            ].join(', '),
+          },
+          // Elevation only while scrolled: at rest the band sits flush with the content
+          ...(compact && {
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.18)',
+          }),
+          // The compact-state menu toggle only exists on mobile breakpoints
+          '& .mobile-menu-toggle': { display: { xs: 'block', sm: 'none' } },
         }}
       >
-        {/* Top Header */}
+          {/* Mobile menu toggle lives inside the unified band now */}
+          <AnimatePresence initial={false}>
+            {compact && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 40 }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                style={{ overflow: 'hidden', display: 'none' }}
+                className="mobile-menu-toggle"
+              >
+                <IconButton onClick={handleDrawerToggle} sx={{ color: '#ffffff' }}>
+                  <MenuIcon size={24} color="currentColor" />
+                </IconButton>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        {/* Brand block: the white chip inverts on the compact band so the
+            logo keeps reading as "raised" when the panel shrinks. On sm+ the
+            block is sized to the sidebar column, so the page title starts
+            exactly above the menu panel's right edge */}
         <Box
           sx={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 1100,
-            px: { xs: 2, sm: 4 },
-            // Fixed height (not minHeight): the header must be exactly as tall as
-            // the sidebar logo band, so both blue panels end on the same line.
-            // No vertical padding: the two text lines (~46px) fit into 48/52px
-            height: { xs: MOBILE_HEADER_HEIGHT, sm: HEADER_HEIGHT },
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            background: HEADER_BLUE,
-            mt: { xs: 6, sm: 0 },
+            gap: { xs: 1.5, sm: 1 },
+            width: { sm: `calc(${DRAWER_WIDTH}px - 64px)` },
+            flexShrink: 0,
           }}
         >
-          <Box>
+          <Box
+            sx={{
+              width: compact ? 24 : 32,
+              height: compact ? 24 : 32,
+              // Scaled-down rounding to match the smaller plate
+              borderRadius: '0.375rem',
+              background: compact ? 'rgba(255, 255, 255, 0.16)' : '#ffffff',
+              color: compact ? '#ffffff' : HEADER_BLUE,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <Video size={compact ? 14 : 18} color="currentColor" />
+          </Box>
+          <AnimatePresence initial={false}>
+            {!compact && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    // Inter is not bundled and the global stylesheet sets
+                    // `font-synthesis: none`, so a bold fallback face may not render;
+                    // re-enable synthesis for the wordmark only
+                    fontSynthesis: 'weight style',
+                    // Fallback fonts rarely ship a real 800 face, so the extra
+                    // weight is enforced with a hairline stroke of the same color
+                    WebkitTextStroke: '0.4px #ffffff',
+                    letterSpacing: '0.01em',
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                >
+                  {t('common.appName')}
+                </Typography>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Box>
+
+        {/* Page title block: hidden while the band is compact */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: compact ? 0 : 1, height: compact ? 0 : 'auto' }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          style={{ overflow: 'hidden' }}
+        >
+          <Box sx={{ pl: { xs: 0, sm: 3 } }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
               {t(filteredMenuItems.find((item) => item.path === location.pathname)?.textKey || 'common.dashboard')}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-              {t('layout.welcomeBack', { firstName: user?.firstName || 'User' })}
-            </Typography>
           </Box>
+        </motion.div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* Language Toggle */}
-            <Tooltip title={t('common.language')}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
+          {/* Language Toggle */}
+          <Tooltip title={t('common.language')}>
               <IconButton
                 onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ru' : 'en')}
                 sx={{
@@ -493,8 +463,6 @@ export default function Layout() {
                 <Bell size={20} />
               </IconButton>
             </Tooltip>
-
-            <Divider orientation="vertical" flexItem sx={{ borderColor: 'rgba(255, 255, 255, 0.3)' }} />
 
             <Box
               onClick={handleMenuOpen}
@@ -567,23 +535,104 @@ export default function Layout() {
               </MenuItem>
             </MuiMenu>
           </Box>
-        </Box>
+      </Box>
 
-        {/* Page Content */}
-        <Box
-          sx={{
-            flex: 1,
-            p: { xs: 2, sm: 4 },
-            overflow: 'auto',
+      {/* Below the band: sidebar column and page content side by side */}
+      <Box
+        sx={{
+          display: 'flex',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Desktop Sidebar: docked under the header band. The paper is pinned
+            to the viewport below the band instead of MUI's default fixed
+            top: 0, so it never overlays the blue panel */}
+        <Drawer
+          variant="permanent"
+          open
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+          PaperProps={{
+            sx: {
+              position: 'fixed',
+              top: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
+              bottom: 0,
+              height: 'auto',
+              width: collapsed ? 80 : DRAWER_WIDTH,
+              boxSizing: 'border-box',
+              background: 'var(--sidebar-bg)',
+              borderRight: 'none',
+              transition: 'width 0.3s ease, top 0.3s ease',
+            },
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          {drawerContent}
+        </Drawer>
+        {/* Spacer reserving the sidebar column inside the row (the paper above
+            is fixed, so it does not take up flow space on its own) */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'block' },
+            width: collapsed ? 80 : DRAWER_WIDTH,
+            flexShrink: 0,
+            transition: 'width 0.3s ease',
+          }}
+        />
+
+        {/* Mobile Drawer: opens beneath the band, mirroring the desktop dock */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': {
+              top: compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT,
+              bottom: 0,
+              height: 'auto',
+              width: DRAWER_WIDTH,
+              background: 'var(--sidebar-bg)',
+              borderRight: 'none',
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
+            minHeight: 0,
+          }}
+        >
+          {/* Page Content: the scroll container driving the compact header state.
+              Its height tracks the header band exactly, so the scrollbar starts
+              right below the band instead of running up over it */}
+          <Box
+            ref={contentRef}
+            onScroll={handleContentScroll}
+            sx={{
+              height: `calc(100dvh - ${compact ? HEADER_HEIGHT_COMPACT : HEADER_HEIGHT}px)`,
+              transition: 'height 0.3s ease',
+              p: { xs: 2, sm: 4 },
+              overflow: 'auto',
+            }}
           >
-            <Outlet />
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     </Box>
