@@ -6,7 +6,6 @@ import {
   Chip,
   CircularProgress,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
@@ -180,7 +179,6 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           p: 2,
           mb: 0,
           borderRadius: 'var(--radius-lg)',
-          background: 'rgba(255, 255, 255, 0.03)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
@@ -447,7 +445,17 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
               )}
             </Box>
           </Box>
-          <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+            <Button
+              onClick={handleClose}
+              sx={{
+                ...dialogButtonSx,
+                color: 'var(--text-muted)',
+                textTransform: 'none',
+              }}
+            >
+              {t('common.close')}
+            </Button>
             <Button
               variant="contained"
               startIcon={saving ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <Plus size={18} />}
@@ -470,20 +478,6 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </Box>
         </Box>
       </DialogContent>
-
-      <DialogActions sx={{ px: 3, pb: 2, pt: 1.5 }}>
-        <Button
-          onClick={handleClose}
-          size="small"
-          sx={{
-            ...dialogButtonSx,
-            color: 'var(--text-muted)',
-            textTransform: 'none',
-          }}
-        >
-          {t('common.close')}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }
