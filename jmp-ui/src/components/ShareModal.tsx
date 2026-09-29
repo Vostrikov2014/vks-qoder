@@ -20,7 +20,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Check, Clock, Copy, Link as LinkIcon, Plus, ShieldCheck, Trash2, User, X } from 'lucide-react';
+import { Check, Clock, Copy, Link as LinkIcon, Plus, ShieldCheck, Trash2, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { conferenceLinkApi, extractApiError } from '../services/api';
 import type { ConferenceLink, ConferenceLinkCreateRequest, ConferenceLinkRole } from '../services/api';
@@ -314,30 +314,15 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
       <DialogTitle
         sx={{
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
+          gap: 1.5,
           pb: 1,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <LinkIcon size={24} color="var(--text-h)" />
-          <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
-            {t('share.title')}
-          </Typography>
-        </Box>
-        <IconButton
-          onClick={handleClose}
-          aria-label={t('common.close')}
-          sx={{
-            color: 'var(--text-muted)',
-            '&:hover': {
-              background: 'rgba(239, 68, 68, 0.1)',
-              color: '#ef4444',
-            },
-          }}
-        >
-          <X size={20} />
-        </IconButton>
+        <LinkIcon size={24} color="var(--text-h)" />
+        <Typography variant="h6" sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
+          {t('share.title')}
+        </Typography>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
@@ -445,16 +430,17 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
               )}
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
             <Button
               onClick={handleClose}
               sx={{
                 ...dialogButtonSx,
-                color: 'var(--text-muted)',
+                color: 'var(--text)',
                 textTransform: 'none',
+                fontWeight: 600,
               }}
             >
-              {t('common.close')}
+              {t('common.cancel')}
             </Button>
             <Button
               variant="contained"
