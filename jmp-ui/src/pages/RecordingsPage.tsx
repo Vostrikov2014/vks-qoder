@@ -39,6 +39,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { recordingApi } from '../services/api';
+import { dialogButtonSx } from '../styles/dialogFields';
 import { useThemeStore } from '../store/themeStore';
 import type { RecordingSummary } from '../types';
 
@@ -699,29 +700,55 @@ export default function RecordingsPage() {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
-            background: 'var(--bg-elevated)',
+            background: 'var(--bg)',
             border: '1px solid var(--glass-border)',
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: 'var(--radius-lg)',
           },
         }}
       >
-        <DialogTitle sx={{ color: 'var(--text-h)' }}>{t('recordings.delete')}</DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: 'var(--text-h)' }}>
+            {t('recordings.delete')}
+          </Typography>
+        </DialogTitle>
         <DialogContent>
           <Typography sx={{ color: 'var(--text)' }}>
             {t('recordings.deleteConfirm')}
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: 'var(--text-muted)' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{
+              ...dialogButtonSx,
+              color: 'var(--text)',
+              textTransform: 'none',
+              fontWeight: 600,
+            }}
+          >
             {t('common.cancel')}
           </Button>
           <Button
             onClick={handleDeleteConfirm}
-            color="error"
             variant="contained"
             disabled={deleting}
+            sx={{
+              ...dialogButtonSx,
+              background: '#dc2626',
+              color: 'white',
+              fontWeight: 600,
+              textTransform: 'none',
+              px: 3,
+              '&:hover': {
+                background: '#b91c1c',
+              },
+              '&.Mui-disabled': {
+                background: 'rgba(239, 68, 68, 0.35)',
+                color: 'white',
+              },
+            }}
           >
-            {deleting ? <CircularProgress size={20} /> : t('common.delete')}
+            {deleting ? <CircularProgress size={20} sx={{ color: 'white' }} /> : t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>

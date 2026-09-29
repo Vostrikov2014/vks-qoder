@@ -36,6 +36,7 @@ import {
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
 import { createDialogFieldSx, dialogButtonSx } from '../styles/dialogFields';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -149,6 +150,8 @@ export default function TenantsPage() {
   const [suspendReason, setSuspendReason] = useState('');
   const [formData, setFormData] = useState<FormData>(emptyForm);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   // Create/edit dialog fields follow the Recordings (Entries) page look
   const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
@@ -196,14 +199,21 @@ export default function TenantsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t('tenants.deleteConfirm'))) {
-      try {
-        await tenantApi.deleteTenant(id);
-        fetchTenants();
-      } catch (error) {
-        console.error('Failed to delete tenant:', error);
-      }
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleting(true);
+    try {
+      await tenantApi.deleteTenant(deleteTargetId);
+      setDeleteTargetId(null);
+      fetchTenants();
+    } catch (error) {
+      console.error('Failed to delete tenant:', error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -1178,6 +1188,18 @@ export default function TenantsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title={t('common.delete')}
+        message={t('tenants.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setDeleteTargetId(null)}
+      />
     </motion.div>
   );
 }

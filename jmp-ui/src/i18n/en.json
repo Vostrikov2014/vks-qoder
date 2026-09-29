@@ -183,7 +183,6 @@
   },
   "share": {
     "title": "Share Conference",
-    "howItWorks": "These are permanent join links: they work until you revoke them. Every visit is checked against the access policy of the conference, and the Jitsi token is signed at the moment of joining — the link itself never contains a password or a token.",
     "unnamedLink": "Main link",
     "primaryBadge": "Primary",
     "revokedBadge": "Revoked",
@@ -203,7 +202,6 @@
     "setExpiryAriaLabel": "Make the link expire at a given time",
     "expiresAt": "Valid until",
     "addLinkButton": "Create link",
-    "policyNote": "Visitors without an account join under the same access policy.",
     "loadFailed": "Failed to load the links",
     "createFailed": "Failed to create the link",
     "revokeFailed": "Failed to revoke the link"

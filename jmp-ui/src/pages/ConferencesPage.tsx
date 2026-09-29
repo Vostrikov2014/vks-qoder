@@ -50,6 +50,7 @@ import { conferenceApi, participantAssignmentApi } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
 import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 import ShareModal from '../components/ShareModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import ParticipantManagementPanel from '../components/ParticipantManagementPanel';
 import type { Conference, ConferenceType, AccessPolicy, ParticipantAssignment } from '../types';
 
@@ -213,6 +214,8 @@ export default function ConferencesPage() {
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
   const [shareConference, setShareConference] = useState<Conference | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     roomName: '',
     displayName: '',
@@ -305,14 +308,21 @@ export default function ConferencesPage() {
     setOpenDialog(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t('conferences.deleteConfirm'))) {
-      try {
-        await conferenceApi.deleteConference(id);
-        fetchConferences();
-      } catch (error) {
-        console.error('Failed to delete conference:', error);
-      }
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleting(true);
+    try {
+      await conferenceApi.deleteConference(deleteTargetId);
+      setDeleteTargetId(null);
+      fetchConferences();
+    } catch (error) {
+      console.error('Failed to delete conference:', error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -441,12 +451,12 @@ export default function ConferencesPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%)',
+              background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               '&:hover': {
-                background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
+                background: 'var(--primary-700)',
               },
             }}
           >
@@ -1683,6 +1693,18 @@ export default function ConferencesPage() {
         conference={shareConference}
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title={t('common.delete')}
+        message={t('conferences.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setDeleteTargetId(null)}
       />
     </motion.div>
   );

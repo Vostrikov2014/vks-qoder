@@ -249,9 +249,6 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100dvh', overflow: 'hidden' }}>
-      {/* Aurora Background */}
-      <div className="aurora-bg" />
-
       {/* Top Header: one band across the full viewport width - brand on the
           left, page title and controls to the right. The sidebar sits below,
           so the band forms a single continuous frame edge */}
@@ -269,20 +266,6 @@ export default function Layout() {
           alignItems: 'center',
           gap: { xs: 1, sm: 2 },
           background: HEADER_BLUE,
-          // Decorative "aurora" layer: faint white radial gradients over the
-          // brand blue, echoing the .aurora-bg on the login/landing pages
-          // without introducing new colors
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            background: [
-              'radial-gradient(ellipse 42% 130% at 30% 120%, rgba(255, 255, 255, 0.14) 0%, transparent 70%)',
-              'radial-gradient(ellipse 30% 150% at 62% -40%, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
-              'radial-gradient(ellipse 24% 150% at 88% 130%, rgba(255, 255, 255, 0.10) 0%, transparent 70%)',
-            ].join(', '),
-          },
         }}
       >
           {/* Mobile menu toggle: below sm the docked sidebar is hidden, so the

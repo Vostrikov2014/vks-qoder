@@ -318,9 +318,6 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      {/* Aurora overlay - same as on the login page (styles come from index.css) */}
-      <div className="aurora-bg" />
-
       {/* Left side panel - fixed, always the full screen height */}
       <aside className="home-rail">
         <button

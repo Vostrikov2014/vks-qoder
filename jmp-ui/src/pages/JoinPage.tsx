@@ -127,8 +127,6 @@ export default function JoinPage() {
         p: 2,
       }}
     >
-      <div className="aurora-bg" />
-
       <Box sx={{ position: 'absolute', top: 24, left: 24, zIndex: 10 }}>
         <IconButton
           onClick={() => navigate('/')}

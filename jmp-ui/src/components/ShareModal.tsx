@@ -178,7 +178,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
         key={link.id}
         sx={{
           p: 2,
-          mb: 2,
+          mb: 0,
           borderRadius: 'var(--radius-lg)',
           background: 'rgba(255, 255, 255, 0.03)',
         }}
@@ -354,18 +354,6 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </Box>
         )}
 
-        <Alert
-          severity="info"
-          sx={{
-            mb: 3,
-            background: 'rgba(var(--primary-rgb), 0.08)',
-            color: 'var(--primary-600)',
-            border: '1px solid rgba(var(--primary-rgb), 0.2)',
-          }}
-        >
-          <Typography variant="caption">{t('share.howItWorks')}</Typography>
-        </Alert>
-
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -397,10 +385,10 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
           </>
         )}
 
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mt: 2, mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'var(--text-h)', mt: 2.5, mb: 2 }}>
           {t('share.addLinkTitle')}
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <TextField
             fullWidth
             size="small"
@@ -411,7 +399,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
             inputProps={{ maxLength: 100 }}
             sx={dialogFieldSx}
           />
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
             <FormControl size="small" sx={{ minWidth: 200, ...dialogFieldSx }}>
               <InputLabel id="link-role-label">
                 {t('share.linkRole')}
@@ -454,26 +442,27 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
                   onChange={(e) => setExpiresAt(e.target.value)}
                   InputLabelProps={{ shrink: true }}
                   label={t('share.expiresAt')}
-                  sx={{ ...dialogFieldSx, mt: 2 }}
+                  sx={{ ...dialogFieldSx, mt: 2.5 }}
                 />
               )}
             </Box>
           </Box>
           <Box>
             <Button
-              variant="outlined"
-              size="small"
-              startIcon={saving ? <CircularProgress size={16} /> : <Plus size={18} />}
+              variant="contained"
+              startIcon={saving ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <Plus size={18} />}
               onClick={handleCreate}
               disabled={saving || (limited && !expiresAt)}
               sx={{
                 ...dialogButtonSx,
-                borderColor: 'rgba(var(--primary-rgb), 0.4)',
-                color: 'var(--primary-600)',
-                textTransform: 'none',
+                background: 'var(--primary-600)',
+                color: 'white',
                 fontWeight: 600,
-                '&:hover': { borderColor: 'var(--primary-600)', background: 'rgba(var(--primary-rgb), 0.06)' },
-                '&.Mui-disabled': { color: 'var(--text-muted)', borderColor: 'var(--border)' },
+                textTransform: 'none',
+                px: 3,
+                '&:hover': {
+                  background: 'var(--btn-hover-bg)',
+                },
               }}
             >
               {t('share.addLinkButton')}
@@ -483,9 +472,6 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2, pt: 1.5 }}>
-        <Typography variant="caption" sx={{ color: 'var(--text-muted)', mr: 'auto' }}>
-          {t('share.policyNote')}
-        </Typography>
         <Button
           onClick={handleClose}
           size="small"

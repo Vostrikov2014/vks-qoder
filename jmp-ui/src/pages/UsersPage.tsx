@@ -43,6 +43,7 @@ import {
 import { userApi, extractApiError } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
 import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface UserData {
   id: string;
@@ -195,6 +196,8 @@ export default function UsersPage() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   // Create/edit dialog fields follow the Recordings (Entries) page look
   const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
@@ -239,14 +242,21 @@ export default function UsersPage() {
     setOpenDialog(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t('users.deleteConfirm'))) {
-      try {
-        await userApi.deleteUser(id);
-        fetchUsers();
-      } catch (error) {
-        console.error('Failed to delete user:', error);
-      }
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleting(true);
+    try {
+      await userApi.deleteUser(deleteTargetId);
+      setDeleteTargetId(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -281,18 +291,6 @@ export default function UsersPage() {
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
   };
 
-  const getAvatarGradient = (id: string) => {
-    const gradients = [
-      'var(--avatar-gradient-1)',
-      'var(--avatar-gradient-2)',
-      'var(--avatar-gradient-3)',
-      'var(--avatar-gradient-4)',
-      'var(--avatar-gradient-5)',
-    ];
-    const index = id.charCodeAt(0) % gradients.length;
-    return gradients[index];
-  };
-
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       {/* Header */}
@@ -314,12 +312,12 @@ export default function UsersPage() {
               py: 1.5,
               px: 3,
               borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%)',
+              background: 'var(--primary-600)',
               color: 'white',
               fontWeight: 600,
               textTransform: 'none',
               '&:hover': {
-                background: 'linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%)',
+                background: 'var(--primary-700)',
               },
             }}
           >
@@ -522,7 +520,7 @@ export default function UsersPage() {
                         sx={{
                           width: 56,
                           height: 56,
-                          background: getAvatarGradient(user.id),
+                          background: 'var(--avatar-bg)',
                           fontWeight: 700,
                           fontSize: '1.25rem',
                         }}
@@ -767,7 +765,7 @@ export default function UsersPage() {
                           sx={{
                             width: 32,
                             height: 32,
-                            background: getAvatarGradient(user.id),
+                            background: 'var(--avatar-bg)',
                             fontWeight: 700,
                             fontSize: '0.85rem',
                           }}
@@ -1132,6 +1130,18 @@ export default function UsersPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title={t('common.delete')}
+        message={t('users.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setDeleteTargetId(null)}
+      />
     </motion.div>
   );
 }

@@ -67,13 +67,12 @@ const itemVariants = {
 interface BentoCardProps {
   children: React.ReactNode;
   className?: string;
-  gradient?: string;
   colSpan?: number;
   rowSpan?: number;
   padding?: number;
 }
 
-const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1, padding = 3 }: BentoCardProps) => (
+const BentoCard = ({ children, colSpan = 1, rowSpan = 1, padding = 3 }: BentoCardProps) => (
   <motion.div
     variants={itemVariants}
     className="bento-card"
@@ -85,7 +84,7 @@ const BentoCard = ({ children, gradient, colSpan = 1, rowSpan = 1, padding = 3 }
     <Box
       sx={{
         height: '100%',
-        background: gradient || 'var(--glass-bg)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(20px)',
         borderRadius: 'var(--radius-xl)',
         p: padding,
@@ -107,12 +106,11 @@ interface StatCardProps {
   icon: React.ReactNode;
   trend?: number;
   color: string;
-  bgGradient?: string;
   locale?: string;
 }
 
-const StatCard = ({ title, value, icon, trend, color, bgGradient, locale = 'en-US' }: StatCardProps) => (
-  <BentoCard gradient={bgGradient} padding={2}>
+const StatCard = ({ title, value, icon, trend, color, locale = 'en-US' }: StatCardProps) => (
+  <BentoCard padding={2}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
       <Box
         sx={{
