@@ -901,11 +901,14 @@ export default function ConferencesPage() {
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
-                  xs: '40px 1fr 100px 100px',
+                  // xs: a single line — status dot, flexible name, then the
+                  // badges and action icons packed to the right (UsersPage
+                  // convention); all the other columns collapse on xs
+                  xs: '32px minmax(0, 1fr) auto',
                   sm: '40px 1.5fr 1fr 100px 100px 80px 120px',
                   md: '40px 1.5fr 1fr 100px 100px 80px 100px 140px',
                 },
-                gap: 2,
+                gap: { xs: 1, sm: 2 },
                 p: 2,
                 borderBottom: '1px solid var(--border)',
                 background: 'rgba(var(--primary-rgb), 0.04)',
@@ -921,7 +924,7 @@ export default function ConferencesPage() {
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 {t('conferences.type')}
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 {t('common.scheduled')}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
@@ -930,7 +933,9 @@ export default function ConferencesPage() {
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', md: 'block' } }}>
                 Features
               </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {/* Hidden on xs: the mobile row packs badges + actions into the
+                  trailing auto column, and the caption would spill the grid */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: { xs: 'none', sm: 'block' } }}>
                 Actions
               </Typography>
             </Box>
@@ -952,11 +957,11 @@ export default function ConferencesPage() {
                       sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                          xs: '40px 1fr 100px 100px',
+                          xs: '32px minmax(0, 1fr) auto',
                           sm: '40px 1.5fr 1fr 100px 100px 80px 120px',
                           md: '40px 1.5fr 1fr 100px 100px 80px 100px 140px',
                         },
-                        gap: 2,
+                        gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
                         borderBottom: '1px solid var(--border)',
@@ -993,30 +998,36 @@ export default function ConferencesPage() {
                         {conference.roomName}
                       </Typography>
 
-                      {/* Badges + actions: on phones one compact secondary
-                          row (icon-only badges without tinted backgrounds,
-                          edit/delete next to the other actions); on sm+ the
-                          original grid cells (badges in colored pills, the
-                          action buttons in their own column) */}
+                      {/* Badges + actions: on phones a single compact line —
+                          the name column flexes, while badges (tinted pills)
+                          and flat icon buttons are packed to the right edge
+                          (auto column); on sm+ the original grid
+                          cells (badges in colored pills, the action buttons in
+                          their own column) */}
                       <Box
                         sx={{
                           display: { xs: 'flex', sm: 'none' },
                           alignItems: 'center',
-                          gap: 0.5,
+                          // Tighter than the UsersPage group: seven compact
+                          // items must read as one cluster at the right edge
+                          gap: 0,
                           minWidth: 0,
+                          flexShrink: 0,
                         }}
                       >
                         {/* Bare icon on xs (no Chip wrapper: an empty label
-                            drops the icon), but the tinted background pill is
-                            kept — just tighter than the full-size badge */}
+                            drops the icon), kept inside a round tinted badge —
+                            equal width/height so the background is a circle */}
                         {typeConfig.icon && (
                           <Tooltip title={typeConfig.labelKey ? t(typeConfig.labelKey) : ''}>
                             <Box
                               sx={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 24,
                                 height: 24,
-                                px: 0.75,
+                                mx: '1px',
                                 borderRadius: 'var(--radius-full)',
                                 background: typeConfig.bgColor,
                                 color: typeConfig.color,
@@ -1033,8 +1044,10 @@ export default function ConferencesPage() {
                               sx={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 24,
                                 height: 24,
-                                px: 0.75,
+                                mx: '1px',
                                 borderRadius: 'var(--radius-full)',
                                 background: statusConfig.bgColor,
                                 color: statusConfig.color,
@@ -1050,7 +1063,7 @@ export default function ConferencesPage() {
                             size="small"
                             aria-label={conference.status === 'ACTIVE' ? t('conferences.enter') : t('common.start')}
                             onClick={() => handleStart(conference.id, conference.status)}
-                            sx={{ p: 0.5, color: 'var(--primary-700)' }}
+                            sx={{ p: 0.25, color: 'var(--primary-700)', '&:hover': { background: 'rgba(var(--primary-rgb), 0.1)' } }}
                           >
                             <Play size={14} />
                           </IconButton>
@@ -1062,9 +1075,10 @@ export default function ConferencesPage() {
                             onClick={() => handleEnd(conference.id)}
                             disabled={conference.status !== 'ACTIVE'}
                             sx={{
-                              p: 0.5,
+                              p: 0.25,
                               color: conference.status === 'ACTIVE' ? '#6b7280' : 'var(--text-muted)',
                               opacity: conference.status === 'ACTIVE' ? 1 : 0.35,
+                              '&:hover': { background: 'rgba(107, 114, 128, 0.12)' },
                             }}
                           >
                             <Square size={14} />
@@ -1074,7 +1088,7 @@ export default function ConferencesPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleShare(conference)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                            sx={{ p: 0.25, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
                           >
                             <Share2 size={14} />
                           </IconButton>
@@ -1083,7 +1097,7 @@ export default function ConferencesPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(conference)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
+                            sx={{ p: 0.25, color: 'var(--text-muted)', '&:hover': { color: 'var(--primary-600)' } }}
                           >
                             <Edit2 size={14} />
                           </IconButton>
@@ -1092,7 +1106,7 @@ export default function ConferencesPage() {
                           <IconButton
                             size="small"
                             onClick={() => handleDelete(conference.id)}
-                            sx={{ p: 0.5, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
+                            sx={{ p: 0.25, color: 'var(--text-muted)', '&:hover': { color: '#ef4444' } }}
                           >
                             <Trash2 size={14} />
                           </IconButton>
