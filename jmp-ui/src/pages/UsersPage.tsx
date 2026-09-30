@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { userApi, extractApiError } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { usePageViewMode } from '../store/viewModeStore';
 import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -195,7 +196,8 @@ export default function UsersPage() {
     roleNames: [] as string[],
   });
   const [formError, setFormError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Cards/list choice is remembered per page in the persisted store
+  const [viewMode, setViewMode] = usePageViewMode('users');
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   // Create/edit dialog fields follow the Recordings (Entries) page look
@@ -608,8 +610,9 @@ export default function UsersPage() {
 
                     {/* Join Date and the actions on one line: the date pill
                         fills the row, the buttons sit to its right, styled as
-                        on the conference cards */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        on the conference cards, separated by the same thin
+                        divider above the actions */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 1, borderTop: '1px solid var(--border)' }}>
                       <Box
                         sx={{
                           flex: 1,
@@ -749,13 +752,13 @@ export default function UsersPage() {
                         gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
-                        borderBottom: '1px solid var(--border)',
+                        // Thin divider between rows; none after the last one.
+                        // The row Box is the only child of its motion wrapper,
+                        // so :last-child would hide every divider
+                        borderBottom: index === users.length - 1 ? 'none' : '1px solid var(--border)',
                         transition: 'background 0.15s ease',
                         '&:hover': {
                           background: 'rgba(var(--primary-rgb), 0.04)',
-                        },
-                        '&:last-child': {
-                          borderBottom: 'none',
                         },
                       }}
                     >
@@ -1099,7 +1102,7 @@ export default function UsersPage() {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{

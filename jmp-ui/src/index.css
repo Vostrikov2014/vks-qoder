@@ -34,9 +34,9 @@
   --accent-red: #ef4444;
   
   /* Sidebar Colors - light theme: pale blue surface, a shade below the page
-     background (#F5F9FF) so the panel still reads as a separate surface */
-  --sidebar-bg: #E8F0FA;
-  --sidebar-bg-dark: #DBE7F6;
+     background (#D7E2F2) so the panel still reads as a separate surface */
+  --sidebar-bg: #C8D6EC;
+  --sidebar-bg-dark: #BBCDE8;
   --sidebar-text: var(--text-h);
   --sidebar-text-muted: var(--text-muted);
   --sidebar-active-bg: rgba(var(--primary-rgb), 0.14);
@@ -65,8 +65,9 @@
   --text-muted: #57718E;
   --text-inverse: #ffffff;
   
-  /* Background Colors */
-  --bg: #F5F9FF;
+  /* Background Colors - the page surface sits clearly below white, so the
+     white (borderless) input fields and light cards stand out from it */
+  --bg: #D7E2F2;
   --bg-elevated: #ffffff;
   
   /* Border & Divider */
@@ -120,7 +121,9 @@
   }
 }
 
-/* Dark Mode - Black / Gray */
+/* Dark Mode - Black / Gray.
+   Page and elevated surfaces are lifted a step above near-black; HomePage and
+   LoginPage keep their own literal palettes with the same tones. */
 html.dark,
 html.dark body {
   color-scheme: dark;
@@ -129,12 +132,12 @@ html.dark body {
   --text-muted: #8A8A8A;
   --text-inverse: #0A0A0A;
   
-  --bg: #0A0A0A;
-  --bg-elevated: #1A1A1A;
+  --bg: #141414;
+  --bg-elevated: #202020;
   
   /* Sidebar keeps the previous dark look: all whitish values are set explicitly */
-  --sidebar-bg: #1A1A1A;
-  --sidebar-bg-dark: #0A0A0A;
+  --sidebar-bg: #202020;
+  --sidebar-bg-dark: #141414;
   --sidebar-text: #F5F5F5;
   --sidebar-text-muted: #9A9A9A;
   --sidebar-active-bg: rgba(96, 165, 250, 0.2);
@@ -149,7 +152,7 @@ html.dark body {
   --sidebar-divider: rgba(255, 255, 255, 0.15);
   --sidebar-border-right: rgba(255, 255, 255, 0.08);
   
-  --glass-bg: rgba(26, 26, 26, 0.8);
+  --glass-bg: rgba(32, 32, 32, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
   
   --border: rgba(255, 255, 255, 0.10);

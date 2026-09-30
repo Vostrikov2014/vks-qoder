@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { tenantApi, type TenantSummary, type Tenant, type TenantCreateRequest, type TenantUpdateRequest, type TenantQuotas } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { usePageViewMode } from '../store/viewModeStore';
 import { createDialogFieldSx, dialogButtonSx } from '../styles/dialogFields';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -149,7 +150,8 @@ export default function TenantsPage() {
   const [suspendTarget, setSuspendTarget] = useState<TenantSummary | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
   const [formData, setFormData] = useState<FormData>(emptyForm);
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Cards/list choice is remembered per page in the persisted store
+  const [viewMode, setViewMode] = usePageViewMode('tenants');
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   // Create/edit dialog fields follow the Recordings (Entries) page look
@@ -510,7 +512,7 @@ export default function TenantsPage() {
                       )}
 
                       {/* Actions */}
-                      <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1, pt: 1, borderTop: '1px solid var(--border)' }}>
                         {tenant.status === 'ACTIVE' && (
                           <Button
                             fullWidth
@@ -664,10 +666,12 @@ export default function TenantsPage() {
                         gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
-                        borderBottom: '1px solid var(--border)',
+                        // Thin divider between rows; none after the last one.
+                        // The row Box is the only child of its motion wrapper,
+                        // so :last-child would hide every divider
+                        borderBottom: index === tenants.length - 1 ? 'none' : '1px solid var(--border)',
                         transition: 'background 0.15s ease',
                         '&:hover': { background: 'rgba(var(--primary-rgb), 0.04)' },
-                        '&:last-child': { borderBottom: 'none' },
                       }}
                     >
                       {/* Initials Icon */}
@@ -1089,7 +1093,7 @@ export default function TenantsPage() {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{
@@ -1157,7 +1161,7 @@ export default function TenantsPage() {
             sx={dialogFieldSx}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
           <Button
             onClick={() => setOpenSuspendDialog(false)}
             sx={{

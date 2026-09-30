@@ -394,6 +394,7 @@ export default function DashboardPage() {
                       border: '1px solid rgba(var(--primary-rgb), 0.15)',
                       borderRadius: 'var(--radius-lg)',
                     }}
+                    labelStyle={{ color: 'var(--text-h)' }}
                   />
                   <Area
                     type="monotone"

@@ -430,7 +430,7 @@ export default function ShareModal({ conference, open, onClose }: ShareModalProp
               )}
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, pt: 2, borderTop: '1px solid var(--border)' }}>
             <Button
               onClick={handleClose}
               sx={{

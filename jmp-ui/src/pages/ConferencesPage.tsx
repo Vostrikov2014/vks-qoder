@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { conferenceApi, participantAssignmentApi } from '../services/api';
 import { useThemeStore } from '../store/themeStore';
+import { usePageViewMode } from '../store/viewModeStore';
 import { createDialogFieldSx, dialogButtonSx, dialogMenuProps } from '../styles/dialogFields';
 import ShareModal from '../components/ShareModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -235,7 +236,8 @@ export default function ConferencesPage() {
   });
   const [participants, setParticipants] = useState<ParticipantAssignment[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  // Cards/list choice is remembered per page in the persisted store
+  const [viewMode, setViewMode] = usePageViewMode('conferences');
   // Create/edit dialog fields follow the Recordings (Entries) page look
   const dialogFieldSx = createDialogFieldSx(isDarkMode);
 
@@ -790,7 +792,7 @@ export default function ConferencesPage() {
                     </Box>
 
                     {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, pt: 1, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: 1, pt: 1, flexWrap: 'wrap', borderTop: '1px solid var(--border)' }}>
                       <Button
                         variant="contained"
                         startIcon={<Play size={16} />}
@@ -974,13 +976,13 @@ export default function ConferencesPage() {
                         gap: { xs: 1, sm: 2 },
                         p: 2,
                         alignItems: 'center',
-                        borderBottom: '1px solid var(--border)',
+                        // Thin divider between rows; none after the last one.
+                        // The row Box is the only child of its motion wrapper,
+                        // so :last-child would hide every divider
+                        borderBottom: index === conferences.length - 1 ? 'none' : '1px solid var(--border)',
                         transition: 'background 0.15s ease',
                         '&:hover': {
                           background: 'rgba(var(--primary-rgb), 0.04)',
-                        },
-                        '&:last-child': {
-                          borderBottom: 'none',
                         },
                       }}
                     >
@@ -1653,7 +1655,7 @@ export default function ConferencesPage() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
           <Button
             onClick={() => {
               setOpenDialog(false);
