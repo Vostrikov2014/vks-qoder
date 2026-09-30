@@ -40,3 +40,6 @@ build/
 ### Certs & Certbot ###
 certs/*.pem
 certbot-webroot/
+
+### VKS TV: локальный тулчейн сборки Android-приложения (JDK, SDK, кеши) ###
+.toolchain/

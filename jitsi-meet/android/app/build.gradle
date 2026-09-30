@@ -13,6 +13,18 @@ if (googleServicesEnabled) {
 // https://stackoverflow.com/a/38643838
 def vcode = (int) (((new Date().getTime() / 1000) - 1546297200) / 10)
 
+// VKS TV: набор ABI, которые попадают в сборку. По умолчанию сохраняется
+// историческое поведение (все четыре ABI). Сборку под ТВ можно сузить, чтобы
+// заметно её ускорить, например: -PreactNativeArchitectures=arm64-v8a
+def reactNativeArchitectures() {
+    return (project.findProperty('reactNativeArchitectures')
+        ?: System.getenv('REACT_NATIVE_ARCHITECTURES')
+        ?: 'armeabi-v7a,arm64-v8a,x86,x86_64')
+        .split(',')
+        .collect { it.trim() }
+        .findAll { it }
+}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -26,7 +38,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
 
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            reactNativeArchitectures().each { abiFilters it }
         }
 
         externalNativeBuild {
@@ -45,6 +57,21 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+
+        // VKS TV: ключ для release-сборки. Файл ключа в репозиторий не попадает
+        // (*.keystore в .gitignore); его создаёт scripts/build-vks-tv.sh или
+        // вручную: keytool -genkeypair -keystore keystores/vks-tv.keystore …
+        // Пароли можно переопределить переменными окружения VKS_TV_*.
+        release {
+            def keystoreFile = rootProject.file('keystores/vks-tv.keystore')
+
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+                storePassword System.getenv('VKS_TV_STORE_PASSWORD') ?: 'vks-tv'
+                keyAlias System.getenv('VKS_TV_KEY_ALIAS') ?: 'vks-tv'
+                keyPassword System.getenv('VKS_TV_KEY_PASSWORD') ?: 'vks-tv'
+            }
+        }
     }
 
     buildTypes {
@@ -54,6 +81,12 @@ android {
             applicationIdSuffix ".debug"
         }
         release {
+            // VKS TV: если ключ keystores/vks-tv.keystore существует, сборка
+            // автоматически подписывается им (см. signingConfigs.release).
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
+
             // Uncomment the following line for signing a test release build.
             // signingConfig signingConfigs.debug
             minifyEnabled true
@@ -88,6 +121,14 @@ android {
     }
 
     namespace 'org.jitsi.meet'
+}
+
+// VKS TV: фиксированные имена артефактов: release -> vks-tv.apk,
+// debug -> vks-tv-debug.apk.
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        output.outputFileName = variant.buildType.name == 'release' ? 'vks-tv.apk' : "vks-tv-${variant.buildType.name}.apk"
+    }
 }
 
 dependencies {

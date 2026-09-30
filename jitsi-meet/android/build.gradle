@@ -53,6 +53,15 @@ buildscript {
 
 allprojects {
     repositories {
+        // VKS TV: локальный Maven-репозиторий с предзагруженными крупными
+        // артефактами (react-android, hermes-android): штатная загрузка из
+        // repo.reactnative.dev рвётся по таймауту в медленных сетях.
+        def vksLocalMaven = rootProject.file('local-maven')
+
+        if (vksLocalMaven.exists()) {
+            maven { url vksLocalMaven.toURI() }
+        }
+
         mavenCentral()
         google()
         maven { url 'https://www.jitpack.io' }
@@ -196,6 +205,23 @@ subprojects { subproject ->
                 // react-native-calendar-events
                 lint {
                     abortOnError = false
+                }
+
+                // VKS TV: закрепляем версию NDK, которую использует проект
+                // (см. ext.ndkVersion), чтобы не подтягивалась другая версия.
+                ndkVersion rootProject.ext.ndkVersion
+
+                // VKS TV: если задан reactNativeArchitectures (например,
+                // -PreactNativeArchitectures=arm64-v8a), собираем нативный код
+                // только под этот набор ABI — это сильно ускоряет сборку.
+                def vksArchs = subproject.findProperty('reactNativeArchitectures')
+
+                if (vksArchs) {
+                    defaultConfig {
+                        ndk {
+                            vksArchs.split(',').each { abiFilters it.trim() }
+                        }
+                    }
                 }
             }
         }
