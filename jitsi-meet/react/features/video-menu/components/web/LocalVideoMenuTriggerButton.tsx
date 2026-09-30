@@ -25,7 +25,11 @@ import { PARTICIPANT_MENU_BUTTONS as BUTTONS } from '../../constants';
 import ConnectionStatusButton from './ConnectionStatusButton';
 import DemoteToVisitorButton from './DemoteToVisitorButton';
 import FlipLocalVideoButton from './FlipLocalVideoButton';
-import HideSelfViewVideoButton from './HideSelfViewVideoButton';
+// NOTE: The "hide self view" entry of the local video (thumbnail) menu is
+// temporarily hidden. The setting itself remains available in the settings
+// dialog. To restore the menu entry, uncomment this import and the
+// corresponding block in the menu content below.
+// import HideSelfViewVideoButton from './HideSelfViewVideoButton';
 import TogglePinToStageButton from './TogglePinToStageButton';
 
 /**
@@ -196,6 +200,10 @@ const LocalVideoMenuTriggerButton = ({
                             notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.FLIP_LOCAL_VIDEO) }
                             onClick = { hidePopover } />
                     }
+                    {/* NOTE: The "hide self view" entry of the local video menu is
+                    temporarily hidden. The setting itself remains available in the
+                    settings dialog. To restore the menu entry, uncomment this block
+                    and the HideSelfViewVideoButton import at the top of the file.
                     {_showHideSelfViewButton
                         && <HideSelfViewVideoButton
                             className = { _overflowDrawer ? classes.flipText : '' }
@@ -204,6 +212,7 @@ const LocalVideoMenuTriggerButton = ({
                             notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.HIDE_SELF_VIEW) }
                             onClick = { hidePopover } />
                     }
+                    */}
                     {
                         _showPinToStage && <TogglePinToStageButton
                             className = { _overflowDrawer ? classes.flipText : '' }

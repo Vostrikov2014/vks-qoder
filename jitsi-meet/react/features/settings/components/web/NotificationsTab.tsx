@@ -95,7 +95,7 @@ const styles = (theme: Theme) => {
             flexDirection: 'column' as const,
             flex: 1,
 
-            '&:first-child:not(:last-child)': {
+            '&:first-of-type:not(:last-child)': {
                 marginRight: theme.spacing(3),
 
                 '@media (max-width: 607px)': {

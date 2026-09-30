@@ -105,7 +105,7 @@ const useStyles = makeStyles()(theme => {
                             marginRight: theme.spacing(1),
                             borderRadius: 5
                         },
-                        '&>div:first-child': {
+                        '&>div:first-of-type': {
                             borderRadius: '0 5px 5px 0'
                         },
                         '&>div:last-child': {

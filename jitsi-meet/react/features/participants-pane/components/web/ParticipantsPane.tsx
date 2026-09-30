@@ -62,7 +62,7 @@ const useStyles = makeStyles<IStylesProps>()((theme, { isChatOpen }) => {
                 border: 'none'
             },
 
-            [[ '& > *:first-child', '& > *:last-child' ] as any]: {
+            [[ '& > *:first-of-type', '& > *:last-child' ] as any]: {
                 flexShrink: 0
             },
 
@@ -119,18 +119,6 @@ const useStyles = makeStyles<IStylesProps>()((theme, { isChatOpen }) => {
             height: '60px',
             padding: `0 ${participantsPaneTheme.panePadding}px`,
             justifyContent: 'flex-end'
-        },
-
-        antiCollapse: {
-            fontSize: 0,
-
-            '&:first-child': {
-                display: 'none'
-            },
-
-            '&:first-child + *': {
-                marginTop: 0
-            }
         },
 
         footer: {
@@ -212,9 +200,9 @@ const ParticipantsPane = () => {
             </div>
             <div className = { classes.container }>
                 <VisitorsList />
-                <br className = { classes.antiCollapse } />
+                <br className = 'pane-anti-collapse' />
                 <LobbyParticipants />
-                <br className = { classes.antiCollapse } />
+                <br className = 'pane-anti-collapse' />
                 <MeetingParticipants
                     searchString = { searchString }
                     setSearchString = { setSearchString } />

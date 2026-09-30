@@ -471,18 +471,26 @@ export default class LargeVideoManager {
         const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
         const resizableFilmstrip = isFilmstripResizable(state);
 
-        if (isParticipantsPaneOpen) {
-            widthToUse -= theme.participantsPaneWidth;
-        }
-
-        if (isOpen && window.innerWidth > 580) {
+        if (isParticipantsPaneOpen && isOpen && window.innerWidth > 580) {
             /**
-             * If chat state is open, we re-compute the container width
-             * by subtracting the chat width, which may be resized by the user.
+             * The chat and the participants pane share a single right column,
+             * its width is subtracted only once.
              */
-            const chatWidth = state['features/chat'].width?.current ?? CHAT_SIZE;
+            widthToUse -= theme.participantsPaneWidth;
+        } else {
+            if (isParticipantsPaneOpen) {
+                widthToUse -= theme.participantsPaneWidth;
+            }
 
-            widthToUse -= chatWidth;
+            if (isOpen && window.innerWidth > 580) {
+                /**
+                 * If chat state is open, we re-compute the container width
+                 * by subtracting the chat width, which may be resized by the user.
+                 */
+                const chatWidth = state['features/chat'].width?.current ?? CHAT_SIZE;
+
+                widthToUse -= chatWidth;
+            }
         }
 
         if (resizableFilmstrip && visible && filmstripWidth.current >= FILMSTRIP_BREAKPOINT) {

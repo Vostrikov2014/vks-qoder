@@ -278,7 +278,15 @@ const defaultStyles = (theme: Theme) => {
         },
 
         indicatorsBottomContainer: {
-            bottom: 0
+            bottom: 0,
+
+            // In tile view the bottom plate (with the participant name) is
+            // raised ~3cm (114px) above the tile's bottom edge and centered
+            // horizontally.
+            '&.tile-view-mode': {
+                bottom: '114px',
+                justifyContent: 'center'
+            }
         },
 
         indicatorsBackground: {

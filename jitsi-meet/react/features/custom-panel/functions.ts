@@ -1,6 +1,6 @@
 import { IReduxState } from '../app/types';
 import { CHAT_SIZE } from '../chat/constants';
-import { getParticipantsPaneWidth } from '../participants-pane/functions';
+import { getParticipantsPaneOpen, getParticipantsPaneWidth } from '../participants-pane/functions';
 import { VIDEO_SPACE_MIN_SIZE } from '../video-layout/constants';
 
 import { DEFAULT_CUSTOM_PANEL_WIDTH } from './constants';
@@ -63,7 +63,11 @@ export function getCustomPanelWidth(state: IReduxState): number {
 export function getCustomPanelMaxSize(state: IReduxState): number {
     const { clientWidth } = state['features/base/responsive-ui'];
     const { isOpen: isChatOpen, width: chatWidth } = state['features/chat'];
-    const chatPanelWidth = isChatOpen ? (chatWidth?.current ?? CHAT_SIZE) : 0;
+    const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
+    // The chat and the participants pane share a single right column, so its
+    // width is subtracted only once. The column keeps the participants pane
+    // width while the chat is stacked below it.
+    const chatPanelWidth = isChatOpen && !isParticipantsPaneOpen ? (chatWidth?.current ?? CHAT_SIZE) : 0;
 
     return Math.max(clientWidth - chatPanelWidth - getParticipantsPaneWidth(state) - VIDEO_SPACE_MIN_SIZE, 0);
 }

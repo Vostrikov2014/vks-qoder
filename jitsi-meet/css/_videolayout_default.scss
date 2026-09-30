@@ -11,6 +11,59 @@
     height: 100%;
 }
 
+/**
+ * Column hosting the participants pane and the chat panel on the right side of
+ * the videospace. A single open panel takes the full height on its own; when
+ * both are open ({@code .right-panels-split}) they share the height, the
+ * participants pane on top and the chat below.
+ */
+#right-panels {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+
+    // A single open panel fills the whole right column. The participants
+    // pane declares height: 100% itself, but the chat panel used to rely on
+    // the parent stretching it while it lived directly under #layout_wrapper,
+    // so the rule is made explicit for every direct child.
+    @media (min-width: 581px) {
+        & > * {
+            height: 100%;
+        }
+    }
+
+    &.right-panels-split {
+        // On mobile (max-width 580px) both panels are fullscreen overlays, so
+        // the stacked column layout does not apply.
+        @media (min-width: 581px) {
+            width: 315px;
+
+            & > * {
+                box-sizing: border-box;
+                flex: 1 1 0;
+                // The flex layout distributes the height evenly; drop the
+                // full-height rule from the non-split state.
+                height: auto;
+                min-height: 0;
+                width: 100%;
+            }
+
+            // Both panels share the same background color, so a hairline
+            // divider is drawn between the stacked panes.
+            & > * + * {
+                border-top: 1px solid rgba(255, 255, 255, 0.10);
+            }
+
+            // Resizing only makes sense while the chat owns the full-height
+            // right column on its own.
+            .dragHandleContainer {
+                display: none;
+            }
+        }
+    }
+}
+
 #videospace {
     display: block;
     height: 100%;

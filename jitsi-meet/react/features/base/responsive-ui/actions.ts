@@ -3,7 +3,7 @@ import { batch } from 'react-redux';
 import { IStore } from '../../app/types';
 import { CHAT_SIZE } from '../../chat/constants';
 import { getCustomPanelWidth } from '../../custom-panel/functions';
-import { getParticipantsPaneWidth } from '../../participants-pane/functions';
+import { getParticipantsPaneOpen, getParticipantsPaneWidth } from '../../participants-pane/functions';
 
 import {
     CLIENT_RESIZED,
@@ -46,12 +46,21 @@ export function clientResized(clientWidth: number, clientHeight: number) {
             const state = getState();
             const { reducedUIEnabled = true } = state['features/base/config'];
             const { isOpen: isChatOpen, width } = state['features/chat'];
+            const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
+            const participantsPaneWidth = getParticipantsPaneWidth(state);
 
-            if (isChatOpen) {
-                availableWidth -= width?.current ?? CHAT_SIZE;
+            if (isChatOpen && isParticipantsPaneOpen) {
+                // The chat and the participants pane share a single right
+                // column, so its width is subtracted only once.
+                availableWidth -= participantsPaneWidth;
+            } else {
+                if (isChatOpen) {
+                    availableWidth -= width?.current ?? CHAT_SIZE;
+                }
+
+                availableWidth -= participantsPaneWidth;
             }
 
-            availableWidth -= getParticipantsPaneWidth(state);
             availableWidth -= getCustomPanelWidth(state);
 
             reducedUIEnabled && dispatch(setReducedUI(availableWidth, clientHeight));

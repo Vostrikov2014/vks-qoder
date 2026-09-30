@@ -113,9 +113,9 @@ export const colorMap = {
     overflowMenuBorder: 'surface05',      // Overflow menu border
     overflowMenuItemText: 'text01',       // Overflow menu item text
     overflowMenuItemIcon: 'text01',       // Overflow menu item icon
-    overflowMenuItemHover: 'surface03',   // Overflow menu item hover background
+    overflowMenuItemHover: 'surface05',   // Overflow menu item hover background (lighter than the menu surface)
     overflowMenuItemDisabled: 'text03',   // Overflow menu item disabled text/icon
-    overflowMenuSeparator: 'ui03',        // Overflow menu group separator
+    overflowMenuSeparator: 'surface05',   // Overflow menu group separator (subtle on the menu surface)
 
     // Participants Pane
     participantsPaneBackground: 'surface02', // Participants list background
@@ -155,7 +155,7 @@ export const colorMap = {
     preMeetingBackground: 'surface02',  // Pre-meeting screen container background
     preMeetingPreview: 'ui01',          // Video preview in pre-meeting
     prejoinDialogBackground: 'uiBackground', // Prejoin dialog background
-    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#0D0D0F)
+    prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#141414)
     prejoinDialogDelimiter: 'ui03',     // Prejoin dialog delimiter line
     prejoinDialogDelimiterText: 'text01', // Prejoin dialog delimiter text
     prejoinTitleText: 'text01',         // Prejoin title text color
@@ -433,7 +433,7 @@ export const colorMap = {
     securityDialogBorder: 'ui07',            // Security dialog border color
 
     // Deep Linking
-    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#0D0D0F)
+    deepLinkingBackground: 'uiBackground',   // Deep linking page content pane background (#141414)
     deepLinkingBorder: 'ui03',               // Deep linking page content pane border
     deepLinkingText: 'text01',               // Deep linking page text
     deepLinkingSeparator: 'ui03',            // Deep linking separator line
