@@ -78,7 +78,7 @@ const ConfirmDialog = ({
       <DialogContent>
         <Typography sx={{ color: 'var(--text)' }}>{message}</Typography>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
         <Button
           onClick={onClose}
           disabled={loading}

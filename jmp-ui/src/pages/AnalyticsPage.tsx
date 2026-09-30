@@ -489,6 +489,7 @@ export default function AnalyticsPage() {
                           border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
+                        labelStyle={{ color: 'var(--text-h)' }}
                       />
                       <Area
                         type="monotone"
@@ -543,6 +544,7 @@ export default function AnalyticsPage() {
                           border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
+                        labelStyle={{ color: 'var(--text-h)' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -586,6 +588,7 @@ export default function AnalyticsPage() {
                           border: '1px solid rgba(var(--primary-rgb), 0.15)',
                           borderRadius: 'var(--radius-lg)',
                         }}
+                        labelStyle={{ color: 'var(--text-h)' }}
                         formatter={(value) => [formatDurationHuman(Number(value ?? 0), t), '']}
                       />
                       <Bar dataKey="value" radius={[12, 12, 0, 0]}>

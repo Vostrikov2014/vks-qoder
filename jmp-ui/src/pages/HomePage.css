@@ -9,7 +9,8 @@
  *   panel width
  *
  * Note: the landing page keeps its own dark palette regardless of the app
- * theme variables, so all colors here are literal.
+ * theme variables, so all colors here are literal. The page and tile tones
+ * mirror the dark-theme app backgrounds (--bg: #141414, --bg-elevated: #202020).
  */
 
 /* ==========================================================================
@@ -17,8 +18,8 @@
    ========================================================================== */
 
 .home-page {
-  --lp-bg: #0d0d0f;
-  --lp-tile: #1a1a1d;
+  --lp-bg: #141414;
+  --lp-tile: #202020;
   --lp-tile-hover: #2e2e33;
   --lp-blue: #2563eb;
   --lp-blue-hover: #3b82f6;

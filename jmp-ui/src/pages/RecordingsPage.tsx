@@ -561,7 +561,15 @@ export default function RecordingsPage() {
           ) : (
             <>
               <TableContainer>
-                <Table>
+                <Table
+                  sx={{
+                    // Thin divider lines like on the other list views: under
+                    // the header and between rows; the last row drops it so
+                    // it doesn't double up with the pagination divider
+                    '& .MuiTableCell-root': { borderBottom: '1px solid var(--border)' },
+                    '& .MuiTableRow-root:last-child .MuiTableCell-root': { borderBottom: 'none' },
+                  }}
+                >
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600, color: 'var(--text-h)' }}>
@@ -687,7 +695,7 @@ export default function RecordingsPage() {
                   setPage(0);
                 }}
                 rowsPerPageOptions={[10, 20, 50]}
-                sx={{ borderTop: '1px solid var(--glass-border)' }}
+                sx={{ borderTop: '1px solid var(--border)' }}
               />
             </>
           )}
@@ -716,7 +724,7 @@ export default function RecordingsPage() {
             {t('recordings.deleteConfirm')}
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid var(--border)' }}>
           <Button
             onClick={() => setDeleteDialogOpen(false)}
             sx={{

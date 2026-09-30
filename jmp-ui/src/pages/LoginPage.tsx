@@ -121,7 +121,7 @@ export default function LoginPage() {
   // the auth fields - a plain white surface that turns pale blue on hover, plus
   // the matching dark theme pair. The glyphs themselves keep the muted grey (white
   // in the dark theme): only the plate reacts to hover, hence the fixed tile colour
-  const railTileBg = isDarkMode ? '#1a1a1d' : '#ffffff';
+  const railTileBg = isDarkMode ? 'var(--bg-elevated)' : '#ffffff';
   const railTileHoverBg = isDarkMode ? '#2e2e33' : 'var(--primary-100)';
   const railTileColor = isDarkMode ? '#ffffff' : 'var(--text-muted)';
 
@@ -168,7 +168,9 @@ export default function LoginPage() {
         position: 'relative',
         overflow: 'hidden',
         p: 2,
-        background: isDarkMode ? '#000' : 'transparent',
+        // Shared page surface (dark: #141414, the same tone as HomePage), so
+        // the login background follows the app theme instead of pure black
+        background: 'var(--bg)',
         // Phones: mirror the HomePage layout - the rail turns into a
         // normal-flow top bar, while the form keeps its own padding and is
         // centred in the space left below the bar (auto margins absorb it)
