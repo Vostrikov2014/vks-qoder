@@ -26,12 +26,33 @@ export async function loadConfig(url: string): Promise<Object> {
     try {
         const configTxt = await loadScript(url, 10 * 1000, true);
 
-        const parseConfigAsync = workletContext.createRunAsync(function parseConfig(configText: string): string {
+        let locJson = '{}';
+
+        try {
+            const urlObj = new URL(url);
+
+            locJson = JSON.stringify({
+                host: urlObj.host,
+                hostname: urlObj.hostname,
+                protocol: urlObj.protocol,
+                origin: urlObj.origin,
+                href: urlObj.href,
+                pathname: urlObj.pathname
+            });
+        } catch (e) {
+            // Ignore URL parsing errors
+        }
+
+        const parseConfigAsync = workletContext.createRunAsync(function parseConfig(
+            configText: string,
+            locData: string
+        ): string {
             'worklet';
             try {
-                // Used IIFE wrapper to capture config object from config.js
+                // Used IIFE wrapper to capture config object from config.js with polyfilled location
                 const configObj = eval(
                     '(function(){\n'
+                    + 'var location = (typeof globalThis !== "undefined" && globalThis.location) || ' + locData + ';\n'
                     + configText
                     + '\n; return (typeof config !== "undefined" ? config : globalThis.config); })()'
                 );
@@ -50,7 +71,7 @@ export async function loadConfig(url: string): Promise<Object> {
             }
         });
 
-        const workletConfig = await parseConfigAsync(configTxt);
+        const workletConfig = await parseConfigAsync(configTxt, locJson);
 
         if (typeof workletConfig !== 'string') {
             throw new Error('Worklet error: workletConfig is not a string');
