@@ -226,15 +226,14 @@ const useStyles = makeStyles()(theme => {
                 fontWeight: 400,
 
                 '& td': {
-                    padding: '2px 0'
+                    padding: '2px 0',
+                    // Previously set by "& td:nth-child(n-1)", which matches
+                    // every cell, so the padding applies to all of them.
+                    paddingLeft: '5px'
                 }
             },
             '& > table': {
                 whiteSpace: 'nowrap'
-            },
-
-            '& td:nth-child(n-1)': {
-                paddingLeft: '5px'
             },
 
             '& $upload, & $download': {

@@ -212,8 +212,10 @@ const useStyles = makeStyles<{
             justifyContent: 'center',
             // On touch devices, always visible if resize enabled. On desktop, hidden by default
             visibility: (isTouch && resizeEnabled) ? 'visible' : 'hidden',
+            // The chat is docked to the right edge of the videospace, so the
+            // resize handle sits on its left edge.
             // Position touch handle centered on offset from edge, maintaining same gap as non-touch
-            right: isTouch
+            left: isTouch
                 ? `${CHAT_DRAG_HANDLE_OFFSET - Math.floor((CHAT_TOUCH_HANDLE_SIZE - CHAT_DRAG_HANDLE_WIDTH) / 2)}px`
                 : `${CHAT_DRAG_HANDLE_OFFSET}px`,
             top: 0,
@@ -395,7 +397,7 @@ const Chat = ({
             const diff = e.clientX - mousePosition;
 
             const newWidth = Math.max(
-                Math.min(dragChatWidth + diff, maxChatWidth),
+                Math.min(dragChatWidth - diff, maxChatWidth),
                 CHAT_SIZE
             );
 

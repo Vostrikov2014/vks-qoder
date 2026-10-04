@@ -233,7 +233,9 @@ export const commonStyles = (theme: Theme) => {
 
         '.toolbox-icon': {
             display: 'flex',
-            borderRadius: 10,
+            // Match the join button shape (theme.shape.borderRadius = 12px) so
+            // toolbox buttons read consistently across prejoin and conference.
+            borderRadius: theme.shape.borderRadius,
             flexDirection: 'column' as const,
             fontSize: '1.5rem',
             height: 48,
@@ -277,14 +279,16 @@ export const commonStyles = (theme: Theme) => {
         },
 
         '.toolbox-content-items': {
-            background: theme.palette.toolboxBackground,
+            // No background panel behind the buttons: the toolbox floats over
+            // the video, only the individual icons react to hover/press.
+            background: 'transparent',
             borderRadius: 16,
             margin: '0 auto',
             padding: 6,
             textAlign: 'center' as const,
             pointerEvents: 'all' as const,
             display: 'flex',
-            boxShadow: '0px 2px 8px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.15)',
+            boxShadow: 'none',
 
             '& > div': {
                 marginRight: theme.spacing(2),

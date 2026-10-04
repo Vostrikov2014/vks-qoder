@@ -4,3 +4,28 @@
         border-radius: 6px;
     }
 }
+
+/**
+ * Zero-height <br> separators between the sections of the participants pane.
+ * A separator is hidden when it is the first child of the pane content and
+ * clears the top margin of the section that follows it.
+ *
+ * These rules used to live in the makeStyles styles of ParticipantsPane, but
+ * Emotion logs a warning for ":first-child" selectors (they are "potentially
+ * unsafe when doing server-side rendering"). The selectors cannot be
+ * mechanically changed to ":first-of-type" here: the separators are <br>
+ * elements, so the first of them matches even when other content precedes it.
+ */
+#participants-pane {
+    .pane-anti-collapse {
+        font-size: 0;
+
+        &:first-child {
+            display: none;
+        }
+
+        &:first-child + * {
+            margin-top: 0;
+        }
+    }
+}

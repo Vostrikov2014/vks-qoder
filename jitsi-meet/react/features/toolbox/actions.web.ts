@@ -1,5 +1,5 @@
 import { IStore } from '../app/types';
-import { overwriteConfig } from '../base/config/actions';
+// import { overwriteConfig } from '../base/config/actions';
 import { isMobileBrowser } from '../base/environment/utils';
 import { isLayoutTileView } from '../video-layout/functions.any';
 
@@ -16,6 +16,10 @@ import {
 import { setToolboxVisible } from './actions.web';
 import { getToolbarTimeout } from './functions.web';
 
+// NOTE: The toolbar auto-hide is temporarily disabled: the toolbar has to stay
+// visible during the whole conference. The commented out code below is kept so
+// the original behaviour can easily be restored.
+
 export * from './actions.any';
 
 /**
@@ -28,7 +32,7 @@ export function dockToolbox(dock: boolean) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
         const { visible } = state['features/toolbox'];
-        const toolbarTimeout = getToolbarTimeout(state);
+        // const toolbarTimeout = getToolbarTimeout(state);
 
         if (dock) {
             // First make sure the toolbox is shown.
@@ -36,10 +40,12 @@ export function dockToolbox(dock: boolean) {
 
             dispatch(clearToolboxTimeout());
         } else if (visible) {
-            dispatch(
-                setToolboxTimeout(
-                    () => dispatch(hideToolbox()),
-                    toolbarTimeout));
+            // The toolbar has to stay visible: uncomment this dispatch (and
+            // the `toolbarTimeout` variable above) to restore the auto-hide.
+            // dispatch(
+            //     setToolboxTimeout(
+            //         () => dispatch(hideToolbox()),
+            //         toolbarTimeout));
         } else {
             dispatch(showToolbox());
         }
@@ -122,18 +128,23 @@ export function setFullScreen(fullScreen: boolean) {
 }
 
 /**
- * Shows the toolbox for specified timeout.
+ * Shows the toolbox.
  *
- * @param {number} timeout - Timeout for showing the toolbox.
+ * @param {number} _timeout - Timeout for showing the toolbox. Currently
+ * unused: the toolbar auto-hide is temporarily disabled.
  * @returns {Function}
  */
-export function showToolbox(timeout = 0) {
+export function showToolbox(_timeout = 0) {
     return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const state = getState();
-        const { toolbarConfig } = state['features/base/config'];
-        const toolbarTimeout = getToolbarTimeout(state);
-        const initialTimeout = toolbarConfig?.initialTimeout;
-        const alwaysVisible = toolbarConfig?.alwaysVisible;
+
+        // The toolbar has to stay visible: uncomment the commented out lines
+        // below (and rename `_timeout` back to `timeout` above) to restore
+        // the auto-hide.
+        // const { toolbarConfig } = state['features/base/config'];
+        // const toolbarTimeout = getToolbarTimeout(state);
+        // const initialTimeout = toolbarConfig?.initialTimeout;
+        // const alwaysVisible = toolbarConfig?.alwaysVisible;
 
         const {
             enabled,
@@ -145,19 +156,19 @@ export function showToolbox(timeout = 0) {
 
             // If the Toolbox is always visible, there's no need for a timeout
             // to toggle its visibility.
-            if (!alwaysVisible) {
-                if (typeof initialTimeout === 'number') {
-                    // reset `initialTimeout` once it is consumed once
-                    dispatch(overwriteConfig({ toolbarConfig: {
-                        ...toolbarConfig,
-                        initialTimeout: null
-                    } }));
-                }
-                dispatch(
-                    setToolboxTimeout(
-                        () => dispatch(hideToolbox()),
-                        timeout || initialTimeout || toolbarTimeout));
-            }
+            // if (!alwaysVisible) {
+            //     if (typeof initialTimeout === 'number') {
+            //         // reset `initialTimeout` once it is consumed once
+            //         dispatch(overwriteConfig({ toolbarConfig: {
+            //             ...toolbarConfig,
+            //             initialTimeout: null
+            //         } }));
+            //     }
+            //     dispatch(
+            //         setToolboxTimeout(
+            //             () => dispatch(hideToolbox()),
+            //             timeout || initialTimeout || toolbarTimeout));
+            // }
         }
     };
 }

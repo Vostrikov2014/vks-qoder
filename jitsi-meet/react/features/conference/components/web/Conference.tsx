@@ -26,6 +26,7 @@ import LobbyScreen from '../../../lobby/components/web/LobbyScreen';
 import { getIsLobbyVisible } from '../../../lobby/functions';
 import { getOverlayToRender } from '../../../overlay/functions.web';
 import ParticipantsPane from '../../../participants-pane/components/web/ParticipantsPane';
+import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
 import Prejoin from '../../../prejoin/components/web/Prejoin';
 import { isPrejoinPageVisible } from '../../../prejoin/functions.web';
 import ReactionAnimations from '../../../reactions/components/web/ReactionsAnimations';
@@ -75,6 +76,16 @@ interface IProps extends AbstractProps, WithTranslation {
      * Are any overlays visible?
      */
     _isAnyOverlayVisible: boolean;
+
+    /**
+     * Whether the chat panel is currently open.
+     */
+    _isChatOpen: boolean;
+
+    /**
+     * Whether the participants pane is currently open.
+     */
+    _isParticipantsPaneOpen: boolean;
 
     /**
      * The CSS class to apply to the root of {@link Conference} to modify the
@@ -230,6 +241,8 @@ class Conference extends AbstractConference<IProps, any> {
     override render() {
         const {
             _isAnyOverlayVisible,
+            _isChatOpen,
+            _isParticipantsPaneOpen,
             _layoutClassName,
             _notificationsVisible,
             _overflowDrawer,
@@ -273,6 +286,12 @@ class Conference extends AbstractConference<IProps, any> {
             );
         }
 
+        // When both panels are open they are stacked in a single right column
+        // (participants on top, chat below); otherwise the single open panel
+        // occupies the full-height right column on its own.
+        const isSplitRightPanels = _isChatOpen && _isParticipantsPaneOpen;
+        const rightPanelsClassName = `right-panels${isSplitRightPanels ? ' right-panels-split' : ''}`;
+
         return (
             <div
                 id = 'layout_wrapper'
@@ -280,7 +299,6 @@ class Conference extends AbstractConference<IProps, any> {
                 onMouseLeave = { this._onMouseLeave }
                 onMouseMove = { this._onMouseMove }
                 ref = { this._setBackground }>
-                <Chat />
                 <div
                     className = { _layoutClassName }
                     id = 'videoconference_page'
@@ -323,7 +341,12 @@ class Conference extends AbstractConference<IProps, any> {
                     { (_showLobby && !_showVisitorsQueue) && <LobbyScreen />}
                     { _showVisitorsQueue && <VisitorsQueue />}
                 </div>
-                <ParticipantsPane />
+                <div
+                    className = { rightPanelsClassName }
+                    id = 'right-panels'>
+                    <ParticipantsPane />
+                    <Chat />
+                </div>
                 <CustomPanel />
                 <ReactionAnimations />
             </div>
@@ -464,6 +487,8 @@ function _mapStateToProps(state: IReduxState) {
         ...abstractMapStateToProps(state),
         _backgroundAlpha: backgroundAlpha,
         _isAnyOverlayVisible: Boolean(getOverlayToRender(state)),
+        _isChatOpen: state['features/chat'].isOpen,
+        _isParticipantsPaneOpen: getParticipantsPaneOpen(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state) ?? ''],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
         _overflowDrawer: overflowDrawer,

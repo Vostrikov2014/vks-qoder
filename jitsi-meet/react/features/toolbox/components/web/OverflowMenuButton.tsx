@@ -74,13 +74,19 @@ interface IProps {
 }
 
 const useStyles = makeStyles<{ overflowDrawer: boolean; reactionsMenuHeight: number; }>()(
-(_theme, { reactionsMenuHeight, overflowDrawer }) => {
+(theme, { reactionsMenuHeight, overflowDrawer }) => {
     return {
         overflowMenuDrawer: {
             overflowY: 'scroll',
             height: `calc(${DRAWER_MAX_HEIGHT})`
         },
         contextMenu: {
+            // Match the color of the "More actions" button in its pressed
+            // (toggled) state, which is a bit lighter than the default menu
+            // surface, and drop the border so the menu reads as an extension
+            // of the button that opened it.
+            backgroundColor: theme.palette.toolboxIconToggled,
+            border: 'none',
             position: 'relative' as const,
             right: 'auto',
             margin: 0,

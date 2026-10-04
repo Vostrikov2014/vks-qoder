@@ -12,20 +12,20 @@ import JitsiMeetJS from '../base/lib-jitsi-meet';
 import { raiseHand } from '../base/participants/actions';
 import { getLocalParticipant, hasRaisedHand } from '../base/participants/functions';
 import { isToggleCameraEnabled } from '../base/tracks/functions.web';
-import { isInBreakoutRoom } from '../breakout-rooms/functions';
+// import { isInBreakoutRoom } from '../breakout-rooms/functions';
 import { toggleChat } from '../chat/actions.web';
 import { isChatDisabled } from '../chat/functions';
 import { useChatButton } from '../chat/hooks.web';
 import { useCustomPanelButton } from '../custom-panel/hooks.web';
-import { useEmbedButton } from '../embed-meeting/hooks';
+// import { useEmbedButton } from '../embed-meeting/hooks';
 import { useEtherpadButton } from '../etherpad/hooks';
 import { useFeedbackButton } from '../feedback/hooks.web';
 import { useFileSharingButton } from '../file-sharing/hooks.web';
 import { setGifMenuVisibility } from '../gifs/actions';
 import { isGifEnabled } from '../gifs/function.any';
-import InviteButton from '../invite/components/add-people-dialog/web/InviteButton';
+// import InviteButton from '../invite/components/add-people-dialog/web/InviteButton';
 import { registerShortcut, unregisterShortcut } from '../keyboard-shortcuts/actions';
-import { useKeyboardShortcutsButton } from '../keyboard-shortcuts/hooks';
+// import { useKeyboardShortcutsButton } from '../keyboard-shortcuts/hooks';
 import NoiseSuppressionButton from '../noise-suppression/components/NoiseSuppressionButton';
 import {
     close as closeParticipantsPane,
@@ -36,7 +36,7 @@ import {
     isParticipantsPaneEnabled
 } from '../participants-pane/functions';
 import { useParticipantPaneButton } from '../participants-pane/hooks.web';
-import { usePollsButton } from '../polls/hooks.web';
+// import { usePollsButton } from '../polls/hooks.web';
 import { addReactionToBuffer } from '../reactions/actions.any';
 import { toggleReactionsMenuVisibility } from '../reactions/actions.web';
 import RaiseHandContainerButton from '../reactions/components/web/RaiseHandContainerButtons';
@@ -48,17 +48,17 @@ import { isSalesforceEnabled } from '../salesforce/functions';
 import { startScreenShareFlow } from '../screen-share/actions.web';
 import ShareAudioButton from '../screen-share/components/web/ShareAudioButton';
 import { isScreenAudioSupported, isScreenVideoShared } from '../screen-share/functions';
-import { useSecurityDialogButton } from '../security/hooks.web';
+// import { useSecurityDialogButton } from '../security/hooks.web';
 import SettingsButton from '../settings/components/web/SettingsButton';
-import { useSharedVideoButton } from '../shared-video/hooks';
+// import { useSharedVideoButton } from '../shared-video/hooks';
 import SpeakerStats from '../speaker-stats/components/web/SpeakerStats';
 import { isSpeakerStatsDisabled } from '../speaker-stats/functions';
-import { useSpeakerStatsButton } from '../speaker-stats/hooks.web';
+// import { useSpeakerStatsButton } from '../speaker-stats/hooks.web';
 import { useClosedCaptionButton } from '../subtitles/hooks.web';
 import { toggleTileView } from '../video-layout/actions.any';
 import { shouldDisplayTileView } from '../video-layout/functions.web';
 import { useTileViewButton } from '../video-layout/hooks';
-import VideoQualityButton from '../video-quality/components/VideoQualityButton.web';
+// import VideoQualityButton from '../video-quality/components/VideoQualityButton.web';
 import VideoQualityDialog from '../video-quality/components/VideoQualityDialog.web';
 import { useVirtualBackgroundButton } from '../virtual-background/hooks';
 import { useWhiteboardButton } from '../whiteboard/hooks';
@@ -111,11 +111,14 @@ const raisehand = {
     group: 2
 };
 
-const invite = {
-    key: 'invite',
-    Content: InviteButton,
-    group: 2
-};
+// NOTE: The invite button is temporarily hidden from the toolbox. All the
+// commented out invite-related code in this file can be uncommented to
+// restore it.
+// const invite = {
+//     key: 'invite',
+//     Content: InviteButton,
+//     group: 2
+// };
 
 const toggleCamera = {
     key: 'toggle-camera',
@@ -123,11 +126,15 @@ const toggleCamera = {
     group: 2
 };
 
-const videoQuality = {
-    key: 'videoquality',
-    Content: VideoQualityButton,
-    group: 2
-};
+// NOTE: The "videoquality" (Performance settings) button is temporarily
+// hidden from the toolbox. To restore it, uncomment this block, the
+// corresponding line in the buttons object below and the VideoQualityButton
+// import above.
+// const videoQuality = {
+//     key: 'videoquality',
+//     Content: VideoQualityButton,
+//     group: 2
+// };
 
 const fullscreen = {
     key: 'fullscreen',
@@ -261,18 +268,18 @@ function useHelpButton() {
     }
 }
 
-/**
- * Hide invite button for breakout-rooms.
- *
- * @returns {Object | undefined}
- */
-function useInviteButton() {
-    const visible = useSelector((state: IReduxState) => !isInBreakoutRoom(state));
-
-    if (visible) {
-        return invite;
-    }
-}
+// /**
+//  * Hide invite button for breakout-rooms.
+//  *
+//  * @returns {Object | undefined}
+//  */
+// function useInviteButton() {
+//     const visible = useSelector((state: IReduxState) => !isInBreakoutRoom(state));
+//
+//     if (visible) {
+//         return invite;
+//     }
+// }
 
 /**
 * Returns all buttons that could be rendered.
@@ -285,31 +292,37 @@ export function useToolboxButtons(
     const desktopSharing = getDesktopSharingButton();
     const toggleCameraButton = useToggleCameraButton();
     const _fullscreen = getFullscreenButton();
-    const security = useSecurityDialogButton();
+    // const security = useSecurityDialogButton();
     const reactions = useReactionsButton();
     const participants = useParticipantPaneButton();
     const tileview = useTileViewButton();
     const chat = useChatButton();
     const cc = useClosedCaptionButton();
-    const polls = usePollsButton();
+    // const polls = usePollsButton();
     const filesharing = useFileSharingButton();
     const recording = useRecordingButton();
     const liveStreaming = useLiveStreamingButton();
     const linktosalesforce = useLinkToSalesforceButton();
     const shareaudio = getShareAudioButton();
-    const shareVideo = useSharedVideoButton();
+    // const shareVideo = useSharedVideoButton();
     const whiteboard = useWhiteboardButton();
     const etherpad = useEtherpadButton();
     const virtualBackground = useVirtualBackgroundButton();
-    const speakerStats = useSpeakerStatsButton();
-    const shortcuts = useKeyboardShortcutsButton();
-    const embed = useEmbedButton();
+    // const speakerStats = useSpeakerStatsButton();
+    // const shortcuts = useKeyboardShortcutsButton();
+    // const embed = useEmbedButton();
     const feedback = useFeedbackButton();
     const _download = useDownloadButton();
     const _help = useHelpButton();
-    const _invite = useInviteButton();
+    // const _invite = useInviteButton();
     const customPanel = useCustomPanelButton();
 
+    // NOTE: The "security", "polls", "sharedvideo" (YouTube), "videoquality"
+    // (Performance settings), "stats" (Speaker stats), "shortcuts" (Keyboard
+    // shortcuts) and "embedmeeting" (Embed meeting) buttons are temporarily
+    // hidden from the toolbox. Uncomment the commented out lines related to
+    // them (in this function and the imports at the top of the file) to
+    // restore the buttons.
     const buttons: { [key in ToolbarButton]?: IToolboxButton; } = {
         microphone,
         camera,
@@ -319,28 +332,28 @@ export function useToolboxButtons(
         raisehand,
         reactions,
         'participants-pane': participants,
-        invite: _invite,
+        // invite: _invite,
         tileview,
         'toggle-camera': toggleCameraButton,
-        videoquality: videoQuality,
+        // videoquality: videoQuality,
         fullscreen: _fullscreen,
-        security,
+        // security,
         closedcaptions: cc,
-        polls,
+        // polls,
         filesharing,
         recording,
         livestreaming: liveStreaming,
         linktosalesforce,
-        sharedvideo: shareVideo,
+        // sharedvideo: shareVideo,
         shareaudio,
         noisesuppression: noiseSuppression,
         whiteboard,
         etherpad,
         'select-background': virtualBackground,
-        stats: speakerStats,
+        // stats: speakerStats,
         settings,
-        shortcuts,
-        embedmeeting: embed,
+        // shortcuts,
+        // embedmeeting: embed,
         feedback,
         download: _download,
         help: _help,

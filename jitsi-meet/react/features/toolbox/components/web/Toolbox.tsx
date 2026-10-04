@@ -7,9 +7,16 @@ import { IReduxState } from '../../../app/types';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { getLocalParticipant, isLocalParticipantModerator } from '../../../base/participants/functions';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
+import {
+    getVerticalViewMaxWidth,
+    isFilmstripDisabled,
+    isFilmstripVisible
+} from '../../../filmstrip/functions.web';
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from '../../../reactions/functions.web';
 import { isCCTabEnabled } from '../../../subtitles/functions.any';
 import { isTranscribing } from '../../../transcribing/functions';
+import { LAYOUTS } from '../../../video-layout/constants';
+import { getCurrentLayout } from '../../../video-layout/functions.web';
 import {
     setHangupMenuVisible,
     setOverflowMenuVisible,
@@ -65,6 +72,34 @@ const useStyles = makeStyles()(() => {
 });
 
 /**
+ * Main toolbar buttons pinned to the right corner of the videospace instead
+ * of sitting in the centered button group. The array order defines the
+ * display order from left to right.
+ */
+const RIGHT_CORNER_BUTTON_KEYS = [ 'participants-pane', 'chat' ];
+
+/**
+ * Toolbar buttons pinned to the left corner of the videospace instead of
+ * sitting in the centered button group. Unlike the right corner keys, these
+ * may also come from the overflow menu (fullscreen): such buttons are moved
+ * out of the "More actions" menu into this group.
+ */
+const LEFT_CORNER_BUTTON_KEYS = [ 'tileview', 'fullscreen' ];
+
+/**
+ * All toolbar buttons pinned to the corners of the videospace on desktop.
+ * In the mobile layout they are moved into the "More actions" menu.
+ */
+const CORNER_BUTTON_KEYS = [ ...RIGHT_CORNER_BUTTON_KEYS, ...LEFT_CORNER_BUTTON_KEYS ];
+
+/**
+ * Toolbar buttons moved to the top of the "More actions" menu in the mobile
+ * layout: the participant profile (showing the display name) comes first,
+ * followed by the right corner buttons (participants, chat).
+ */
+const TOP_OVERFLOW_BUTTON_KEYS = [ 'profile', ...RIGHT_CORNER_BUTTON_KEYS ];
+
+/**
  * A component that renders the main toolbar.
  *
  * @param {IProps} props - The props of the component.
@@ -82,6 +117,11 @@ export default function Toolbox({
     const conference = useSelector((state: IReduxState) => state['features/base/conference'].conference);
     const isNarrowLayout = useSelector((state: IReduxState) => state['features/base/responsive-ui'].isNarrowLayout);
     const videoSpaceWidth = useSelector((state: IReduxState) => state['features/base/responsive-ui'].videoSpaceWidth);
+    const currentLayout = useSelector(getCurrentLayout);
+    const filmstripVisible = useSelector(isFilmstripVisible);
+    const filmstripDisabled = useSelector(isFilmstripDisabled);
+    const filmstripResizing = useSelector((state: IReduxState) => state['features/filmstrip'].isResizing);
+    const verticalViewMaxWidth = useSelector(getVerticalViewMaxWidth);
     const isModerator = useSelector(isLocalParticipantModerator);
     const customToolbarButtons = useSelector((state: IReduxState) => state['features/base/config'].customToolbarButtons);
     const iAmRecorder = useSelector((state: IReduxState) => state['features/base/config'].iAmRecorder);
@@ -114,7 +154,30 @@ export default function Toolbox({
     const reducedUI = useSelector((state: IReduxState) => state['features/base/responsive-ui'].reducedUI);
     const allButtons = useToolboxButtons(customToolbarButtons);
     const isMobile = isMobileBrowser();
+    // The mobile layout (mobile browser or a narrow window): the corner
+    // buttons are moved into the "More actions" menu instead of being pinned
+    // to the corners of the videospace.
+    const isMobileLayout = isMobile || isNarrowLayout;
     const endConferenceSupported = Boolean(conference?.isEndConferenceSupported() && isModerator);
+
+    // The main filmstrip of the vertical filmstrip layouts is a drawer docked
+    // to the right edge of the videospace (the videoconference page is its
+    // containing block): it slides in by animating `right` from a negative
+    // offset to 0, floating over the videospace on the way in. This holds
+    // next to the open chat or participants panel as well, since the panels
+    // live outside of the page. To keep the chat and participants buttons
+    // clear of the thumbnails they are offset to the left by the width of the
+    // open drawer.
+    const isFilmstripDrawerLayout = currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+        || currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW;
+    const filmstripDrawerOffset = isFilmstripDrawerLayout && filmstripVisible && !filmstripDisabled
+        ? verticalViewMaxWidth
+        : 0;
+
+    // The corner buttons ride along with the filmstrip drawer, so they use the
+    // same animation as the filmstrip itself (it also slides `right` for 1s).
+    // While the resize handle is being dragged the buttons follow instantly.
+    const rightCornerButtonsTransition = filmstripResizing ? 'none' : 'right 1s';
 
     useKeyboardShortcuts(toolbarButtonsToUse);
 
@@ -221,7 +284,9 @@ export default function Toolbox({
      * @returns {void}
      */
     const handleBlur = useCallback(() => {
-        dispatch(setToolboxVisible(false));
+        // The toolbar has to stay visible: uncomment the dispatch below to
+        // restore the hiding of the toolbar on blur.
+        // dispatch(setToolboxVisible(false));
     }, [ dispatch ]);
 
     if (iAmRecorder || iAmSipGateway) {
@@ -233,7 +298,7 @@ export default function Toolbox({
         toolbarButtonsToUse.length ? '' : 'no-buttons'}`;
 
     const toolbarAccLabel = 'toolbar.accessibilityLabel.moreActionsMenu';
-    const containerClassName = `toolbox-content${isMobile || isNarrowLayout ? ' toolbox-content-mobile' : ''}`;
+    const containerClassName = `toolbox-content${isMobileLayout ? ' toolbox-content-mobile' : ''}`;
 
     const normalUIButtons = getVisibleButtons({
         allButtons,
@@ -254,9 +319,45 @@ export default function Toolbox({
     const mainMenuButtons = reducedUI
         ? reducedUIButtons.mainMenuButtons
         : normalUIButtons.mainMenuButtons;
-    const overflowMenuButtons = reducedUI
+    const allOverflowMenuButtons = reducedUI
         ? []
         : normalUIButtons.overflowMenuButtons;
+    // The corner groups are only used in the desktop layout. In the mobile
+    // layout the corner buttons go back to the "More actions" menu instead
+    // (see `overflowMenuButtons` below).
+    // Right corner buttons follow the key order above, unlike the center row
+    // which keeps the order given by the toolbar thresholds.
+    const rightCornerButtons: IToolboxButton[] = isMobileLayout ? [] : RIGHT_CORNER_BUTTON_KEYS
+        .map(key => mainMenuButtons.find(button => button.key === key))
+        .filter((button): button is IToolboxButton => button !== undefined);
+    // The tileview button comes from the main row, while fullscreen usually
+    // lives in the overflow menu: collect both into the left corner group.
+    const leftCornerButtons: IToolboxButton[] = isMobileLayout ? [] : [
+        ...mainMenuButtons.filter(({ key }) => LEFT_CORNER_BUTTON_KEYS.includes(key)),
+        ...allOverflowMenuButtons.filter(({ key }) => LEFT_CORNER_BUTTON_KEYS.includes(key))
+    ];
+    // The mobile top overflow buttons are kept out of the center row as well
+    // (with the default config they are not part of the main row anyway).
+    const centerMenuButtons = mainMenuButtons.filter(({ key }) =>
+        !CORNER_BUTTON_KEYS.includes(key) && !(isMobileLayout && TOP_OVERFLOW_BUTTON_KEYS.includes(key)));
+    // In the mobile layout the corner buttons join the "More actions" menu
+    // instead of being pinned to the corners. The top of the menu is formed
+    // by `TOP_OVERFLOW_BUTTON_KEYS`: the participant profile (the display
+    // name) goes first, followed by participants and chat (the desktop corner
+    // order is kept). The rest of the corner buttons keep their place in the
+    // overflow list or are appended to it. On desktop the left corner keys
+    // are kept out of the menu, because they are displayed in the corner
+    // instead.
+    const overflowMenuButtons = isMobileLayout
+        ? [
+            ...TOP_OVERFLOW_BUTTON_KEYS
+                .map(key => [ ...mainMenuButtons, ...allOverflowMenuButtons ]
+                    .find(button => button.key === key))
+                .filter((button): button is IToolboxButton => button !== undefined),
+            ...allOverflowMenuButtons.filter(({ key }) => !TOP_OVERFLOW_BUTTON_KEYS.includes(key)),
+            ...mainMenuButtons.filter(({ key }) => LEFT_CORNER_BUTTON_KEYS.includes(key))
+        ]
+        : allOverflowMenuButtons.filter(({ key }) => !LEFT_CORNER_BUTTON_KEYS.includes(key));
     const raiseHandInOverflowMenu = overflowMenuButtons.some(({ key }) => key === 'raisehand');
     const showReactionsInOverflowMenu = _shouldDisplayReactionsButtons
         && (
@@ -270,6 +371,15 @@ export default function Toolbox({
             id = 'new-toolbox'
             style = { toolbarBackgroundColor ? { backgroundColor: toolbarBackgroundColor } : undefined }>
             <div className = { containerClassName }>
+                {Boolean(leftCornerButtons.length) && (
+                    <div className = 'toolbox-content-items toolbox-left-corner'>
+                        {leftCornerButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
+                            <Content
+                                { ...rest }
+                                buttonKey = { key }
+                                key = { key } />))}
+                    </div>
+                )}
                 <div
                     className = 'toolbox-content-wrapper'
                     onBlur = { handleBlur }
@@ -282,7 +392,7 @@ export default function Toolbox({
                     <div
                         className = 'toolbox-content-items'
                         ref = { _toolboxRef }>
-                        {mainMenuButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
+                        {centerMenuButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
                             <Content
                                 { ...rest }
                                 buttonKey = { key }
@@ -356,6 +466,23 @@ export default function Toolbox({
                         )}
                     </div>
                 </div>
+
+                {Boolean(rightCornerButtons.length) && (
+                    <div
+                        className = 'toolbox-content-items toolbox-right-corner'
+                        style = { videoSpaceWidth > 0
+                            ? {
+                                right: `calc(100% - ${videoSpaceWidth}px + 16px + ${filmstripDrawerOffset}px)`,
+                                transition: rightCornerButtonsTransition
+                            }
+                            : undefined }>
+                        {rightCornerButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
+                            <Content
+                                { ...rest }
+                                buttonKey = { key }
+                                key = { key } />))}
+                    </div>
+                )}
             </div>
         </div>
     );

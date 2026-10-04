@@ -93,8 +93,85 @@
 
 .toolbox-content-wrapper::after {
     content: '';
-    background: var(--toolbox-background-color, $newToolbarBackgroundColor);
+    // Matches the transparent toolbox panel: no colored safe-area strip below it
+    background: transparent;
     padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/**
+ * Tileview / fullscreen buttons pinned to the left corner of the videospace.
+ * Absolutely positioned so the centered main button group is unaffected.
+ */
+.toolbox-content .toolbox-content-items.toolbox-left-corner {
+    bottom: 0;
+    left: 16px;
+    margin: 0;
+    position: absolute;
+
+    @media (max-width: 500px) {
+        // The main button row is full width on small screens: float the
+        // corner group above it so nothing overlaps. The width and alignment
+        // overrides keep the buttons as a compact cluster (the shared mobile
+        // row styles would stretch them across the full width otherwise).
+        bottom: calc(100% + 4px);
+        justify-content: flex-start;
+        left: 8px;
+        padding: 0;
+        width: auto;
+    }
+}
+
+/**
+ * Chat / participants buttons pinned to the right corner of the videospace.
+ * Absolutely positioned so the centered main button group is unaffected; the
+ * inline style offsets `right` by the width of the open filmstrip drawer, so
+ * the sliding thumbnails push the buttons instead of covering them.
+ */
+.toolbox-content-items.toolbox-right-corner {
+    bottom: 0;
+    margin: 0;
+    position: absolute;
+    right: 16px;
+
+    @media (max-width: 500px) {
+        // The main button row is full width on small screens: float the
+        // corner group above it so nothing overlaps.
+        bottom: calc(100% + 4px);
+        right: 8px;
+    }
+}
+
+/**
+ * Corner buttons (tileview / fullscreen on the left, chat / participants on
+ * the right): no background highlight, the toggled (pressed) state is
+ * indicated by the blue icon color instead.
+ */
+.toolbox-content .toolbox-content-items.toolbox-left-corner,
+.toolbox-content .toolbox-content-items.toolbox-right-corner {
+    .toolbox-icon {
+        // Slightly smaller icons for these corner buttons (default is 24px).
+        svg {
+            height: 20px;
+            width: 20px;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover,
+            &:active {
+                // Overrides the shared `.toolbox-icon` hover/active background.
+                background-color: transparent;
+            }
+        }
+
+        // No background when toggled either: only the icon turns blue.
+        &.toggled {
+            background-color: transparent;
+
+            svg {
+                fill: var(--toolbar-icon-active-color, #3B82F6);
+            }
+        }
+    }
 }
 
 .overflow-menu-hr {
