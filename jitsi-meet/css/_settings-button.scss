@@ -3,7 +3,11 @@
 
     .toolbox-icon {
         align-items: center;
-        border-radius: 10px;
+
+        // No border-radius here: the corner radius of every toolbar button is
+        // owned by the global `.toolbox-icon` style (theme.shape.borderRadius),
+        // so buttons decorated with a settings gear (camera, microphone,
+        // reactions) keep the same shape as the plain ones (raise hand).
         cursor: pointer;
         display: flex;
         justify-content: center;

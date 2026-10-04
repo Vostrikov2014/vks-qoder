@@ -233,8 +233,10 @@ export const commonStyles = (theme: Theme) => {
 
         '.toolbox-icon': {
             display: 'flex',
-            // Match the join button shape (theme.shape.borderRadius = 12px) so
-            // toolbox buttons read consistently across prejoin and conference.
+            // Single source of truth for the corner radius of every toolbar
+            // button (theme.shape.borderRadius = 16px), including the ones
+            // wrapped in `.settings-button-container`, so camera / microphone /
+            // reactions match plain buttons such as raise hand.
             borderRadius: theme.shape.borderRadius,
             flexDirection: 'column' as const,
             fontSize: '1.5rem',

@@ -151,8 +151,8 @@
     .toolbox-icon {
         // Slightly smaller icons for these corner buttons (default is 24px).
         svg {
-            height: 20px;
-            width: 20px;
+            height: 16px;
+            width: 16px;
         }
 
         @media (hover: hover) and (pointer: fine) {
