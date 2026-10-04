@@ -205,18 +205,18 @@ android.libraryVariants.all { def variant ->
                     "generateReleaseLintVitalModel",
                     "lintVitalAnalyzeRelease",
                     "lintReportRelease",
-                    "lintAnalyzeRelease",
-                    "lintReportDebug",
-                    "lintAnalyzeDebug"
+                    "lintAnalyzeRelease"
                 ].each { taskName ->
                     if (subproject.tasks.findByName(taskName)) {
                         currentBundleTask.dependsOn(subproject.tasks.named(taskName))
                     }
                 }
 
-                // Also depend on the main build task to ensure all sub-tasks are completed
-                if (subproject.tasks.findByName("build")) {
-                    currentBundleTask.dependsOn(subproject.tasks.named("build"))
+                // VKS TV: зависим от release-сборки модуля, а не от «build»:
+                // «build» тянет ещё и debug-варианты (assembleDebug), из-за чего
+                // весь нативный код и зависимости собирались бы дважды.
+                if (subproject.tasks.findByName("assembleRelease")) {
+                    currentBundleTask.dependsOn(subproject.tasks.named("assembleRelease"))
                 }
             }
         }

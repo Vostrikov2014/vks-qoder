@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- VKS TV: monochrome-слой adaptive-иконки (Android 13+ Themed Icons).
-     Тот же знак видеокамеры lucide, одноцветный -->
+<!-- VKS TV: белая видеокамера (lucide Video) на безопасной зоне adaptive-icon.
+     Геометрия повторяет favicon jmp-ui: сетка 24, translate(21 21) scale(2.75)
+     по полю 108 => 66dp контента по центру -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -11,12 +12,14 @@
       android:translateY="21"
       android:scaleX="2.75"
       android:scaleY="2.75">
+    <!-- корпус камеры: rect x=2 y=6 w=14 h=12 rx=2 -->
     <path
         android:pathData="M4,6 L16,6 A2,2 0 0 1 18,8 L18,16 A2,2 0 0 1 16,18 L4,18 A2,2 0 0 1 2,16 L2,8 A2,2 0 0 1 4,6 Z"
         android:strokeColor="#FFFFFFFF"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"/>
+    <!-- объектив -->
     <path
         android:pathData="M16,13 L21.223,16.482 a0.5,0.5 0 0 0 0.777,-0.416 L21.9999,7.87 a0.5,0.5 0 0 0 -0.752,-0.432 L16,10.5"
         android:strokeColor="#FFFFFFFF"

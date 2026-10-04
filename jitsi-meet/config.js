@@ -868,41 +868,52 @@ var config = {
     // - it's possible to reorder the buttons in the maintoolbar by changing the order of the mainToolbarButtons
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
-    // toolbarButtons: [
-    //    'camera',
-    //    'chat',
-    //    'closedcaptions',
-    //    'desktop',
-    //    'download',
-    //    'embedmeeting',
-    //    'etherpad',
-    //    'feedback',
-    //    'filmstrip',
-    //    'fullscreen',
-    //    'hangup',
-    //    'help',
-    //    'highlight',
-    //    'invite',
-    //    'linktosalesforce',
-    //    'livestreaming',
-    //    'microphone',
-    //    'noisesuppression',
-    //    'participants-pane',
-    //    'profile',
-    //    'raisehand',
-    //    'recording',
-    //    'security',
-    //    'select-background',
-    //    'settings',
-    //    'shareaudio',
-    //    'sharedvideo',
-    //    'shortcuts',
-    //    'stats',
-    //    'tileview',
-    //    'toggle-camera',
-    //    'videoquality',
-    //    'whiteboard',
-    // ],
+    //
+    // VKS TV: the deployment provides conference functionality only, so the list is
+    // deliberately narrower than the upstream default — no embed, etherpad, shared
+    // video, downloads, feedback, help or other non-conference integrations. The list
+    // is shared by the web app and the VKS TV mobile app, which resolves the same
+    // names against its own (native) button set; 'overflowmenu' and 'hangup' are
+    // native-only names and must stay here or the "More" menu and the hang up button
+    // would disappear in the mobile app.
+    toolbarButtons: [
+        // Media
+        'microphone',
+        'camera',
+        'desktop',
+        'shareaudio',
+        'noisesuppression',
+
+        // In-conference interaction
+        'chat',
+        'raisehand',
+        'reactions',
+        'closedcaptions',
+
+        // Participants and moderation (lobby, passwords, rosters)
+        'participants-pane',
+        'security',
+
+        // Conference layout
+        'tileview',
+        'filmstrip',
+        'fullscreen',
+        'toggle-camera',
+        'videoquality',
+
+        // Invitations: getInviteURL hands out the platform join link from
+        // config.jmpShareUrl, never the bare Jitsi URL.
+        'invite',
+
+        // Device setup
+        'profile',
+        'settings',
+        'select-background',
+
+        // Mobile-only keys (React Native toolbox)
+        'overflowmenu',
+        'hangup'
+    ],
 
     // Holds values related to toolbar visibility control.
     // toolbarConfig: {

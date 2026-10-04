@@ -34,6 +34,24 @@ export default {
     },
 
     /**
+     * Container of the VKS TV brand mark on the welcome page.
+     */
+    brandingContainer: {
+        alignItems: 'center',
+        paddingHorizontal: BaseTheme.spacing[3],
+        paddingTop: BaseTheme.spacing[3]
+    },
+
+    /**
+     * Application tagline under the brand mark.
+     */
+    brandingTagline: {
+        color: BaseTheme.palette.text02,
+        fontSize: 15,
+        marginTop: BaseTheme.spacing[2]
+    },
+
+    /**
      * Join button style.
      */
     button: {
@@ -44,10 +62,6 @@ export default {
         height: BaseTheme.spacing[7],
         justifyContent: 'center',
         paddingHorizontal: BaseTheme.spacing[4]
-    },
-
-    joinButtonLabel: {
-        textTransform: 'uppercase'
     },
 
     joinButtonText: {

@@ -39,7 +39,7 @@ public class JitsiMeetView extends FrameLayout {
     /**
      * Background color. Should match the background color set in JS.
      */
-    public static final int BACKGROUND_COLOR = 0xFF040404;
+    public static final int BACKGROUND_COLOR = 0xFF141414;
 
     /**
      * React Native root view.

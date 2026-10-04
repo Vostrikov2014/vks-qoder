@@ -118,3 +118,10 @@ react-native-sdk/sounds
 tests/.env
 test-results
 
+# VKS TV: артефакты сборки ТВ-приложения
+/dist/
+
+# VKS TV: локальный Maven-репозиторий с предзагруженными артефактами
+# (см. android/build.gradle)
+/android/local-maven/
+

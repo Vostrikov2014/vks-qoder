@@ -1,9 +1,12 @@
 <resources>
+    <!-- VKS TV: тёмная тема jmp-ui (#141414) как фон окна, чтобы не было белой
+         вспышки до появления splash/React-экранов. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:navigationBarColor">@color/navigationBarColor</item>
         <item name="android:statusBarColor">@color/statusBarColor</item>
+        <item name="android:windowBackground">@color/splashBackground</item>
         <item name="android:windowDisablePreview">true</item>
    </style>
 </resources>

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">VKS TV</string>
+    <string name="splash_tagline">Видеоконференции</string>
+    <string name="restriction_server_url_description">Адрес сервера Jitsi Meet, к которому подключается приложение</string>
+    <string name="restriction_server_url_title">Адрес сервера</string>
+    <string name="join_link_failed">Не удалось открыть конференцию. Проверьте подключение к сети и повторите попытку.</string>
+    <string name="join_link_login_required">Для этой конференции требуется вход. Откройте ссылку в браузере.</string>
+    <string name="join_link_ended">Конференция уже завершена.</string>
+    <string name="join_link_denied">Доступ к этой конференции ограничен.</string>
+    <string name="join_link_not_found">Ссылка на конференцию недействительна, отозвана или устарела.</string>
+</resources>

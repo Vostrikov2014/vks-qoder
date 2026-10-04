@@ -1,10 +1,10 @@
 {
-    "action01": "#3B82F6",
+    "action01": "#2563EB",
     "action02": "#2E2E33",
     "action03": "#DC2626",
     "action04": "#60A5FA",
 
-    "active01": "#2563EB",
+    "active01": "#1D4ED8",
     "active02": "#3A3A42",
     "active03": "#B91C1C",
 
@@ -14,10 +14,10 @@
 
     "disabled01": "#3A3A42",
 
-    "focus01": "#3B82F6",
+    "focus01": "#2563EB",
 
-    "hover01": "#60A5FA",
-    "hover01Light": "#60A5FA",
+    "hover01": "#3B82F6",
+    "hover01Light": "#3B82F6",
     "hover02": "#3A3A42",
     "hover03": "#EF4444",
     "hover05": "#2E2E33",
@@ -47,7 +47,7 @@
     "textColor01": "#F5F5F5",
     "textColor02": "#B3B3B3",
 
-    "ui01": "#1A1A1D",
+    "ui01": "#202020",
     "ui02": "#2E2E33",
     "ui03": "#8A8A8A",
     "ui04": "#F5F5F5",
