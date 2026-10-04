@@ -1664,7 +1664,7 @@
             "roomname": "Enter room name"
         },
         "addMeetingName": "Add Meeting name",
-        "appDescription": "Go ahead, video chat with the whole team. In fact, invite everyone you know. {{app}} is a fully encrypted, 100% open source video conferencing solution that you can use all day, every day, for free — with no account needed.",
+        "appDescription": "VKS TV is a secure video conferencing app of the VKS platform. Start a meeting or join one by its link in a couple of taps — with no account needed.",
         "audioVideoSwitch": {
             "audio": "Voice",
             "video": "Video"
@@ -1676,16 +1676,16 @@
         "getHelp": "Get help",
         "go": "GO",
         "goSmall": "GO",
-        "headerSubtitle": "Secure and high quality meetings",
-        "headerTitle": "Jitsi Meet",
+        "headerSubtitle": "Video conferencing",
+        "headerTitle": "VKS TV",
         "info": "Dial-in info",
-        "jitsiOnMobile": "Jitsi on mobile – download our apps and start a meeting from anywhere",
-        "join": "CREATE / JOIN",
+        "jitsiOnMobile": "VKS TV on mobile – download our app and start a meeting from anywhere",
+        "join": "Create / join",
         "logo": {
             "calendar": "Calendar logo",
             "desktopPreviewThumbnail": "Desktop preview thumbnail",
             "googleLogo": "Google Logo",
-            "logoDeepLinking": "Jitsi meet logo",
+            "logoDeepLinking": "VKS TV logo",
             "microsoftLogo": "Microsoft logo",
             "policyLogo": "Policy logo"
         },
@@ -1707,7 +1707,7 @@
         "settings": "Settings",
         "startMeeting": "Start meeting",
         "terms": "Terms",
-        "title": "Secure, fully featured, and completely free video conferencing",
+        "title": "Video conferencing for everyone",
         "upcomingMeetings": "Your upcoming meetings"
     },
     "whiteboard": {

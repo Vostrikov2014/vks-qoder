@@ -1,11 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- VKS TV: splash в стиле jmp-ui — тёмный фон (#141414, как bg в тёмной теме
+     jmp-ui), по центру фирменный логотип, ниже название приложения и подпись. -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary">
-    <ImageView
+    android:background="@color/splashBackground">
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:src="@drawable/ic_jitsi_logosvg"/>
+        android:gravity="center"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_vks_tv_logo"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:letterSpacing="0.02"
+            android:text="@string/app_name"
+            android:textColor="@color/splashTextColor"
+            android:textSize="28sp"
+            android:textStyle="bold"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/splash_tagline"
+            android:textColor="@color/splashTaglineColor"
+            android:textSize="14sp"/>
+    </LinearLayout>
 </RelativeLayout>

@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">VKS TV</string>
+    <string name="splash_tagline">Video conferencing</string>
     <string name="restriction_server_url_description">URL of Jitsi Meet server instance to connect to</string>
     <string name="restriction_server_url_title">Server URL</string>
+    <string name="join_link_failed">Could not open the conference. Check your network connection and try again.</string>
+    <string name="join_link_login_required">This conference requires signing in. Please open the link in a browser.</string>
+    <string name="join_link_ended">The conference has already ended.</string>
+    <string name="join_link_denied">Access to this conference is restricted.</string>
+    <string name="join_link_not_found">The conference link is invalid, revoked or expired.</string>
 </resources>

@@ -33,6 +33,7 @@ import {
     _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
 import styles from './styles.native';
+import VksTvLogo from './VksTvLogo.native';
 
 interface IProps extends AbstractProps {
 
@@ -307,7 +308,6 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                 <Button
                     accessibilityLabel = { 'welcomepage.accessibilityLabel.join' }
                     labelKey = { 'welcomepage.join' }
-                    labelStyle = { styles.joinButtonLabel }
                     onClick = { this._onJoin }
                     type = { BUTTON_TYPES.PRIMARY } />
             );
@@ -370,6 +370,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
     _renderFullUI() {
         return (
             <>
+                { this._renderBranding() }
                 { this._renderRoomNameInput() }
                 <View style = { styles.welcomePage as ViewStyle }>
                     <WelcomePageTabs
@@ -378,6 +379,25 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
                         onSettingsScreenFocused = { this._onSettingsScreenFocused } />
                 </View>
             </>
+        );
+    }
+
+    /**
+     * Renders the VKS TV brand mark and the application tagline above the room
+     * name input.
+     *
+     * @returns {ReactElement}
+     */
+    _renderBranding() {
+        const { t } = this.props;
+
+        return (
+            <View style = { styles.brandingContainer as ViewStyle }>
+                <VksTvLogo size = { 64 } />
+                <Text style = { styles.brandingTagline as TextStyle }>
+                    { t('welcomepage.headerSubtitle') }
+                </Text>
+            </View>
         );
     }
 

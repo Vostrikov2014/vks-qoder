@@ -42,5 +42,8 @@ build/
 certs/*.pem
 certbot-webroot/
 
+### JVM heap dumps (OOM артефакты сборки Android) ###
+*.hprof
+
 ### VKS TV: локальный тулчейн сборки Android-приложения (JDK, SDK, кеши) ###
 .toolchain/

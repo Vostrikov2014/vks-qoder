@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- VKS TV: палитра в терминах jmp-ui (тёмная тема).
+     colorPrimary — фирменный синий jmp-ui primary-600 (#2563EB);
+     splashBackground/splashSurface — поверхности bg (#141414) и bg-elevated (#202020);
+     тексты — text-h (#F5F5F5) и text-muted (#8A8A8A). -->
 <resources>
-    <color name="colorPrimary">#17A0DB</color>
-    <color name="navigationBarColor">#040404</color>
-    <color name="statusBarColor">#040404</color>
+    <color name="colorPrimary">#2563EB</color>
+    <color name="colorPrimaryDark">#1D4ED8</color>
+    <color name="navigationBarColor">#141414</color>
+    <color name="statusBarColor">#141414</color>
+    <color name="splashBackground">#141414</color>
+    <color name="splashTextColor">#F5F5F5</color>
+    <color name="splashTaglineColor">#8A8A8A</color>
 </resources>

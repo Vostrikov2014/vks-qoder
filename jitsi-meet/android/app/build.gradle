@@ -206,8 +206,16 @@ gradle.projectsEvaluated {
                 // Set up the call to the script
                 workingDir androidRoot
 
-                // Run the packager
-                commandLine("scripts/run-packager.sh")
+                // Run the packager. The upstream helper is a bash script; a stock
+                // Windows environment has no bash, so the PowerShell twin performing
+                // the same steps (adb reverse, Metro in a separate window) is used there.
+                if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+                    commandLine(
+                        'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                        new File(androidRoot, 'scripts/run-packager.ps1').absolutePath)
+                } else {
+                    commandLine('scripts/run-packager.sh')
+                }
             }
 
             // Set up dev mode

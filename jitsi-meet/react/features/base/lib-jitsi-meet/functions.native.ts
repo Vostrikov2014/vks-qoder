@@ -19,12 +19,19 @@ export const workletContext = Worklets.createContext('ConfigParser');
 /**
  * Loads config.js from a specific remote server.
  *
+ * VKS TV: the budget is deliberately larger than the upstream ten seconds. A
+ * host may publish several A records; Android's OkHttp walks them sequentially
+ * with a ten second connect timeout each, so the upstream budget leaves the
+ * app no room to fail over from an unreachable address to a healthy one and
+ * the conference never starts. Twenty seconds still bounds the wait but lets
+ * one dead address be skipped.
+ *
  * @param {string} url - The URL to load.
  * @returns {Promise<Object>}
  */
 export async function loadConfig(url: string): Promise<Object> {
     try {
-        const configTxt = await loadScript(url, 10 * 1000, true);
+        const configTxt = await loadScript(url, 20 * 1000, true);
 
         let locJson = '{}';
 
