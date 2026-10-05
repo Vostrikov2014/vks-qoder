@@ -284,9 +284,7 @@ export default function Toolbox({
      * @returns {void}
      */
     const handleBlur = useCallback(() => {
-        // The toolbar has to stay visible: uncomment the dispatch below to
-        // restore the hiding of the toolbar on blur.
-        // dispatch(setToolboxVisible(false));
+        dispatch(setToolboxVisible(false));
     }, [ dispatch ]);
 
     if (iAmRecorder || iAmSipGateway) {

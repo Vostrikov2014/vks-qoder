@@ -477,7 +477,18 @@ function getDevServerConfig() {
         static: {
             directory: process.cwd(),
             watch: {
-                ignored: file => file.endsWith('.log')
+
+                // Do not recursively watch node_modules and other huge
+                // trees: that exhausts the inotify watches (ENOSPC) on
+                // Linux with the default fs.inotify.max_user_watches.
+                ignored: [
+                    '**/node_modules/**',
+                    '**/android/**',
+                    '**/ios/**',
+                    '**/twa/**',
+                    '**/.git/**',
+                    '**/*.log'
+                ]
             }
         }
     };
@@ -487,6 +498,21 @@ module.exports = (_env, argv) => {
     const analyzeBundle = Boolean(process.env.ANALYZE_BUNDLE);
     const mode = typeof argv.mode === 'undefined' ? 'production' : argv.mode;
     const isProduction = mode === 'production';
+
+    // Keep webpack from watching node_modules and the native app trees:
+    // watching them recursively exhausts the Linux inotify budget
+    // (ENOSPC: System limit for number of file watchers reached).
+    // Note: the schema accepts a single RegExp or an array of glob strings,
+    // but not an array of RegExps.
+    const watchOptions = {
+        ignored: [
+            '**/node_modules/**',
+            '**/android/**',
+            '**/ios/**',
+            '**/twa/**',
+            '**/.git/**'
+        ]
+    };
     const configOptions = {
         detectCircularDeps: Boolean(process.env.DETECT_CIRCULAR_DEPS),
         isProduction
@@ -503,6 +529,7 @@ module.exports = (_env, argv) => {
                 'app.bundle': './app.js'
             },
             devServer: isProduction ? {} : getDevServerConfig(),
+            watchOptions,
             plugins: [
                 ...config.plugins,
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'app'),
@@ -527,6 +554,7 @@ module.exports = (_env, argv) => {
             entry: {
                 'alwaysontop': './react/features/always-on-top/index.tsx'
             },
+            watchOptions,
             plugins: [
                 ...config.plugins,
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'alwaysontop')
@@ -536,6 +564,7 @@ module.exports = (_env, argv) => {
             entry: {
                 'close3': './static/close3.js'
             },
+            watchOptions,
             plugins: [
                 ...config.plugins,
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'close3')
@@ -546,6 +575,7 @@ module.exports = (_env, argv) => {
             entry: {
                 'external_api': './modules/API/external/index.js'
             },
+            watchOptions,
             output: { ...config.output,
                 library: 'JitsiMeetExternalAPI',
                 libraryTarget: 'umd' },
@@ -558,6 +588,7 @@ module.exports = (_env, argv) => {
             entry: {
                 'face-landmarks-worker': './react/features/face-landmarks/faceLandmarksWorker.ts'
             },
+            watchOptions,
             plugins: [
                 ...config.plugins,
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'face-landmarks-worker')
@@ -577,6 +608,7 @@ module.exports = (_env, argv) => {
                 'noise-suppressor-worklet':
                     './react/features/stream-effects/noise-suppression/NoiseSuppressorWorklet.ts'
             },
+            watchOptions,
 
             module: { rules: [
                 ...config.module.rules,
@@ -599,6 +631,7 @@ module.exports = (_env, argv) => {
             entry: {
                 'screenshot-capture-worker': './react/features/screenshot-capture/worker.ts'
             },
+            watchOptions,
             plugins: [
                 ...config.plugins,
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'screenshot-capture-worker')
