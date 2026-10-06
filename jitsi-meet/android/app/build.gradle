@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -90,7 +92,10 @@ android {
             // Uncomment the following line for signing a test release build.
             // signingConfig signingConfigs.debug
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules-release.pro'
+            // AGP 9 больше не разрешает getDefaultProguardFile('proguard-android.txt'):
+            // берём -optimize-вариант, а прежний -dontoptimize из старого файла
+            // продублирован в proguard-rules-release.pro.
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules-release.pro'
             buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "${googleServicesEnabled}"
             buildConfigField "boolean", "LIBRE_BUILD", "${rootProject.ext.libreBuild}"
         }
@@ -112,12 +117,14 @@ android {
         targetCompatibility rootProject.ext.javaVersion
     }
 
-    kotlinOptions {
-        jvmTarget = rootProject.ext.jvmTargetVersion
-    }
-
     kotlin {
         jvmToolchain(rootProject.ext.jvmToolchainVersion)
+
+        // Kotlin JVM target (JDK 25); compilerOptions — современная замена
+        // устаревшему kotlinOptions.
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.jvmTargetVersion.toString()))
+        }
     }
 
     namespace 'org.jitsi.meet'
