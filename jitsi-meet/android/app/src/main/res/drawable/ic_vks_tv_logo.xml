@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- VKS TV: полный логотип для splash/экранов — тот же рецепт, что favicon jmp-ui:
-     скруглённый тайл с диагональным синим градиентом (#2563EB -> #3B82F6 -> #1D4ED8)
+<!-- VKS TV: полный логотип для splash/экранов — точная копия фирменного знака
+     приложения (VksTvLogo.native.tsx) и favicon jmp-ui: скруглённый тайл 64x64
+     (rx=12) с диагональным синим градиентом (#2563EB -> #3B82F6 -> #1D4ED8)
      и белая видеокамера (lucide Video) по центру. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-  <!-- тайл: rx = 12/64 от favicon => 20 по полю 108 -->
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+  <!-- тайл: rx = 12 из сетки favicon 64x64 -->
   <path
-      android:pathData="M20,0 L88,0 A20,20 0 0 1 108,20 L108,88 A20,20 0 0 1 88,108 L20,108 A20,20 0 0 1 0,88 L0,20 A20,20 0 0 1 20,0 Z">
+      android:pathData="M12,0 L52,0 A12,12 0 0 1 64,12 L64,52 A12,12 0 0 1 52,64 L12,64 A12,12 0 0 1 0,52 L0,12 A12,12 0 0 1 12,0 Z">
     <aapt:attr name="android:fillColor">
       <gradient
           android:type="linear"
           android:startX="0"
           android:startY="0"
-          android:endX="108"
-          android:endY="108">
+          android:endX="64"
+          android:endY="64">
         <item android:offset="0" android:color="#FF2563EB"/>
         <item android:offset="0.5" android:color="#FF3B82F6"/>
         <item android:offset="1" android:color="#FF1D4ED8"/>
@@ -25,10 +26,10 @@
     </aapt:attr>
   </path>
   <group
-      android:translateX="21"
-      android:translateY="21"
-      android:scaleX="2.75"
-      android:scaleY="2.75">
+      android:translateX="8"
+      android:translateY="8"
+      android:scaleX="2"
+      android:scaleY="2">
     <!-- корпус камеры: rect x=2 y=6 w=14 h=12 rx=2 -->
     <path
         android:pathData="M4,6 L16,6 A2,2 0 0 1 18,8 L18,16 A2,2 0 0 1 16,18 L4,18 A2,2 0 0 1 2,16 L2,8 A2,2 0 0 1 4,6 Z"
@@ -38,7 +39,7 @@
         android:strokeLineJoin="round"/>
     <!-- объектив -->
     <path
-        android:pathData="M16,13 L21.223,16.482 a0.5,0.5 0 0 0 0.777,-0.416 L21.9999,7.87 a0.5,0.5 0 0 0 -0.752,-0.432 L16,10.5"
+        android:pathData="M16,13 L21.223,16.482 a0.5,0.5 0 0 0 0.777,-0.416 L22,7.87 a0.5,0.5 0 0 0 -0.752,-0.432 L16,10.5"
         android:strokeColor="#FFFFFFFF"
         android:strokeWidth="2"
         android:strokeLineCap="round"

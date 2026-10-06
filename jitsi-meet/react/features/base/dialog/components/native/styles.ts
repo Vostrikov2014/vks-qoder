@@ -9,6 +9,27 @@ import { PREFERRED_DIALOG_SIZE } from '../../constants';
 const BORDER_RADIUS = 5;
 
 /**
+ * Color for the action buttons rendered inside a react-native-dialog
+ * {@code Dialog.Container}.
+ *
+ * The button is not themed by the app: when no label color is supplied it falls
+ * back to its platform default, which is a teal (#169689) on Android and does
+ * not exist anywhere in the design system. The jmp-ui design system paints the
+ * action of a dialog with its primary color, i.e. --primary-600, and on the
+ * light dialog surface that react-native-dialog renders in system light mode
+ * this is #2563EB (5.2:1 on white, 4.6:1 on the #212121 dark surface).
+ */
+const DIALOG_ACTION_COLOR = '#2563EB';
+
+/**
+ * Disabled state of the above, i.e. rgba(var(--primary-rgb), 0.35) from jmp-ui
+ * with --primary-rgb being the very same #2563EB. A disabled button is not
+ * dimmed by react-native-dialog (its TouchableOpacity only stops handling
+ * touches), so the faded label color has to be supplied.
+ */
+const DIALOG_ACTION_COLOR_DISABLED = 'rgba(37, 99, 235, 0.35)';
+
+/**
  * NOTE: These Material guidelines based values are currently only used in
  * dialogs (and related) but later on it would be nice to export it into a base
  * Material feature.
@@ -143,12 +164,25 @@ export const bottomSheetStyles = {
 
 export default {
     dialogButton: {
-        ...BaseTheme.typography.bodyLongBold
+        ...BaseTheme.typography.bodyLongBold,
+
+        // jmp-ui sets textTransform: 'none' on every button. react-native-dialog
+        // hardcodes 'uppercase' for its Android label, so it has to be reset here
+        // (the style passed to Dialog.Button is merged last, into the Text).
+        color: DIALOG_ACTION_COLOR,
+        textTransform: 'none'
+    },
+
+    dialogButtonDisabled: {
+        ...BaseTheme.typography.bodyLongBold,
+        color: DIALOG_ACTION_COLOR_DISABLED,
+        textTransform: 'none'
     },
 
     destructiveDialogButton: {
         ...BaseTheme.typography.bodyLongBold,
-        color: BaseTheme.palette.actionDanger
+        color: BaseTheme.palette.actionDanger,
+        textTransform: 'none'
     }
 };
 
@@ -192,7 +226,9 @@ export const brandedDialog = {
  */
 ColorSchemeRegistry.register('Dialog', {
     button: {
-        backgroundColor: '#44A5FF',
+        // Aligned with the shared palette instead of a hardcoded blue: this is
+        // the same primary action color every other button of the app uses.
+        backgroundColor: BaseTheme.palette.action01,
         flex: 1,
         padding: BoxModel.padding * 1.5
     },

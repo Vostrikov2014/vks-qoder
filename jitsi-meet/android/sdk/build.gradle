@@ -18,7 +18,9 @@ android {
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Ссылка на несуществующий proguard-rules.pro убрана: в AGP 9
+            // отсутствующий proguard-файл — ошибка сборки, а при выключенной
+            // минификации правила всё равно не применяются.
             buildConfigField "boolean", "LIBRE_BUILD", "${rootProject.ext.libreBuild}"
             buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "${rootProject.ext.googleServicesEnabled}"
         }
@@ -103,9 +105,9 @@ android.libraryVariants.all { def variant ->
     def targetName = variant.name.capitalize()
     def targetPath = variant.dirName
 
-    // React js bundle directories
-    def jsBundleDir = file("$buildDir/generated/assets/react/${targetPath}")
-    def resourcesDir = file("$buildDir/generated/res/react/${targetPath}")
+    // React js bundle directories ($buildDir удалён в Gradle 9)
+    def jsBundleDir = layout.buildDirectory.dir("generated/assets/react/${targetPath}").get().asFile
+    def resourcesDir = layout.buildDirectory.dir("generated/res/react/${targetPath}").get().asFile
 
     def jsBundleFile = file("$jsBundleDir/index.android.bundle")
 
@@ -203,6 +205,11 @@ android.libraryVariants.all { def variant ->
                     "generateReleaseLintModel",
                     "writeReleaseLintModelMetadata",
                     "generateReleaseLintVitalModel",
+                    // VKS TV: lint-AAR модуля попадает в node_modules, то есть
+                    // внутрь inputs корда fileTree(reactRoot) выше. Без явной
+                    // зависимости Gradle 9 считает это использованием чужого
+                    // output и валит сборку.
+                    "bundleReleaseLocalLintAar",
                     "lintVitalAnalyzeRelease",
                     "lintReportRelease",
                     "lintAnalyzeRelease"
@@ -274,7 +281,7 @@ publishing {
             artifactId 'jitsi-meet-sdk'
             version System.env.OVERRIDE_SDK_VERSION ?: project.sdkVersion
 
-            artifact("${project.buildDir}/outputs/aar/${project.name}-release.aar") {
+            artifact(layout.buildDirectory.file("outputs/aar/${project.name}-release.aar")) {
                 extension "aar"
             }
             pom.withXml {

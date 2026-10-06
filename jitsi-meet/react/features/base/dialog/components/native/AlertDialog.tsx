@@ -8,6 +8,7 @@ import { _abstractMapStateToProps } from '../../functions';
 import { renderHTML } from '../functions.native';
 
 import AbstractDialog, { IProps as AbstractProps } from './AbstractDialog';
+import dialogStyles from './styles';
 
 interface IProps extends AbstractProps, WithTranslation {
 
@@ -47,7 +48,8 @@ class AlertDialog extends AbstractDialog<IProps> {
                 </Dialog.Description>
                 <Dialog.Button
                     label = { t('dialog.Ok') }
-                    onPress = { this._onSubmit } />
+                    onPress = { this._onSubmit }
+                    style = { dialogStyles.dialogButton } />
             </Dialog.Container>
         );
     }

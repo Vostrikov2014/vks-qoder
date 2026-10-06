@@ -62,6 +62,8 @@ export interface IProps extends WithTranslation {
 interface IState {
     _fieldFocused?: boolean;
     animateTimeoutId?: number;
+    createConferenceError: boolean;
+    creatingConference: boolean;
     generateRoomNames?: string;
     generatedRoomName: string;
     hintBoxAnimation?: any;
@@ -97,6 +99,8 @@ export class AbstractWelcomePage<P extends IProps> extends Component<P, IState> 
      */
     override state: IState = {
         animateTimeoutId: undefined,
+        createConferenceError: false,
+        creatingConference: false,
         generatedRoomName: '',
         generateRoomNames: undefined,
         insecureRoomName: false,

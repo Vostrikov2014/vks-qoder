@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -30,7 +32,10 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        applicationId 'org.jitsi.meet'
+        // VKS TV: уникальный applicationId, чтобы Android не путал приложение
+        // с официальным Jitsi Meet из Google Play (пакет org.jitsi.meet).
+        // namespace остаётся org.jitsi.meet — к нему привязан Java-пакет кода.
+        applicationId 'ru.slamx.vkst'
         versionCode vcode
         versionName project.appVersion
 
@@ -90,7 +95,10 @@ android {
             // Uncomment the following line for signing a test release build.
             // signingConfig signingConfigs.debug
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules-release.pro'
+            // AGP 9 больше не разрешает getDefaultProguardFile('proguard-android.txt'):
+            // берём -optimize-вариант, а прежний -dontoptimize из старого файла
+            // продублирован в proguard-rules-release.pro.
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules-release.pro'
             buildConfigField "boolean", "GOOGLE_SERVICES_ENABLED", "${googleServicesEnabled}"
             buildConfigField "boolean", "LIBRE_BUILD", "${rootProject.ext.libreBuild}"
         }
@@ -112,12 +120,23 @@ android {
         targetCompatibility rootProject.ext.javaVersion
     }
 
-    kotlinOptions {
-        jvmTarget = rootProject.ext.jvmTargetVersion
+    // VKS TV: раньше .so извлекались при установке через
+    // android:extractNativeLibs="true" в AndroidManifest.xml. AGP 9 запрещает
+    // задавать это в манифесте, эквивалент — useLegacyPackaging здесь.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 
     kotlin {
         jvmToolchain(rootProject.ext.jvmToolchainVersion)
+
+        // Kotlin JVM target (JDK 25); compilerOptions — современная замена
+        // устаревшему kotlinOptions.
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.jvmTargetVersion.toString()))
+        }
     }
 
     namespace 'org.jitsi.meet'

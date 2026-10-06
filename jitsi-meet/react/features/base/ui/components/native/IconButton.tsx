@@ -31,7 +31,12 @@ const IconButton: React.FC<IIconButtonProps> = ({
         iconButtonContainerStyles = styles.iconButtonContainerPrimary;
         underlayColor = BaseTheme.palette.action01;
     } else if (type === SECONDARY) {
-        color = BaseTheme.palette.icon04;
+
+        // Secondary icon buttons are filled with action02 (#2E2E33): icon04 is a
+        // dark blue meant for icons on light surfaces and disappears on the dark
+        // fill. The web Button tints the secondary icon with icon01 for the same
+        // reason.
+        color = BaseTheme.palette.icon01;
         iconButtonContainerStyles = styles.iconButtonContainerSecondary;
         underlayColor = BaseTheme.palette.action02;
     } else if (type === TERTIARY) {

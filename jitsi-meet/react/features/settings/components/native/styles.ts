@@ -181,6 +181,16 @@ export default {
         borderColor: BaseTheme.palette.ui05
     },
 
+    /**
+     * Container for the language options list. Items are stacked from the top
+     * (flex-start) so that a short list is not spread across the whole screen.
+     */
+    languageListContainer: {
+        flexGrow: 1,
+        flexDirection: 'column',
+        justifyContent: 'flex-start'
+    },
+
     selectedLanguage: {
         color: BaseTheme.palette.text03
     },

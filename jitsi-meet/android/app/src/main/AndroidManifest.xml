@@ -12,7 +12,6 @@
   <application
       android:allowBackup="true"
       android:banner="@drawable/tv_banner"
-      android:extractNativeLibs="true"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
       android:name=".VksTvApplication"
@@ -37,7 +36,12 @@
         <category android:name="android.intent.category.LAUNCHER" />
         <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
       </intent-filter>
-      <intent-filter android:autoVerify="true">
+      <!-- VKS TV: autoVerify=false намеренно. Проверяемые (verified) app-links
+           Android открывает в приложении молча. Отключая проверку, мы добиваемся
+           системного диалога «Открыть в …» с вариантами «Только сейчас» / «Всегда»,
+           где пользователь сам решает — VKS TV или Jitsi Meet/браузер, а выбор
+           «Всегда» запоминается системой. -->
+      <intent-filter android:autoVerify="false">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.BROWSABLE" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -48,7 +52,9 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.BROWSABLE" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="org.jitsi.meet" />
+        <!-- VKS TV: собственный scheme вместо org.jitsi.meet, чтобы не
+             конфликтовать с приложением Jitsi Meet из Google Play. -->
+        <data android:scheme="ru.slamx.vkst" />
       </intent-filter>
     </activity>
   </application>

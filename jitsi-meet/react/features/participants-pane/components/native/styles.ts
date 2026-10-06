@@ -232,7 +232,11 @@ export default {
     },
 
     contextMenuItemName: {
-        color: BaseTheme.palette.text04,
+        // Rendered inside contextMenuItemSectionAvatar, whose background is
+        // ui01 (#1A1A1D): text04 resolves to surface01 (#141414) and made the
+        // display name invisible. The sibling brandedDialogLabelStyle uses
+        // text01 for the very same header.
+        color: BaseTheme.palette.text01,
         flexShrink: 1,
         fontSize: BaseTheme.spacing[3],
         marginLeft: BaseTheme.spacing[3],

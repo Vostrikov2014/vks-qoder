@@ -11,6 +11,7 @@ import SettingsButton from '../../../base/settings/components/native/SettingsBut
 import BreakoutRoomsButton
     from '../../../breakout-rooms/components/native/BreakoutRoomsButton';
 import SharedDocumentButton from '../../../etherpad/components/SharedDocumentButton.native';
+import InviteButton from '../../../invite/components/add-people-dialog/native/InviteButton';
 import ReactionMenu from '../../../reactions/components/native/ReactionMenu';
 import { shouldDisplayReactionsButtons } from '../../../reactions/functions.any';
 import LiveStreamButton from '../../../recording/components/LiveStream/native/LiveStreamButton';
@@ -158,6 +159,7 @@ class OverflowMenu extends PureComponent<IProps, IState> {
                 <OpenCarmodeButton { ...topButtonProps } />
                 <AudioOnlyButton { ...buttonProps } />
                 { this._renderRaiseHandButton(buttonProps) }
+                <InviteButton { ...buttonProps } />
                 {/* @ts-ignore */}
                 <SecurityDialogButton { ...buttonProps } />
                 <RecordButton { ...buttonProps } />

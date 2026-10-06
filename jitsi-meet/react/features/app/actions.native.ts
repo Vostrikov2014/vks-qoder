@@ -18,6 +18,7 @@ import isInsecureRoomName from '../base/util/isInsecureRoomName';
 import { parseURLParams } from '../base/util/parseURLParams';
 import {
     appendURLParam,
+    getLocationContextRoot,
     getNormalizedRoomName,
     parseURIString,
     toURLString
@@ -69,6 +70,15 @@ export function appNavigate(uri?: string, options: IReloadNowOptions = {}) {
                     = defaultLocation.pathname + location.pathname.substr(1);
                 location.port = defaultLocation.port;
                 location.protocol = defaultLocation.protocol;
+
+                // The context root is a value parsed out of the path, so merging the
+                // default location into the pathname above leaves the one computed for
+                // the bare room name behind, i.e. '/'. Recompute it, otherwise a
+                // deployment served from a path prefix (https://host/prefix/) is asked
+                // for its config.js at the root of the host: the request misses, the
+                // welcome page silently runs on a stub config and every feature reading
+                // that config (join, platform address) breaks.
+                location.contextRoot = getLocationContextRoot(location);
             } else {
                 location = defaultLocation;
             }

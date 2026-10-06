@@ -10,7 +10,7 @@
 #   scripts/build-vks-tv.sh arm64-v8a,armeabi-v7a  # два ABI для старых приставок
 #
 # Переменные окружения:
-#   JAVA_HOME            — JDK 17; если не задан, ищется сам
+#   JAVA_HOME            — JDK 25; если не задан, ищется сам
 #   ANDROID_HOME         — Android SDK; если не задан, берётся из local.properties
 #                          или из <workspace>/.toolchain/android-sdk
 #   LIBRE_BUILD=true     — сборка без сервисов Google/Firebase
@@ -25,12 +25,12 @@ PROJECT_DIR=$(dirname "$ANDROID_DIR")
 WORKSPACE_DIR=$(dirname "$PROJECT_DIR")
 ARCHS=${1:-${ARCHS:-arm64-v8a}}
 
-# --- JDK 17 ---
+# --- JDK 25 ---
 if [ -z "${JAVA_HOME:-}" ] || [ ! -x "${JAVA_HOME}/bin/java" ]; then
     for candidate in \
-        "${WORKSPACE_DIR}/.toolchain/jdk17/usr/lib/jvm/java-17-openjdk-amd64" \
-        "${HOME}"/.sdkman/candidates/java/17* \
-        /usr/lib/jvm/java-17-openjdk-amd64; do
+        "${WORKSPACE_DIR}/.toolchain/jdk25/usr/lib/jvm/java-25-openjdk-amd64" \
+        "${HOME}"/.sdkman/candidates/java/25* \
+        /usr/lib/jvm/java-25-openjdk-amd64; do
         if [ -x "${candidate}/bin/java" ]; then
             export JAVA_HOME="${candidate}"
             break
@@ -39,12 +39,19 @@ if [ -z "${JAVA_HOME:-}" ] || [ ! -x "${JAVA_HOME}/bin/java" ]; then
 fi
 
 if [ -z "${JAVA_HOME:-}" ]; then
-    echo "Не найден JDK 17. Установите его и укажите JAVA_HOME." >&2
+    echo "Не найден JDK 25. Установите его и укажите JAVA_HOME." >&2
     exit 1
 fi
 
 echo "JAVA_HOME=${JAVA_HOME}"
 "${JAVA_HOME}/bin/java" -version 2>&1 | head -1
+
+# VKS TV: Gradle и toolchain проекта переведены на Java 25 — требуем именно JDK 25.
+JAVA_MAJOR=$("${JAVA_HOME}/bin/java" -version 2>&1 | sed -n 's/.*version "\([0-9]*\).*/\1/p')
+if [ "${JAVA_MAJOR}" != "25" ]; then
+    echo "Для сборки нужен JDK 25, а найден JDK ${JAVA_MAJOR:-неизвестной версии}." >&2
+    exit 1
+fi
 
 # --- Android SDK ---
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
