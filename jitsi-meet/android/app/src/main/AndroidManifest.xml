@@ -47,7 +47,9 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.BROWSABLE" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="org.jitsi.meet" />
+        <!-- VKS TV: собственный scheme вместо org.jitsi.meet, чтобы не
+             конфликтовать с приложением Jitsi Meet из Google Play. -->
+        <data android:scheme="ru.slamx.vkst" />
       </intent-filter>
     </activity>
   </application>
