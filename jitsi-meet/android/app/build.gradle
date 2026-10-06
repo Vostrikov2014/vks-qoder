@@ -117,6 +117,15 @@ android {
         targetCompatibility rootProject.ext.javaVersion
     }
 
+    // VKS TV: раньше .so извлекались при установке через
+    // android:extractNativeLibs="true" в AndroidManifest.xml. AGP 9 запрещает
+    // задавать это в манифесте, эквивалент — useLegacyPackaging здесь.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     kotlin {
         jvmToolchain(rootProject.ext.jvmToolchainVersion)
 

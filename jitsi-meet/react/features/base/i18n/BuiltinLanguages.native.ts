@@ -2,177 +2,18 @@ import i18next from 'i18next';
 
 /**
  * The builtin languages.
+ *
+ * NOTE: For the Android build we only bundle Russian. English is always
+ * available as the builtin default language (loaded from lang/main.json in
+ * i18next.ts), so it does not need to be registered here. Any other language
+ * is intentionally excluded: React Native has no HTTP backend, so only the
+ * bundles registered below are usable in the app.
  */
 const _LANGUAGES = {
-
-    // Afrikaans
-    'af': {
-        main: require('../../../../lang/main-af')
-    },
-
-    // Arabic
-    'ar': {
-        main: require('../../../../lang/main-ar')
-    },
-
-    // Bulgarian
-    'bg': {
-        main: require('../../../../lang/main-bg')
-    },
-
-    // Catalan
-    'ca': {
-        main: require('../../../../lang/main-ca')
-    },
-
-    // German
-    'de': {
-        main: require('../../../../lang/main-de')
-    },
-
-    // Esperanto
-    'eo': {
-        main: require('../../../../lang/main-eo')
-    },
-
-    // Spanish
-    'es': {
-        main: require('../../../../lang/main-es')
-    },
-
-    // Spanish (Latin America)
-    'es-US': {
-        main: require('../../../../lang/main-es-US')
-    },
-
-    // Estonian
-    'et': {
-        main: require('../../../../lang/main-et')
-    },
-
-    // Persian
-    'fa': {
-        main: require('../../../../lang/main-fa')
-    },
-
-    // Finnish
-    'fi': {
-        main: require('../../../../lang/main-fi')
-    },
-
-    // French
-    'fr': {
-        main: require('../../../../lang/main-fr')
-    },
-
-    // French (Canadian)
-    'fr-CA': {
-        main: require('../../../../lang/main-fr-CA')
-    },
-
-    // Croatian
-    'hr': {
-        main: require('../../../../lang/main-hr')
-    },
-
-    // Hungarian
-    'hu': {
-        main: require('../../../../lang/main-hu')
-    },
-
-    // Italian
-    'it': {
-        main: require('../../../../lang/main-it')
-    },
-
-    // Japanese
-    'ja': {
-        main: require('../../../../lang/main-ja')
-    },
-
-    // Korean
-    'ko': {
-        main: require('../../../../lang/main-ko')
-    },
-
-    // Mongolian
-    'mn': {
-        main: require('../../../../lang/main-mn')
-    },
-
-    // Dutch
-    'nl': {
-        main: require('../../../../lang/main-nl')
-    },
-
-    // Occitan
-    'oc': {
-        main: require('../../../../lang/main-oc')
-    },
-
-    // Polish
-    'pl': {
-        main: require('../../../../lang/main-pl')
-    },
-
-    // Portuguese (Brazil)
-    'pt-BR': {
-        main: require('../../../../lang/main-pt-BR')
-    },
-
-    // Romanian
-    'ro': {
-        main: require('../../../../lang/main-ro')
-    },
 
     // Russian
     'ru': {
         main: require('../../../../lang/main-ru')
-    },
-
-    // Sardinian (Sardinia)
-    'sc': {
-        main: require('../../../../lang/main-sc')
-    },
-
-    // Slovak
-    'sk': {
-        main: require('../../../../lang/main-sk')
-    },
-
-    // Slovenian
-    'sl': {
-        main: require('../../../../lang/main-sl')
-    },
-
-    // Swedish
-    'sv': {
-        main: require('../../../../lang/main-sv')
-    },
-
-    // Turkish
-    'tr': {
-        main: require('../../../../lang/main-tr')
-    },
-
-    // Ukrainian
-    'uk': {
-        main: require('../../../../lang/main-uk')
-    },
-
-    // Vietnamese
-    'vi': {
-        main: require('../../../../lang/main-vi')
-    },
-
-    // Chinese (Simplified)
-    'zh-CN': {
-        main: require('../../../../lang/main-zh-CN')
-    },
-
-    // Chinese (Traditional)
-    'zh-TW': {
-        main: require('../../../../lang/main-zh-TW')
     }
 };
 

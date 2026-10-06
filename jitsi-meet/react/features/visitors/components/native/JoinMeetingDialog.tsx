@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View, ViewStyle } from 'react-native';
 import Dialog from 'react-native-dialog';
 
+import dialogStyles from '../../../base/dialog/components/native/styles';
 import { StandaloneRaiseHandButton as RaiseHandButton } from '../../../reactions/components/native/RaiseHandButton';
 import styles from '../../components/native/styles';
 
@@ -34,7 +35,8 @@ export default function JoinMeetingDialog() {
             <Dialog.Description>{t('visitors.joinMeeting.wishToSpeak')}</Dialog.Description>
             <Dialog.Button
                 label = { t('dialog.Ok') }
-                onPress = { closeDialog } />
+                onPress = { closeDialog }
+                style = { dialogStyles.dialogButton } />
         </Dialog.Container>
     );
 }

@@ -90,7 +90,7 @@ export function SubtitlesMessagesContainer({ messages, groups }: IProps) {
                             // eslint-disable-next-line react/jsx-no-bind
                             icon = { () => (
                                 <Icon
-                                    color = { BaseTheme.palette.icon04 }
+                                    color = { BaseTheme.palette.icon01 }
                                     size = { 20 }
                                     src = { IconArrowDown } />
                             ) }

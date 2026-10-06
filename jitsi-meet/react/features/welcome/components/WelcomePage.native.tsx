@@ -2,16 +2,21 @@ import React from 'react';
 import {
     Animated,
     NativeSyntheticEvent,
+    Pressable,
+    PressableStateCallbackType,
+    ScrollView,
     StyleProp,
     TextInputFocusEventData,
     TextStyle,
-    TouchableHighlight,
     View,
     ViewStyle
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 import { connect } from 'react-redux';
 
+import { createWelcomePageEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
 import { getName } from '../../app/functions.native';
 import { IReduxState } from '../../app/types';
 import { translate } from '../../base/i18n/functions';
@@ -20,22 +25,55 @@ import { IconWarning } from '../../base/icons/svg';
 import LoadingIndicator from '../../base/react/components/native/LoadingIndicator';
 import Text from '../../base/react/components/native/Text';
 import BaseTheme from '../../base/ui/components/BaseTheme.native';
-import Button from '../../base/ui/components/native/Button';
 import Input from '../../base/ui/components/native/Input';
-import { BUTTON_TYPES } from '../../base/ui/constants.native';
 import getUnsafeRoomText from '../../base/util/getUnsafeRoomText.native';
 import WelcomePageTabs
     from '../../mobile/navigation/components/welcome/components/WelcomePageTabs';
+import { createInstantConference } from '../actions.native';
 
 import {
     IProps as AbstractProps,
     AbstractWelcomePage,
     _mapStateToProps as _abstractMapStateToProps
 } from './AbstractWelcomePage';
+import VksTvVideoGlyph from './VksTvVideoGlyph.native';
 import styles from './styles.native';
-import VksTvLogo from './VksTvLogo.native';
+
+/**
+ * Size and stroke width of the camera glyph on the «Create a meeting» tile.
+ * The web start page draws the very same glyph oversized and hairline-thin
+ * (140px / stroke 1, 96px in its phone layout), so the phone tile keeps the
+ * thin line at a slightly reduced size.
+ */
+const CREATE_TILE_ICON_SIZE = 88;
+const CREATE_TILE_ICON_STROKE_WIDTH = 1;
+
+/**
+ * Arrow of the «Connect» tile, mirroring the lucide ArrowRight of the web
+ * start page (size 52 / stroke 1.8) at the compact tile's scale.
+ */
+const CONNECT_TILE_ICON_SIZE = 36;
+const CONNECT_TILE_ICON_STROKE_WIDTH = 1.8;
+
+/**
+ * Color of the «Connect» tile arrow: the accent purple the web start page
+ * paints its connect icon with (jmp-ui HomePage `.tile-icon-arrow`).
+ */
+const CONNECT_TILE_ICON_COLOR = '#C26BF5';
+
+/**
+ * Minimum viewport width for the wide tiles layout of the start screen. Below
+ * it the tiles are stacked in a column, above (landscape, TV) they sit side by
+ * side, like the two columns of the web start page.
+ */
+const WIDE_TILES_MIN_WIDTH = 700;
 
 interface IProps extends AbstractProps {
+
+    /**
+     * The width of the app viewport, used to pick the tiles layout.
+     */
+    _clientWidth: number;
 
     /**
      * Function for getting the unsafe room text.
@@ -49,7 +87,32 @@ interface IProps extends AbstractProps {
 }
 
 /**
- * The native container rendering the welcome page.
+ * Arrow of the «Connect» tile: the lucide ArrowRight of the web start page -
+ * a shaft plus a head. The base icon set only ships a chevron, which reads as
+ * «next» rather than «go to the meeting», so the glyph is drawn here.
+ *
+ * @returns {ReactElement}
+ */
+const ConnectArrowGlyph = () => (
+    <Svg
+        height = { CONNECT_TILE_ICON_SIZE }
+        viewBox = '0 0 24 24'
+        width = { CONNECT_TILE_ICON_SIZE }>
+        <Path
+            d = 'M5,12 L19,12 M12,5 L19,12 L12,19'
+            fill = 'none'
+            stroke = { CONNECT_TILE_ICON_COLOR }
+            strokeLinecap = 'round'
+            strokeLinejoin = 'round'
+            strokeWidth = { CONNECT_TILE_ICON_STROKE_WIDTH } />
+    </Svg>
+);
+
+/**
+ * The native container rendering the welcome page: the start screen of the
+ * app, made of action tiles that mirror the jmp-ui HomePage - a primary blue
+ * tile that creates a new video meeting and a dark tile that joins a meeting
+ * by its code or link.
  *
  * @augments AbstractWelcomePage
  */
@@ -71,11 +134,12 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
 
         this.state.roomNameInputAnimation = new Animated.Value(1);
 
-        this.state.hintBoxAnimation = new Animated.Value(0);
-
         // Bind event handlers so they are only bound once per instance.
+        this._getConnectTileStyle = this._getConnectTileStyle.bind(this);
+        this._getCreateTileStyle = this._getCreateTileStyle.bind(this);
+        this._onConnectPress = this._onConnectPress.bind(this);
+        this._onCreateConference = this._onCreateConference.bind(this);
         this._onFieldFocusChange = this._onFieldFocusChange.bind(this);
-        this._renderHintBox = this._renderHintBox.bind(this);
 
         // Specially bind functions to avoid function definition on render.
         this._onFieldBlur = this._onFieldFocusChange.bind(this, false);
@@ -85,8 +149,7 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
 
     /**
      * Implements React's {@link Component#componentDidMount()}. Invoked
-     * immediately after mounting occurs. Creates a local video track if none
-     * is available and the camera permission was already granted.
+     * immediately after mounting occurs.
      *
      * @inheritdoc
      * @returns {void}
@@ -103,15 +166,10 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
             headerTitle: t('welcomepage.headerTitle')
         });
 
-        navigation.addListener('focus', () => {
-            this._updateRoomName();
-        });
-
         navigation.addListener('blur', () => {
-            this._clearTimeouts();
-
+            // Leaving the start screen drops whatever was typed: the join
+            // field is a one-shot entry point, not stored state.
             this.setState({
-                generatedRoomName: '',
                 insecureRoomName: false,
                 room: ''
             });
@@ -151,15 +209,11 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
      */
     _doRenderInsecureRoomNameWarning() {
         return (
-            <View
-                style = { [
-                    styles.messageContainer,
-                    styles.insecureRoomNameWarningContainer as ViewStyle
-                ] }>
+            <View style = { styles.insecureRoomNameWarningContainer as ViewStyle }>
                 <Icon
                     src = { IconWarning }
                     style = { styles.insecureRoomNameWarningIcon } />
-                <Text style = { styles.insecureRoomNameWarningText }>
+                <Text style = { styles.insecureRoomNameWarningText as TextStyle }>
                     { this.props.getUnsafeRoomTextFn(this.props.t) }
                 </Text>
             </View>
@@ -167,63 +221,115 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
     }
 
     /**
-     * Constructs a style array to handle the hint box animation.
+     * Returns the style of the «Connect» tile: the dark tile lightens while it
+     * is pressed, and only when a code or link has been typed - an empty tile
+     * stays inert, like on the web start page.
      *
      * @private
-     * @returns {Array<Object>}
+     * @param {PressableStateCallbackType} state - The pressable state of the
+     * tile.
+     * @returns {StyleProp<ViewStyle>}
      */
-    _getHintBoxStyle() {
+    _getConnectTileStyle({ pressed }: PressableStateCallbackType): StyleProp<ViewStyle> {
+        const hasRoom = Boolean(this.state.room.trim());
+
         return [
-            styles.messageContainer,
-            styles.hintContainer,
-            {
-                opacity: this.state.hintBoxAnimation
-            }
-        ];
+            styles.tile,
+            styles.connectTile,
+            pressed && hasRoom && styles.connectTilePressed
+        ] as StyleProp<ViewStyle>;
     }
 
     /**
-     * Callback for when the room field's focus changes so the hint box
-     * must be rendered or removed.
+     * Returns the style of the «Create a meeting» tile: the blue tile lightens
+     * while it is pressed and fades out while the conference is being created.
+     *
+     * @private
+     * @param {PressableStateCallbackType} state - The pressable state of the
+     * tile.
+     * @returns {StyleProp<ViewStyle>}
+     */
+    _getCreateTileStyle({ pressed }: PressableStateCallbackType): StyleProp<ViewStyle> {
+        const { creatingConference } = this.state;
+
+        return [
+            styles.tile,
+            styles.createTile,
+            pressed && !creatingConference && styles.createTilePressed,
+            creatingConference && styles.tileDisabled
+        ] as StyleProp<ViewStyle>;
+    }
+
+    /**
+     * Handles a press on the «Connect» tile: the whole tile is the join form,
+     * so a tap (outside of the input) joins - but only once a code or link has
+     * been typed, exactly like the web start page, where an empty code leaves
+     * the tile inert.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onConnectPress() {
+        if (this.state.joining || !this.state.room.trim()) {
+            return;
+        }
+
+        this._onJoin();
+    }
+
+    /**
+     * Handles the «Create a conference» action: asks the platform for a fresh
+     * instant room and joins it right away.
+     *
+     * @private
+     * @returns {Promise<void>}
+     */
+    async _onCreateConference() {
+        const { dispatch, t } = this.props;
+
+        if (this.state.creatingConference) {
+            return;
+        }
+
+        sendAnalytics(createWelcomePageEvent('clicked', 'createConferenceButton'));
+
+        this.setState({
+            createConferenceError: false,
+            creatingConference: true
+        });
+
+        const created = await dispatch(
+            createInstantConference(t('welcomepage.instantConferenceSubject')));
+
+        if (created) {
+            // The app has navigated to the new conference, so this component
+            // unmounts and there is nothing left to update.
+            return;
+        }
+
+        this._mounted && this.setState({
+            createConferenceError: true,
+            creatingConference: false
+        });
+    }
+
+    /**
+     * Callback for when the room field's focus changes.
      *
      * @private
      * @param {boolean} focused - The focused state of the field.
      * @returns {void}
      */
     _onFieldFocusChange(focused: boolean) {
-        if (focused) {
-            // Stop placeholder animation.
-            this._clearTimeouts();
-            this.setState({
-                _fieldFocused: true,
-                roomPlaceholder: ''
-            });
-        } else {
-            // Restart room placeholder animation.
-            this._updateRoomName();
-        }
-
-        Animated.timing(
-
-            this.state.hintBoxAnimation,
-
-            {
-                duration: 300,
-                toValue: focused ? 1 : 0,
-                useNativeDriver: true
-            })
-            .start(animationState =>
-
-                animationState.finished
-
-                && !focused
-                    && this.setState({
-                        _fieldFocused: false
-                    }));
+        this.setState({
+            _fieldFocused: focused
+        });
     }
 
     /**
-     * Callback for when the settings screen is focused.
+     * Callback for when the settings screen is focused: the brand header of
+     * the welcome route is hidden and the tiles collapse, so the settings
+     * screen gets the full height of the start page.
      *
      * @private
      * @param {boolean} focused - The focused state of the screen.
@@ -249,116 +355,86 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
     }
 
     /**
-     * Renders the hint box if necessary.
-     *
-     * @private
-     * @returns {React$Node}
-     */
-    _renderHintBox() {
-        const { t } = this.props;
-
-        if (this.state._fieldFocused) {
-            return (
-                <Animated.View style = { this._getHintBoxStyle() as ViewStyle[] }>
-                    <View style = { styles.hintTextContainer as ViewStyle } >
-                        <Text style = { styles.hintText as TextStyle }>
-                            { t('welcomepage.roomnameHint') }
-                        </Text>
-                    </View>
-                    <View style = { styles.hintButtonContainer as ViewStyle } >
-                        { this._renderJoinButton() }
-                    </View>
-                </Animated.View>
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * Renders the join button.
+     * Renders the «Connect» tile: the dark tile that joins a meeting by its
+     * code or link. The whole tile is the join form, exactly like on the web
+     * start page - typing into the field enables the tile, tapping it (or the
+     * keyboard «go» key) joins.
      *
      * @private
      * @returns {ReactElement}
      */
-    _renderJoinButton() {
+    _renderConnectTile() {
         const { t } = this.props;
-        let joinButton;
-
-
-        if (this.state.joining) {
-            // TouchableHighlight is picky about what its children can be, so
-            // wrap it in a native component, i.e. View to avoid having to
-            // modify non-native children.
-            joinButton = (
-                <TouchableHighlight
-                    accessibilityLabel =
-                        { t('welcomepage.accessibilityLabel.join') }
-                    onPress = { this._onJoin }
-                    style = { styles.button as ViewStyle }>
-                    <View>
-                        <LoadingIndicator
-                            color = { BaseTheme.palette.icon01 }
-                            size = 'small' />
-                    </View>
-                </TouchableHighlight>
-            );
-        } else {
-            joinButton = (
-                <Button
-                    accessibilityLabel = { 'welcomepage.accessibilityLabel.join' }
-                    labelKey = { 'welcomepage.join' }
-                    onClick = { this._onJoin }
-                    type = { BUTTON_TYPES.PRIMARY } />
-            );
-        }
-
-        return joinButton;
-    }
-
-    /**
-     * Renders the room name input.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderRoomNameInput() {
-        const roomnameAccLabel = 'welcomepage.accessibilityLabel.roomname';
-        const { t } = this.props;
-        const { isSettingsScreenFocused } = this.state;
+        const { joining } = this.state;
 
         return (
-            <Animated.View
-                style = { [
-                    isSettingsScreenFocused && styles.roomNameInputContainer,
-                    { opacity: this.state.roomNameInputAnimation }
-                ] as StyleProp<ViewStyle> }>
-                <SafeAreaView
-                    edges = { [ 'left', 'right' ] }
-                    style = { styles.roomContainer as StyleProp<ViewStyle> }>
-                    <Text style = { styles.enterRoomText as StyleProp<TextStyle> }>
-                        { t('welcomepage.roomname') }
-                    </Text>
-                    <Input
-                        accessibilityLabel = { t(roomnameAccLabel) }
-                        autoCapitalize = { 'none' }
-                        autoFocus = { false }
-                        customStyles = {{ input: styles.customInput }}
-                        onBlur = { this._onFieldBlur }
-                        onChange = { this._onRoomChange }
-                        onFocus = { this._onFieldFocus }
-                        onSubmitEditing = { this._onJoin }
-                        placeholder = { this.state.roomPlaceholder }
-                        returnKeyType = { 'go' }
-                        value = { this.state.room } />
-                    {
-                        this._renderInsecureRoomNameWarning()
-                    }
-                    {
-                        this._renderHintBox()
-                    }
-                </SafeAreaView>
-            </Animated.View>
+            <Pressable
+                accessibilityLabel = { t('welcomepage.accessibilityLabel.connect') }
+                accessibilityRole = 'button'
+                onPress = { this._onConnectPress }
+                style = { this._getConnectTileStyle }>
+                <View style = { styles.tileIcon as ViewStyle }>
+                    { joining
+                        ? <LoadingIndicator
+                            color = { BaseTheme.palette.icon01 }
+                            size = 'small' />
+                        : <ConnectArrowGlyph /> }
+                </View>
+                <Input
+                    accessibilityLabel = { t('welcomepage.enterMeetingCode') }
+                    autoCapitalize = { 'none' }
+                    autoFocus = { false }
+                    customStyles = { styles.connectInput }
+                    hideFocusedBorder = { true }
+                    onBlur = { this._onFieldBlur }
+                    onChange = { this._onRoomChange }
+                    onFocus = { this._onFieldFocus }
+                    onSubmitEditing = { this._onJoin }
+                    placeholder = { t('welcomepage.enterMeetingCode') }
+                    returnKeyType = { 'go' }
+                    value = { this.state.room } />
+                {
+                    this._renderInsecureRoomNameWarning()
+                }
+                <Text style = { styles.connectTileTitle as TextStyle }>
+                    { t('welcomepage.connect') }
+                </Text>
+            </Pressable>
+        );
+    }
+
+    /**
+     * Renders the «Create a meeting» tile: the primary blue tile that asks the
+     * platform for a fresh conference and joins it in one tap, mirroring the
+     * web start page's blue tile.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderCreateTile() {
+        const { t } = this.props;
+        const { creatingConference, joining } = this.state;
+
+        return (
+            <Pressable
+                accessibilityLabel = { t('welcomepage.accessibilityLabel.createConference') }
+                accessibilityRole = 'button'
+                disabled = { creatingConference || joining }
+                onPress = { this._onCreateConference }
+                style = { this._getCreateTileStyle }>
+                <View style = { styles.tileIcon as ViewStyle }>
+                    { creatingConference
+                        ? <LoadingIndicator
+                            color = { BaseTheme.palette.icon01 }
+                            size = 'large' />
+                        : <VksTvVideoGlyph
+                            size = { CREATE_TILE_ICON_SIZE }
+                            strokeWidth = { CREATE_TILE_ICON_STROKE_WIDTH } /> }
+                </View>
+                <Text style = { styles.createTileTitle as TextStyle }>
+                    { t('welcomepage.createConference') }
+                </Text>
+            </Pressable>
         );
     }
 
@@ -369,35 +445,54 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
      */
     _renderFullUI() {
         return (
-            <>
-                { this._renderBranding() }
-                { this._renderRoomNameInput() }
+            <SafeAreaView
+                edges = { [ 'left', 'right' ] }
+                style = { styles.page as StyleProp<ViewStyle> }>
+                { this._renderTiles() }
                 <View style = { styles.welcomePage as ViewStyle }>
                     <WelcomePageTabs
                         disabled = { Boolean(this.state._fieldFocused) } // @ts-ignore
                         onListContainerPress = { this._onFieldBlur }
                         onSettingsScreenFocused = { this._onSettingsScreenFocused } />
                 </View>
-            </>
+            </SafeAreaView>
         );
     }
 
     /**
-     * Renders the VKS TV brand mark and the application tagline above the room
-     * name input.
+     * Renders the action tiles of the start screen: the primary «Create a
+     * meeting» tile and the «Connect» tile. On screens that are too short for
+     * both, the block scrolls instead of squeezing the tiles.
      *
+     * @private
      * @returns {ReactElement}
      */
-    _renderBranding() {
-        const { t } = this.props;
+    _renderTiles() {
+        const { _clientWidth, t } = this.props;
+        const { createConferenceError, isSettingsScreenFocused } = this.state;
 
         return (
-            <View style = { styles.brandingContainer as ViewStyle }>
-                <VksTvLogo size = { 64 } />
-                <Text style = { styles.brandingTagline as TextStyle }>
-                    { t('welcomepage.headerSubtitle') }
-                </Text>
-            </View>
+            <ScrollView
+                contentContainerStyle = { styles.tilesScrollContent as StyleProp<ViewStyle> }
+                keyboardDismissMode = { 'on-drag' }
+                keyboardShouldPersistTaps = { 'handled' }
+                showsVerticalScrollIndicator = { false }
+                style = { styles.tilesScroll as StyleProp<ViewStyle> }>
+                <Animated.View
+                    style = { [
+                        styles.tiles,
+                        _clientWidth >= WIDE_TILES_MIN_WIDTH && styles.tilesWide,
+                        isSettingsScreenFocused && styles.tilesCollapsed,
+                        { opacity: this.state.roomNameInputAnimation }
+                    ] as StyleProp<ViewStyle> }>
+                    { this._renderCreateTile() }
+                    { this._renderConnectTile() }
+                    { createConferenceError
+                        && <Text style = { styles.createConferenceErrorText as TextStyle }>
+                            { t('welcomepage.createConferenceError') }
+                        </Text> }
+                </Animated.View>
+            </ScrollView>
         );
     }
 
@@ -428,6 +523,8 @@ class WelcomePage extends AbstractWelcomePage<IProps> {
 function _mapStateToProps(state: IReduxState) {
     return {
         ..._abstractMapStateToProps(state),
+
+        _clientWidth: state['features/base/responsive-ui'].clientWidth,
 
         // _reducedUI: state['features/base/responsive-ui'].reducedUI
         getUnsafeRoomTextFn: (t: Function) => getUnsafeRoomText(state, t, 'welcome')

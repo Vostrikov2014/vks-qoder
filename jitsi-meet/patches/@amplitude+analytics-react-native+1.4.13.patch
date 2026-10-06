@@ -1,0 +1,105 @@
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/generated/source/buildConfig/release/com/amplitude/reactnative/BuildConfig.java b/node_modules/@amplitude/analytics-react-native/android/build/generated/source/buildConfig/release/com/amplitude/reactnative/BuildConfig.java
+new file mode 100644
+index 0000000..5be4a02
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/generated/source/buildConfig/release/com/amplitude/reactnative/BuildConfig.java
+@@ -0,0 +1,12 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package com.amplitude.reactnative;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = false;
++  public static final String LIBRARY_PACKAGE_NAME = "com.amplitude.reactnative";
++  public static final String BUILD_TYPE = "release";
++  // Field from default config.
++  public static final boolean IS_NEW_ARCHITECTURE_ENABLED = false;
++}
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/annotation_processor_list/release/javaPreCompileRelease/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar
+new file mode 100644
+index 0000000..b6e9413
+Binary files /dev/null and b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar differ
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/compile_symbol_list/release/generateReleaseRFile/R.txt b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/compile_symbol_list/release/generateReleaseRFile/R.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..1f461f4
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/mergeReleaseJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/jniLibs"/></dataSet><dataSet config="release" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/release/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties
+new file mode 100644
+index 0000000..3a89e2d
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/compile-file-map.properties
+@@ -0,0 +1 @@
++#Tue Oct 06 15:26:39 MSK 2026
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml
+new file mode 100644
+index 0000000..5845538
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/incremental/release/packageReleaseResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/release/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release" generated-set="release$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/release/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"/><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"/><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt
+new file mode 100644
+index 0000000..78ac5b8
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/local_only_symbol_list/release/parseReleaseLocalResources/R-def.txt
+@@ -0,0 +1,2 @@
++R_DEF: Internal format may change without notice
++local
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/nested_resources_validation_report/release/generateReleaseResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..e2fb00d
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/intermediates/symbol_list_with_package_name/release/generateReleaseRFile/package-aware-r.txt
+@@ -0,0 +1 @@
++com.amplitude.reactnative
+diff --git a/node_modules/@amplitude/analytics-react-native/android/build/kotlin/compileReleaseKotlin/cacheable/dirty-sources.txt b/node_modules/@amplitude/analytics-react-native/android/build/kotlin/compileReleaseKotlin/cacheable/dirty-sources.txt
+new file mode 100644
+index 0000000..1b4c5b8
+--- /dev/null
++++ b/node_modules/@amplitude/analytics-react-native/android/build/kotlin/compileReleaseKotlin/cacheable/dirty-sources.txt
+@@ -0,0 +1,4 @@
++/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidContextProvider.kt
++/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidLogger.kt
++/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/LegacyDatabaseStorage.kt
++/home/vd/Projects/vks-qoder/jitsi-meet/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AmplitudeReactNativeModule.kt
+\ No newline at end of file
+diff --git a/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidContextProvider.kt b/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidContextProvider.kt
+index 56fda93..f4b5cd5 100644
+--- a/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidContextProvider.kt
++++ b/node_modules/@amplitude/analytics-react-native/android/src/main/java/com/amplitude/reactnative/AndroidContextProvider.kt
+@@ -115,7 +115,7 @@ class AndroidContextProvider(private val context: Context, shouldTrackAdid: Bool
+           if (manager.phoneType != TelephonyManager.PHONE_TYPE_CDMA) {
+             val country = manager.networkCountryIso
+             if (country != null) {
+-              return country.toUpperCase(Locale.US)
++              return country.uppercase(Locale.US)
+             }
+           }
+         } catch (e: Exception) {

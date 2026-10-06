@@ -6,6 +6,7 @@ import { IReduxState, IStore } from '../../../app/types';
 import { IJitsiConference } from '../../../base/conference/reducer';
 import { connect } from '../../../base/connection/actions.native';
 import { toJid } from '../../../base/connection/functions';
+import dialogStyles from '../../../base/dialog/components/native/styles';
 import { _abstractMapStateToProps } from '../../../base/dialog/functions';
 import { translate } from '../../../base/i18n/functions';
 import { JitsiConnectionErrors } from '../../../base/lib-jitsi-meet';
@@ -138,6 +139,12 @@ class LoginDialog extends Component<IProps, IState> {
             t
         } = this.props;
 
+        // react-native-dialog does not dim a disabled button, so the faded
+        // label has to be selected explicitly.
+        const okButtonStyle = connecting
+            ? dialogStyles.dialogButtonDisabled
+            : dialogStyles.dialogButton;
+
         return (
             <Dialog.Container
                 coverScreen = { false }
@@ -163,11 +170,13 @@ class LoginDialog extends Component<IProps, IState> {
                 </Dialog.Description>
                 <Dialog.Button
                     label = { t('dialog.Cancel') }
-                    onPress = { this._onCancel } />
+                    onPress = { this._onCancel }
+                    style = { dialogStyles.dialogButton } />
                 <Dialog.Button
                     disabled = { connecting }
                     label = { t('dialog.Ok') }
-                    onPress = { this._onLogin } />
+                    onPress = { this._onLogin }
+                    style = { okButtonStyle } />
             </Dialog.Container>
         );
     }

@@ -57,7 +57,7 @@ const ParticipantsPaneFooter = (): JSX.Element => {
                     // eslint-disable-next-line react/jsx-no-bind, no-confusing-arrow
                     icon = { () => (
                         <Icon
-                            color = { BaseTheme.palette.icon04 }
+                            color = { BaseTheme.palette.icon01 }
                             size = { 20 }
                             src = { IconRingGroup } />
                     ) }

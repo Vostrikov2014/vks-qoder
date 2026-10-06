@@ -1,7 +1,9 @@
 import React from 'react';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
-interface IProps {
+import { VIDEO_LENS_PATH } from './VksTvVideoGlyph.native';
+
+interface ILogoProps {
 
     /**
      * Size of the logo square in pixels.
@@ -10,25 +12,25 @@ interface IProps {
 }
 
 /**
- * Renders the VKS TV brand mark: a rounded tile with the platform gradient and a
- * white video glyph, mirroring the web UI favicon of the platform.
+ * Renders the VKS TV brand mark. This mirrors the web UI logo of the platform
+ * (jmp-ui `public/favicon.svg`) exactly: a rounded tile filled with the brand
+ * diagonal gradient and a stroked white video-camera glyph.
  *
- * @param {IProps} props - Component props.
+ * @param {ILogoProps} props - Component props.
  * @returns {ReactElement}
  */
-const VksTvLogo = ({ size = 64 }: IProps) => (
+const VksTvLogo = ({ size = 64 }: ILogoProps) => (
     <Svg
         height = { size }
-        viewBox = '0 0 108 108'
+        viewBox = '0 0 64 64'
         width = { size }>
         <Defs>
             <LinearGradient
-                gradientUnits = 'userSpaceOnUse'
                 id = 'vksTvGradient'
                 x1 = '0'
-                x2 = '108'
+                x2 = '1'
                 y1 = '0'
-                y2 = '108'>
+                y2 = '1'>
                 <Stop
                     offset = '0'
                     stopColor = '#2563EB' />
@@ -42,23 +44,25 @@ const VksTvLogo = ({ size = 64 }: IProps) => (
         </Defs>
         <Rect
             fill = 'url(#vksTvGradient)'
-            height = '108'
-            rx = '20'
-            width = '108'
+            height = '64'
+            rx = '12'
+            width = '64'
             x = '0'
             y = '0' />
         <G
-            transform = 'translate(21, 21) scale(2.75)'>
-            <Path
-                d = 'M4,6 L16,6 A2,2 0 0 1 18,8 L18,16 A2,2 0 0 1 16,18 L4,18 A2,2 0 0 1 2,16 L2,8 A2,2 0 0 1 4,6 Z'
-                fill = 'none'
-                stroke = '#FFFFFF'
-                strokeWidth = '2' />
-            <Path
-                d = 'M16,13 L21.223,16.482 a0.5,0.5 0 0 0 0.777,-0.416 L21.9999,7.87 a0.5,0.5 0 0 0 -0.752,-0.432 L16,10.5'
-                fill = 'none'
-                stroke = '#FFFFFF'
-                strokeWidth = '2' />
+            fill = 'none'
+            stroke = '#FFFFFF'
+            strokeLinecap = 'round'
+            strokeLinejoin = 'round'
+            strokeWidth = '2'
+            transform = 'translate(8, 8) scale(2)'>
+            <Path d = { VIDEO_LENS_PATH } />
+            <Rect
+                height = '12'
+                rx = '2'
+                width = '14'
+                x = '2'
+                y = '6' />
         </G>
     </Svg>
 );

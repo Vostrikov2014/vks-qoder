@@ -205,6 +205,11 @@ android.libraryVariants.all { def variant ->
                     "generateReleaseLintModel",
                     "writeReleaseLintModelMetadata",
                     "generateReleaseLintVitalModel",
+                    // VKS TV: lint-AAR модуля попадает в node_modules, то есть
+                    // внутрь inputs корда fileTree(reactRoot) выше. Без явной
+                    // зависимости Gradle 9 считает это использованием чужого
+                    // output и валит сборку.
+                    "bundleReleaseLocalLintAar",
                     "lintVitalAnalyzeRelease",
                     "lintReportRelease",
                     "lintAnalyzeRelease"

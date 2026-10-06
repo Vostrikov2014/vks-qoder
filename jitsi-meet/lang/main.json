@@ -1660,6 +1660,8 @@
     "volumeSlider": "Volume slider",
     "welcomepage": {
         "accessibilityLabel": {
+            "connect": "Connect to a meeting",
+            "createConference": "Create a conference",
             "join": "Tap to join",
             "roomname": "Enter room name"
         },
@@ -1670,8 +1672,12 @@
             "video": "Video"
         },
         "calendar": "Calendar",
+        "connect": "Connect",
         "connectCalendarButton": "Connect your calendar",
         "connectCalendarText": "Connect your calendar to view all your meetings in {{app}}. Plus, add {{provider}} meetings to your calendar and start them with one click.",
+        "createConference": "Create a video meeting",
+        "createConferenceError": "Failed to create the video meeting. Please try again.",
+        "enterMeetingCode": "Enter meeting code or link",
         "enterRoomTitle": "Start a new meeting",
         "getHelp": "Get help",
         "go": "GO",
@@ -1679,8 +1685,9 @@
         "headerSubtitle": "Video conferencing",
         "headerTitle": "VKS TV",
         "info": "Dial-in info",
+        "instantConferenceSubject": "New video meeting",
         "jitsiOnMobile": "VKS TV on mobile – download our app and start a meeting from anywhere",
-        "join": "Create / join",
+        "join": "Join",
         "logo": {
             "calendar": "Calendar logo",
             "desktopPreviewThumbnail": "Desktop preview thumbnail",

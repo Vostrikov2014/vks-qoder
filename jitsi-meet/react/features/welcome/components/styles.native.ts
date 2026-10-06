@@ -11,6 +11,18 @@ export const AVATAR_SIZE = 104;
 const TEXT_COLOR = BaseTheme.palette.text01;
 
 /**
+ * Palette of the start screen tiles. Literal values of the jmp-ui HomePage
+ * (`HomePage.css`): the web start screen keeps its own dark palette regardless
+ * of the app theme, and the phone start screen mirrors it one-to-one.
+ */
+const TILE_BACKGROUND = '#202020'; // --lp-tile
+const TILE_BACKGROUND_PRESSED = '#2E2E33'; // --lp-tile-hover
+const TILE_BLUE = '#2563EB'; // --lp-blue
+const TILE_BLUE_PRESSED = '#3B82F6'; // --lp-blue-hover
+const TILE_INPUT_BACKGROUND = 'rgba(255, 255, 255, 0.06)';
+const TILE_RADIUS = 24; // --lp-radius
+
+/**
  * The styles of the React {@code Components} of the feature welcome including
  * {@code WelcomePage} and {@code BlankPage}.
  */
@@ -34,77 +46,93 @@ export default {
     },
 
     /**
-     * Container of the VKS TV brand mark on the welcome page.
+     * Join input of the «Connect» tile: the jmp-ui HomePage `.meeting-input` -
+     * a borderless field on a translucent white fill, unlike the bordered box
+     * the app uses elsewhere. The style splits into the 'container' and
+     * 'input' parts read by {@code Input}.
      */
-    brandingContainer: {
-        alignItems: 'center',
-        paddingHorizontal: BaseTheme.spacing[3],
-        paddingTop: BaseTheme.spacing[3]
+    connectInput: {
+        container: {
+            width: '100%'
+        },
+        input: {
+            backgroundColor: TILE_INPUT_BACKGROUND,
+            borderColor: 'transparent',
+            borderRadius: 14,
+            borderWidth: 0
+        }
     },
 
     /**
-     * Application tagline under the brand mark.
+     * «Connect» tile: the dark block that carries the join form. The arrow
+     * stays on top, the input and the title are pinned to the bottom, like
+     * `.tile-connect` of the web start page.
      */
-    brandingTagline: {
-        color: BaseTheme.palette.text02,
-        fontSize: 15,
+    connectTile: {
+        backgroundColor: TILE_BACKGROUND,
+        padding: BaseTheme.spacing[4]
+    },
+
+    connectTilePressed: {
+        backgroundColor: TILE_BACKGROUND_PRESSED
+    },
+
+    /**
+     * Title of the «Connect» tile; the web page keeps the same 2rem heading as
+     * the primary tile, the compact phone tile steps it down a little.
+     */
+    connectTileTitle: {
+        color: TEXT_COLOR,
+        fontSize: 22,
+        fontWeight: '700',
+        lineHeight: 28,
         marginTop: BaseTheme.spacing[2]
     },
 
     /**
-     * Join button style.
+     * Error message shown when creating a conference failed: the
+     * `.create-error` pill of the web start page, below the tiles.
      */
-    button: {
-        backgroundColor: BaseTheme.palette.action01,
-        borderColor: BaseTheme.palette.action01,
-        borderRadius: BaseTheme.shape.borderRadius,
+    createConferenceErrorText: {
+        backgroundColor: 'rgba(239, 68, 68, 0.12)',
+        borderColor: 'rgba(239, 68, 68, 0.4)',
+        borderRadius: 14,
         borderWidth: 1,
-        height: BaseTheme.spacing[7],
-        justifyContent: 'center',
-        paddingHorizontal: BaseTheme.spacing[4]
-    },
-
-    joinButtonText: {
-        alignSelf: 'center',
-        color: BaseTheme.palette.text01,
-        fontSize: 14
-    },
-
-    enterRoomText: {
-        color: TEXT_COLOR,
-        fontSize: 18,
-        marginBottom: BoxModel.margin
-    },
-
-    /**
-     * Container for the button on the hint box.
-     */
-    hintButtonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center'
-    },
-
-    /**
-     * Container for the hint box.
-     */
-    hintContainer: {
-        flexDirection: 'column',
-        overflow: 'hidden'
-    },
-
-    /**
-     * The text of the hint box.
-     */
-    hintText: {
-        color: BaseTheme.palette.text01,
+        color: '#FCA5A5',
+        fontSize: 15,
+        marginTop: BaseTheme.spacing[3],
+        paddingHorizontal: BaseTheme.spacing[3],
+        paddingVertical: BaseTheme.spacing[2],
         textAlign: 'center'
     },
 
     /**
-     * Container for the text on the hint box.
+     * Primary «Create a meeting» tile: the blue block of the web start screen.
+     * It takes the space the compact dark tile leaves, keeps the camera on top
+     * and the title at the bottom. The minimum height keeps the tile intact on
+     * short screens - the tiles block scrolls instead of squeezing it.
      */
-    hintTextContainer: {
-        marginBottom: 2 * BoxModel.margin
+    createTile: {
+        backgroundColor: TILE_BLUE,
+        flex: 1,
+        minHeight: 176,
+        padding: BaseTheme.spacing[4]
+    },
+
+    createTilePressed: {
+        backgroundColor: TILE_BLUE_PRESSED
+    },
+
+    /**
+     * Title of the «Create a meeting» tile. The web page sets 3.6rem on its
+     * desktop layout and 2rem in the phone one; the phone tile follows the
+     * reduced size.
+     */
+    createTileTitle: {
+        color: TEXT_COLOR,
+        fontSize: 28,
+        fontWeight: '700',
+        lineHeight: 34
     },
 
     /**
@@ -115,22 +143,12 @@ export default {
         paddingTop: 10
     },
 
-    messageContainer: {
-        backgroundColor: BaseTheme.palette.ui03,
-        borderRadius: BaseTheme.shape.borderRadius,
-        marginVertical: BaseTheme.spacing[1],
-        paddingHorizontal: BaseTheme.spacing[2],
-        paddingVertical: 2 * BaseTheme.spacing[2]
-    },
-
-    roomNameInputContainer: {
-        height: '0%'
-    },
-
     /**
-     * Top-level screen style.
+     * Top-level screen style. The dark jmp-ui background is set explicitly so
+     * the start screen stays dark on every navigation state.
      */
     page: {
+        backgroundColor: BaseTheme.palette.uiBackground,
         flex: 1,
         flexDirection: 'column'
     },
@@ -148,15 +166,6 @@ export default {
     reducedUIText: {
         color: TEXT_COLOR,
         fontSize: 12
-    },
-
-    /**
-     * Container for room name input box and 'join' button.
-     */
-    roomContainer: {
-        alignSelf: 'stretch',
-        flexDirection: 'column',
-        padding: BaseTheme.spacing[3]
     },
 
     /**
@@ -194,18 +203,93 @@ export default {
     insecureRoomNameWarningContainer: {
         alignItems: 'center',
         flexDirection: 'row',
-        paddingHorizontal: BaseTheme.spacing[1]
+        marginTop: BaseTheme.spacing[2],
+        width: '100%'
     },
 
     insecureRoomNameWarningIcon: {
         color: BaseTheme.palette.warning02,
-        fontSize: 24,
-        marginRight: 10
+        fontSize: 18,
+        marginRight: 8
     },
 
     insecureRoomNameWarningText: {
         color: BaseTheme.palette.text01,
         flex: 1
+    },
+
+    /**
+     * The shared look of the start screen tiles (jmp-ui HomePage `.tile`):
+     * rounded corners, a column that grows from the top-left corner.
+     */
+    tile: {
+        alignItems: 'flex-start',
+        borderRadius: TILE_RADIUS,
+        padding: BaseTheme.spacing[4],
+        width: '100%'
+    },
+
+    /**
+     * Disabled state of a tile while its action is in flight
+     * (jmp-ui HomePage `.tile:disabled`).
+     */
+    tileDisabled: {
+        opacity: 0.7
+    },
+
+    /**
+     * Glyph block of a tile. `marginBottom: auto` pushes the rest of the tile
+     * content down, so the icon keeps the top of the tile.
+     */
+    tileIcon: {
+        marginBottom: 'auto'
+    },
+
+    /**
+     * The block of the action tiles, mirroring the `.cards-grid` of the web
+     * start page - the same 8px (`--space-2`) gap between the tiles.
+     */
+    tiles: {
+        flex: 1,
+        gap: BaseTheme.spacing[2],
+        paddingBottom: BaseTheme.spacing[3],
+        paddingHorizontal: BaseTheme.spacing[3],
+        paddingTop: BaseTheme.spacing[2]
+    },
+
+    /**
+     * Tiles collapsed behind the settings screen of the welcome page.
+     */
+    tilesCollapsed: {
+        flex: 0,
+        height: 0,
+        paddingBottom: 0,
+        paddingHorizontal: 0,
+        paddingTop: 0
+    },
+
+    /**
+     * Scroll area of the tiles: on screens where the tiles cannot fit under
+     * the brand mark, the page scrolls them instead of squeezing.
+     */
+    tilesScroll: {
+        flex: 2
+    },
+
+    /**
+     * Content of the tiles scroll area, stretched to the height of its
+     * viewport, so the tiles fill the screen whenever there is room.
+     */
+    tilesScrollContent: {
+        flexGrow: 1
+    },
+
+    /**
+     * Wide (landscape / TV) screens keep the two tiles side by side, like the
+     * two columns of the web start page.
+     */
+    tilesWide: {
+        flexDirection: 'row'
     },
 
     /**
@@ -215,12 +299,6 @@ export default {
         backgroundColor: BaseTheme.palette.uiBackground,
         flex: 1,
         overflow: 'hidden'
-    },
-
-    customInput: {
-        fontSize: 18,
-        letterSpacing: 0,
-        textAlign: 'center'
     },
 
     recentList: {

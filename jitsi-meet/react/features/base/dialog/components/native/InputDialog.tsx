@@ -11,7 +11,7 @@ import AbstractDialog, {
     IProps as AbstractProps,
     IState as AbstractState
 } from './AbstractDialog';
-import { inputDialog as styles } from './styles';
+import dialogStyles, { inputDialog as styles } from './styles';
 
 interface IProps extends AbstractProps, WithTranslation {
 
@@ -99,6 +99,14 @@ class InputDialog extends AbstractDialog<IProps, IState> {
             titleKey
         } = this.props;
 
+        const { isValid } = this.state;
+
+        // react-native-dialog does not dim a disabled button, so the faded
+        // label has to be selected explicitly.
+        const okButtonStyle = isValid
+            ? dialogStyles.dialogButton
+            : dialogStyles.dialogButtonDisabled;
+
         return (
             <Dialog.Container
                 coverScreen = { false }
@@ -128,11 +136,13 @@ class InputDialog extends AbstractDialog<IProps, IState> {
                 }
                 {!this.props.disableCancel && <Dialog.Button
                     label = { t('dialog.Cancel') }
-                    onPress = { this._onCancel } />}
+                    onPress = { this._onCancel }
+                    style = { dialogStyles.dialogButton } />}
                 <Dialog.Button
-                    disabled = { !this.state.isValid }
+                    disabled = { !isValid }
                     label = { t('dialog.Ok') }
-                    onPress = { this._onSubmitValue } />
+                    onPress = { this._onSubmitValue }
+                    style = { okButtonStyle } />
             </Dialog.Container>
         );
     }

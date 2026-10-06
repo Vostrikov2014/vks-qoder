@@ -32,7 +32,11 @@ const Button: React.FC<IProps> = ({
     mode = BUTTON_MODES.CONTAINED,
     onClick: onPress,
     style,
-    type
+
+    // Same default as the web Button: an untyped Button is a primary one,
+    // otherwise it lands in the generic branch below and picks up the
+    // react-native-paper defaults.
+    type = BUTTON_TYPES.PRIMARY
 }: IProps) => {
     const { t } = useTranslation();
     const { DESTRUCTIVE, PRIMARY, SECONDARY, TERTIARY } = BUTTON_TYPES;
@@ -46,15 +50,15 @@ const Button: React.FC<IProps> = ({
         buttonLabelStyles = mode === TEXT
             ? styles.buttonLabelPrimaryText
             : styles.buttonLabelPrimary;
-        color = mode === CONTAINED && BaseTheme.palette.action01;
+        color = mode === CONTAINED ? BaseTheme.palette.action01 : undefined;
     } else if (type === SECONDARY) {
         buttonLabelStyles = styles.buttonLabelSecondary;
-        color = mode === CONTAINED && BaseTheme.palette.action02;
+        color = mode === CONTAINED ? BaseTheme.palette.action02 : undefined;
     } else if (type === DESTRUCTIVE) {
         buttonLabelStyles = mode === TEXT
             ? styles.buttonLabelDestructiveText
             : styles.buttonLabelDestructive;
-        color = mode === CONTAINED && BaseTheme.palette.actionDanger;
+        color = mode === CONTAINED ? BaseTheme.palette.actionDanger : undefined;
     } else {
         color = buttonColor;
         buttonLabelStyles = styles.buttonLabel;
@@ -63,15 +67,20 @@ const Button: React.FC<IProps> = ({
     if (disabled) {
         buttonLabelStyles = styles.buttonLabelDisabled;
         buttonStyles = styles.buttonDisabled;
+    } else if (type === SECONDARY && mode === CONTAINED) {
+        buttonStyles = styles.buttonSecondary;
     } else {
         buttonStyles = styles.button;
     }
 
     if (type === TERTIARY) {
-        if (disabled) {
-            buttonLabelStyles = styles.buttonLabelTertiaryDisabled;
-        }
-        buttonLabelStyles = styles.buttonLabelTertiary;
+
+        // The tertiary label is a plain Text with its own disabled style: the
+        // assignment used to run after the disabled check and overwrote it, so a
+        // disabled tertiary button stayed fully bright.
+        buttonLabelStyles = disabled
+            ? styles.buttonLabelTertiaryDisabled
+            : styles.buttonLabelTertiary;
 
         return (
             <TouchableHighlight

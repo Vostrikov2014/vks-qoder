@@ -33,6 +33,13 @@ interface IProps extends IInputProps {
     editable?: boolean | undefined;
 
     /**
+     * When true, the blue focus border ({@code inputFocused}) is not applied
+     * while the field is focused. Used, for example, by the welcome page room
+     * name field, which should keep a neutral border at all times.
+     */
+    hideFocusedBorder?: boolean;
+
+    /**
      * The id to set on the input element.
      * This is required because we need it internally to tie the input to its
      * info (label, error) so that screen reader users don't get lost.
@@ -68,6 +75,7 @@ const Input = forwardRef<TextInput, IProps>(({
     customStyles,
     disabled,
     error,
+    hideFocusedBorder,
     icon,
     id,
     keyboardType,
@@ -161,7 +169,7 @@ const Input = forwardRef<TextInput, IProps>(({
                     disabled && styles.inputDisabled,
                     icon && styles.iconInput,
                     multiline && styles.inputMultiline,
-                    focused && styles.inputFocused,
+                    focused && !hideFocusedBorder && styles.inputFocused,
                     error && styles.inputError
                 ] as StyleProp<TextStyle> }
                 testID = { id }
